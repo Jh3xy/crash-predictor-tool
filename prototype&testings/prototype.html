@@ -1,0 +1,96 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Crash Verifier & Heuristic Predictor — Jhey Lab</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div style="max-width:1000px;margin:0 auto 18px;">
+    <h1 style="margin:0 0 6px 0">Crash Verifier & Predictor</h1>
+    <div class="small">Verifier: deterministic formula (given server seed). Predictor: heuristic model trained on pasted history.</div>
+  </div>
+
+  <div class="wrap">
+    <!-- Verifier -->
+    <div class="card">
+      <h2>1) Crash Verifier</h2>
+      <label>Server Seed (raw)</label>
+      <input id="serverSeed" placeholder="paste revealed server seed here" />
+      <label>Client Seed</label>
+      <input id="clientSeed" placeholder="client seed (usually shown or user-defined)" value=""" />
+      <label>Nonce (integer)</label>
+      <input id="nonce" placeholder="e.g. 1" value="1" />
+      <button id="verifyBtn">Compute multiplier</button>
+
+      <div class="output" id="verifyOutput">
+        <div class="small">Result will show here</div>
+      </div>
+      <div style="margin-top:10px" class="small">
+        Notes: This uses HMAC-SHA256(server_seed, `${'{clientSeed}'}:${'{nonce}'}`), takes the first 52 bits (13 hex chars), then uses the standard crash formula (floor((100*2^52)/(2^52 - r))/100).
+      </div>
+    </div>
+
+    <!-- Predictor -->
+    <div class="card">
+      <h2>2) Heuristic Predictor</h2>
+      <label>Paste recent multipliers (comma or newline separated)</label>
+      <textarea id="historyInput" placeholder="e.g. 1.23, 2.00, 1.05, 10.00, 1.01" rows="8"></textarea>
+
+      <label>Predictor settings</label>
+      <div class="row">
+        <select id="windowSize" style="width:40%;">
+          <option value="10">window: 10</option>
+          <option value="20" selected>window: 20</option>
+          <option value="50">window: 50</option>
+          <option value="100">window: 100</option>
+        </select>
+        <select id="strategy" style="width:60%;">
+          <option value="empirical">Empirical (distribution + mean)</option>
+          <option value="streak">Streak-aware</option>
+          <option value="combined" selected>Combined heuristic</option>
+        </select>
+      </div>
+
+      <button id="predictBtn">Run predictor</button>
+
+      <div class="output" id="predictOutput">
+        <div class="small">Prediction output will show here</div>
+      </div>
+
+      <div style="margin-top:10px" class="small">
+        Explanation: predictor uses recent stats (mean, std), streak detection, P(X &lt; t) from empirical CDF, and a small weighting system to produce a point prediction and a confidence score (0-100%). It's a heuristic — backtest before trusting it.
+      </div>
+    </div>
+
+    <!-- Backtest/demo -->
+    <div class="card fullwidth">
+      <h2>3) Backtest / Quick demo</h2>
+      <div class="row">
+        <div class="stat">
+          <strong id="avgPredAcc">—</strong><div class="small">Avg prediction (demo)</div>
+        </div>
+        <div class="stat">
+          <strong id="hitRate">—</strong><div class="small">Hit rate (demo)</div>
+        </div>
+        <div class="stat">
+          <strong id="sampleSize">—</strong><div class="small">Sample size</div>
+        </div>
+      </div>
+
+      <div style="margin-top:12px">
+        <button id="runBacktest">Quick backtest (in-page)</button>
+        <div id="backtestOutput" style="margin-top:10px"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>Use this for learning / verification / research. Don’t use it to try and exploit live services.</footer>
+  <script src="script.js"></script>
+</body>
+</html>
+
+
