@@ -1,0 +1,47 @@
+:root {
+  /*--------- Fonts ---------*/
+  --ff-primary: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  --ff-secondary: 'Roboto Mono', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+
+  /*--------- Primary Colors (60%) ---------*/
+  --color-primary: hsla(225, 57%, 8%, 1);        /* Dark Navy */
+  --color-primary-glass: hsla(225, 57%, 8%, 0.85); /* For glass cards */
+
+  /*--------- Secondary Colors (30%) ---------*/
+  --color-secondary: hsla(212, 100%, 64%, 1);    /* Soft Blue */
+  --color-secondary-hover: hsla(212, 100%, 64%, 0.85); /* Hover/active states */
+  --color-secondary-glow: hsla(212, 100%, 64%, 0.3);   /* Subtle glow */
+
+  /*--------- Accent Colors (10%) ---------*/
+  --color-accent: hsla(162, 100%, 61%, 1);       /* Neon Mint */
+  --color-accent-glow: hsla(162, 100%, 61%, 0.25); /* Neon glow effects */
+
+  /*--------- Text Colors ---------*/
+  --text-primary: hsla(0, 0%, 100%, 1);          /* White text */
+  --text-secondary: hsla(0, 0%, 80%, 1);        /* Soft gray text */
+
+  /*--------- Borders & Cards ---------*/
+  --border-glass: hsla(212, 100%, 64%, 0.15);   /* subtle border for cards */
+  --card-radius: 16px;                           /* rounded corners */
+  --card-shadow: 0 8px 32px rgba(0,0,0,0.4);    /* subtle card shadow */
+  
+  /*--------- Shadows / Glows ---------*/
+  --shadow-glow-accent: 0 0 10px var(--color-accent-glow), 0 0 20px var(--color-accent-glow);
+  --shadow-glow-secondary: 0 0 8px var(--color-secondary-glow), 0 0 16px var(--color-secondary-glow);
+
+  /*--------- Transitions ---------*/
+  --transition-fast: all 0.2s ease-in-out;
+  --transition-slow: all 0.4s ease;
+
+  /*--------- Layout / Misc ---------*/
+  --spacing-base: 16px;      /* base spacing for padding/margin */
+  --spacing-small: 8px;
+  --spacing-large: 24px;
+
+  --z-overlay: 1000;   /* for modals/tooltips if needed */
+}
+
+
+
+
+
