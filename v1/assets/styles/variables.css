@@ -17,13 +17,17 @@
   --color-accent-glow: hsla(162, 100%, 61%, 0.25); /* Neon glow effects */
 
   /*--------- Text Colors ---------*/
-  --text-primary: hsla(0, 0%, 100%, 1);          /* White text */
-  --text-secondary: hsla(0, 0%, 80%, 1);        /* Soft gray text */
+  --text-primary: hsla(0, 0%, 100%, 1);  /* White text */
+  --text-secondary: hsla(0, 0%, 80%, 0.8); /* Soft gray text */
+
+  --color-success: hsla(162, 87%, 59%, 1);  
 
   /*--------- Borders & Cards ---------*/
   --border-glass: hsla(212, 100%, 64%, 0.15);   /* subtle border for cards */
-  --card-radius: 16px;                           /* rounded corners */
+  --card-radius: 16px;   /* rounded corners */
   --card-shadow: 0 8px 32px rgba(0,0,0,0.4);    /* subtle card shadow */
+  --card-border: 1px solid hsla(212, 100%, 64%, 0.22);
+
   
   /*--------- Shadows / Glows ---------*/
   --shadow-glow-accent: 0 0 10px var(--color-accent-glow), 0 0 20px var(--color-accent-glow);
@@ -39,6 +43,13 @@
   --spacing-large: 24px;
 
   --z-overlay: 1000;   /* for modals/tooltips if needed */
+  --sidebar-active-bg: linear-gradient(
+  135deg,
+  hsla(212,100%,64%,0.25),
+  hsla(212,100%,64%,0.15)
+);
+  --sidebar-active-border: hsla(212,100%,64%,0.35);
+
 }
 
 

@@ -11,32 +11,38 @@
     rel="stylesheet"/>
     <!-- Stylesheets -->
     <link rel="stylesheet" href="./assets/styles/variables.css">
-    <link rel="stylesheet" href="./assets/styles/styles.css">
+    <link rel="stylesheet" href="./assets/styles/styles.css"> 
+
+    <!-- Scripts -->
+     <script src="./assets/script.js" defer></script>
 </head>
 <body>
     <div class="dashboard">
         <header>
             <div class="title">
-                <h1>Crash Oracle</h1>
-                <span class="desc">AI-Powered Crash Analytics</span>
+                <h1>Crash Oracle
+                    <span class="desc">AI-Powered Crash Analytics</span>
+                </h1>
             </div>
             <div class="icons">
-                <div class="icon">
+                <div class="icon glass ui-icon-secondary">
                     <i class="fa-solid fa-gear"></i>
                 </div>
-                <div class="icon">
-                    <i class="fa-solid fa-user"></i>
+                <div class="icon ui-icon">
+                    <i class="fa-regular fa-user"></i>
                 </div>
             </div>
         </header>
         <aside class="sidebar">
             <div class="logo">
-                <i class="fa-solid fa-arrow-trend-up"></i>
-                <span>Crash Oracle</span>
+                <span class="ui-icon">
+                    <i class="fa-solid fa-arrow-trend-up"></i>
+                </span>
+                <span class="logo-name">Crash Oracle</span>
             </div>
             <nav>
                 <ul class="tabs">
-                    <li class="tab">
+                    <li class="tab active">
                         <i class="fa-regular fa-house"></i>
                         Home
                     </li>
@@ -45,7 +51,7 @@
                         Predictor
                     </li>
                     <li class="tab">
-                        <i class="fa-regular fa-shield"></i>
+                        <i class="fa-solid fa-shield"></i>
                         Crash Verifier
                     </li>
                     <li class="tab">
@@ -62,8 +68,8 @@
                     </li>
                 </ul>
             </nav>
-            <div class="info">
-
+            <div class="sidebar-footer center">
+                <p>v1.0.0 • Premium</p>
             </div>
         </aside>
         <main class="dashboard-overview">
@@ -71,15 +77,250 @@
                 <h2>Dashboard Overview</h2>
                 <p>Real-time crash analytics and AI-powered predictions</p>
                 <div class="cards">
-                    <div class="card">
+                    <div class="card glass">
+                        <div class="card-title">
+                            <div class="tag">
+                                <span>
+                                    <i class="fa-solid fa-tower-broadcast"></i>
+                                </span>
+                                <h3>Live Sync</h3>
+                            </div>
+                            <span class="status"> Not Connected</span>
+                        </div>
+                        <div class="multipliers">
+                            <span>Current Multiplier</span>
+                            <p class="multiple">4.37x</p>
+                            <div class="recents">
+                                <span>Recent Multipliers</span>
+                                <div class="multiples-grid">
+                                    <div class="center">1.52x</div>
+                                    <div class="center">3.21x</div>
+                                    <div class="center">1.08x</div>
+                                    <div class="center">2.47x</div>
+                                    <div class="center">5.67x</div>
+                                    <div class="center">1.23x</div>
+                                    <div class="center">2.38x</div>
+                                    <div class="center">1.76x</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card glass predictor">
+                         <div class="tag">
+                                <span>
+                                    <i class="fa-solid fa-arrow-trend-up"></i>
+                                </span>
+                                <h3>AI Predictor</h3>
+                            </div>
+                        <div class="info">
+                                    <div class="info-icon center">
+                                        <i class="fa-solid fa-arrow-trend-up"></i>
+                                    </div>
+                                    <p class="info-desc">Click Predict to analyze</p>
+                                </div>
+                                <div class="prediction">
+                                </div>
+                                <button class="btn">Predict</button>
+                    </div>
+                    <div class="card glass verifier">
+                        <div class="tag">
+                            <span>
+                               <i class="fa-solid fa-shield"></i>
+                            </span>
+                            <h3>Crash Verifier</h3>
+                        </div>
+                        <form action="#" novalidate>
+                            <div>
+                                <label for="client-seed">Client Seed</label>
+                                <div class="input-wrap">
+                                    <input type="text" id="client-seed" name="client-seed" placeholder="Enter Client Seed">
+                                </div>
+                            </div>
+                            <div>
+                                <label for="server-seed">Server Seed</label>
+                                <div class="input-wrap">
+                                    <input type="text" id="server-seed" name="client-seed" placeholder="Enter Server Seed">
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label for="Nonce">Nonce</label>
+                                <div class="input-wrap ">
+                                    <input type="text" id="nonce" name="nonce" placeholder="Enter Nonce">
+                                </div>
+                            </div>
+                            <button class="btn">Verify Crash Result</button>
+                        </form>
+                    </div>
+                    <div class="stats-cards">
+                        <div class="card glass">
+                            <div class="tag">
+                                <h3>Total Predictions</h3>
+                            </div>
+                            <p class="stat">1,247
+                                <span class="stat-summary">+127 today</span>
+                            </p>
+                        </div>
+                        <div class="card glass">
+                            <div class="tag">
+                                <h3>Avg. Accuracy</h3>
+                            </div>
+                            <p class="stat">95.7%
+                                <span class="stat-summary">+2.3% this week</span>
+                            </p>
+                        </div>
+                        <div class="card glass">
+                            <div class="tag">
+                                <h3>Win Rate</h3>
+                            </div>
+                            <p class="stat">87.2%
+                                <span class="stat-summary">Last 24h</span>
+                            </p>
+                        </div>
+                        <div class="card glass">
+                            <div class="tag">
+                                <h3>Active Sessions</h3>
+                            </div>
+                            <p class="stat">42
+                                <span class="stat-summary">Live now</span>
+                            </p>
+                        </div>
+                    </div>
 
+                    <div class="card glass full-width history">
+                        <div class="tag">
+                            <span>
+                               <i class="fa-solid fa-clock-rotate-left"></i>
+                            </span>
+                            <h3>Accuracy & History Log</h3>
+                        </div>
+                        <div class="stats-table">
+                            <div class="table">
+                                <div class="table-header">
+                                    <h4>Timestamp</h4>
+                                    <h4>Predicted</h4>
+                                    <h4>Actual</h4>
+                                    <h4>Difference</h4>
+                                    <h4>Accuracy</h4>
+                                </div>
+                                <div class="table-content">
+                                    <div class="time">
+                                        <span>2025-11-17 14:32:15</span>
+                                    </div>
+                                    <div class="predicted">
+                                        <span>2.45x</span>
+                                    </div>
+                                    <div class="actual">
+                                        <span>2.47x</span>		
+                                    </div>
+                                    <div class="difference">
+                                        <span>&plusmn;0.02</span>
+                                    </div>
+                                    <div class="accuracy">
+                                        <span class="green">99.2%</span>
+                                    </div>
+                                </div>
+                                <div class="table-content">
+                                    <div class="time">
+                                        <span>2025-11-17 14:30:08</span>
+                                    </div>
+                                    <div class="predicted">
+                                        <span>3.1x</span>
+                                    </div>
+                                    <div class="actual">
+                                        <span>3.21x</span>		
+                                    </div>
+                                    <div class="difference">
+                                        <span>&plusmn;0.11</span>
+                                    </div>
+                                    <div class="accuracy">
+                                        <span class="green">96.6%</span>				
+                                    </div>
+                                </div>
+                                <div class="table-content">
+                                    <div class="time">
+                                        <span>2025-11-17 14:28:42</span>
+                                    </div>
+                                    <div class="predicted">
+                                        <span>1.2x</span>
+                                    </div>
+                                    <div class="actual">
+                                        <span>1.08x</span>		
+                                    </div>
+                                    <div class="difference">
+                                        <span>&plusmn;0.12</span>
+                                    </div>
+                                    <div class="accuracy">
+                                        <span class="blue">90%</span> 			
+                                    </div>
+                                </div>
+                                <div class="table-content">
+                                    <div class="time">
+                                        <span>2025-11-17 14:26:35</span>
+                                    </div>
+                                    <div class="predicted">
+                                        <span>5.5x</span>
+                                    </div>
+                                    <div class="actual">
+                                        <span>5.67x</span>		
+                                    </div>
+                                    <div class="difference">
+                                        <span>&plusmn;0.17</span>
+                                    </div>
+                                    <div class="accuracy">
+                                        <span class="green">97%</span>
+                                    </div>
+                                </div>  				
+                                <div class="table-content">
+                                    <div class="time">
+                                        <span>2025-11-17 14:24:21</span>
+                                    </div>
+                                    <div class="predicted">
+                                        <span>1.15x</span>
+                                    </div>
+                                    <div class="actual">
+                                        <span>1.23x</span>		
+                                    </div>
+                                    <div class="difference">
+                                        <span>&plusmn;0.08</span>
+                                    </div>
+                                    <div class="accuracy">
+                                        <span class="blue">93.5%</span>  		
+                                    </div>
+                                </div>
+                                <div class="table-content">
+                                    <div class="time">
+                                        <span>2025-11-17 14:22:10</span>
+                                    </div>
+                                    <div class="predicted">
+                                        <span>2.95x</span>
+                                    </div>
+                                    <div class="actual">
+                                        <span>2.89x	</span>		
+                                    </div>
+                                    <div class="difference">
+                                        <span>&plusmn;0.06</span>
+                                    </div>
+                                    <div class="accuracy">
+                                        <span class="green">98%</span>  		
+                                    </div>
+                                </div>
+                                <div class="stat-summary flex">
+                                    <p>Overall Accuracy: <span class="up">95.7%</span></p>
+                                    <p>Total Predictions: <span >1,247</span></p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </main>
-
     </div>
     </div>
 </body>
 </html>
+
+
+
+
+
 
