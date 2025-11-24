@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="./assets/styles/styles.css"> 
 
     <!-- Scripts -->
-     <script src="./assets/script.js" defer></script>
+     <script type="module" src="./assets/script.js" defer></script>
 </head>
 <body>
     <div class="dashboard">
@@ -77,7 +77,7 @@
                 <h2>Dashboard Overview</h2>
                 <p>Real-time crash analytics and AI-powered predictions</p>
                 <div class="cards">
-                    <div class="card glass">
+                    <div class="card glass" id="live-sync">
                         <div class="card-title">
                             <div class="tag">
                                 <span>
@@ -105,7 +105,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="card glass predictor">
+                    <div class="card glass predictor" id="ai-predictor">
                          <div class="tag">
                                 <span>
                                     <i class="fa-solid fa-arrow-trend-up"></i>
@@ -120,9 +120,15 @@
                                 </div>
                                 <div class="prediction">
                                 </div>
-                                <button class="btn">Predict</button>
+                                                    <<div class="prediction">
+                            <p>Next Prediction:</p>
+                            <h2 id="predicted-value">--</h2>
+                        </div>
+
+                        <!-- PREDICT BUTTON -->
+                        <button class="btn" id="predict-btn">Predict</button>
                     </div>
-                    <div class="card glass verifier">
+                    <div class="card glass verifier" id="crash-verfier">
                         <div class="tag">
                             <span>
                                <i class="fa-solid fa-shield"></i>
@@ -139,7 +145,7 @@
                             <div>
                                 <label for="server-seed">Server Seed</label>
                                 <div class="input-wrap">
-                                    <input type="text" id="server-seed" name="client-seed" placeholder="Enter Server Seed">
+                                    <input type="text" id="server-seed" name="sever-seed" placeholder="Enter Server Seed">
                                 </div>
                             </div>
                             <div class="mb-4">
@@ -148,7 +154,8 @@
                                     <input type="text" id="nonce" name="nonce" placeholder="Enter Nonce">
                                 </div>
                             </div>
-                            <button class="btn">Verify Crash Result</button>
+                            <div class="accuracy-output"></div>
+                            <button type="submit" class="btn">Verify Crash Result</button>
                         </form>
                     </div>
                     <div class="stats-cards">
@@ -185,8 +192,7 @@
                             </p>
                         </div>
                     </div>
-
-                    <div class="card glass full-width history">
+                    <div class="card glass full-width history" id="history">
                         <div class="tag">
                             <span>
                                <i class="fa-solid fa-clock-rotate-left"></i>

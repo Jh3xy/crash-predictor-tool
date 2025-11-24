@@ -1,2 +1,9 @@
 
 
+| Client Seed         | Server Seed                                      | Nonce |
+| ------------------- | ------------------------------------------------ | ----- |
+| `JheyClientSeed001` | `BCServerSeedA12B34C56D78E90F`                   | 1     |
+| `PlayerSeedX9Y7Z`   | `ServerSeedF9G8H7I6J5K4L3M2N1O0P`                | 2     |
+| `TestClient2025`    | `FAKE_SERVER_SEED_ABC123XYZ987`                  | 3     |
+| `AlphaSeed999`      | `ServerSeed_QWERTYUIOPASDFGHJKLZXCVBNM123456`    | 4     |
+| `BetaSeed77`        | `ServerSeed_987ZYXWVUTSRQPONMLKJIHGFEDCBA654321` | 5     |
