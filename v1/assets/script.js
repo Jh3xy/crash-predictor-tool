@@ -1,5 +1,4 @@
 
-
 // Import all the core modules from the assets/js folder
 import { DataStore } from './js/DataStore.js';
 import { LiveSync } from './js/LiveSyncing.js'; 
@@ -21,11 +20,42 @@ function getDOMElements() {
         statusMessage: document.getElementById('status-message'),
         
         // Prediction Report Elements (from index.html)
+        predictBtn: document.getElementById('predict-btn'), // <-- NEW: Added button element
+        predictedValue: document.getElementById('predicted-value'), // Assuming you added this ID in HTML
         riskZone: document.getElementById('risk-zone'),
         analysisMessage: document.getElementById('analysis-message'),
         avgMultiplier: document.getElementById('avg-multiplier'),
         volatility: document.getElementById('volatility'),
+        
+        // Assuming other IDs are present for the full UIController
     };
+}
+
+/**
+ * Core function to run the prediction logic and update the UI when the button is clicked.
+ * NOTE: This is separate from the automated prediction triggered by 'newRoundCompleted'.
+ */
+function handlePredictClick(dataStore, predictor, uiController) {
+    // 1. Retrieve only the multipliers (numbers) from the DataStore
+    // We use the new DataStore.getMultipliers() method (which retrieves up to 200).
+    const historyMultipliers = dataStore.getMultipliers();
+    
+    // 2. Set a quick status while analysis runs
+    uiController.updateStatus('reconnecting', 'Analyzing History...');
+    
+    // Simulate a brief delay for a complex analysis feel
+    setTimeout(() => {
+        // 3. Run the prediction logic using the history array
+        const result = predictor.predictNext(historyMultipliers);
+        
+        // 4. Update the prediction card in the UI
+        uiController.renderPrediction(result);
+        
+        // 5. Reset status after analysis
+        const confidence = result.confidence.toFixed(0);
+        const risk = result.riskLevel.toUpperCase();
+        uiController.updateStatus('mock', `Analysis Complete. Risk: ${risk} (${confidence}%)`);
+    }, 500); // 500ms delay
 }
 
 /**
@@ -38,7 +68,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // 2. Instantiate all core logic modules (the brain)
     const dataStore = new DataStore();
     const verifier = new Verifier(dataStore); 
-    const predictor = new CrashPredictor(dataStore); 
+    // FIX: The new CrashPredictor does not accept dataStore in the constructor.
+    const predictor = new CrashPredictor(); 
     const uiController = new UIController(domElements); 
 
     // 3. Instantiate LiveSync, passing it the DataStore and Verifier (the input layer)
@@ -46,8 +77,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
     console.log('🚀 App Initialized. Starting LiveSync connection...');
     
-    // ________NEED HELP HERE FR!!!!!!!!
-    // uiController.updateStatus('initializing', 'Attempting connection...');
+    // Add Event Listener for the "Predict Now" Button
+    if (domElements.predictBtn) {
+        // We wrap the logic so we can pass our instantiated modules (dataStore, predictor, uiController)
+        domElements.predictBtn.addEventListener('click', () => {
+            handlePredictClick(dataStore, predictor, uiController);
+        });
+        console.log('Event Listener: Predict button connected.');
+    }
 
     // Connect to the real-time feed (will fall back to emulation if URL fails)
     liveSync.connect(); 
@@ -74,8 +111,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const round = e.detail;
         console.log(`✨ APP: New round processed! Crash at ${round.finalMultiplier}x.`);
         
-        // 1. Run the Predictor Analysis immediately
-        const predictionResult = predictor.runAnalysis(); 
+        // *AUTOMATED PREDICTION* (Old predictor logic, still useful for automatic updates)
+        // NOTE: Since your predictor.js file has been replaced, 
+        // you should decide if you still want an *automatic* prediction update after every round.
+        // If so, you'd replace the old runAnalysis() call with this:
+        const predictionResult = predictor.predictNext(dataStore.getMultipliers());
         
         // 2. Update UI (renders the new item in the history grid)
         uiController.renderNewRound(round);
@@ -100,3 +140,5 @@ document.addEventListener('DOMContentLoaded', () => {
         uiController.renderNewRound(round);
     });
 });
+
+

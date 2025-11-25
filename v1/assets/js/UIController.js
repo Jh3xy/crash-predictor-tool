@@ -1,12 +1,12 @@
-
 /**
  * js/UIController.js
  * * This module handles all DOM manipulation and rendering for the LiveSync Dashboard.
  *
- * FIX 1: The UIController class now receives the mapped DOM elements in its constructor
- * (Dependency Injection) to keep it clean and testable.
- * FIX 2: Contains the correct logic for renderNewRound to fix the 't is not defined' error.
- * FIX 3: Includes all required methods (updateLiveMultiplier, updateStatus, renderPrediction).
+ * FIX 1: Corrected template literal syntax issues.
+ * FIX 2: Added parseFloat() for defensive coding in updateLiveMultiplier.
+ * FIX 3: Ensured the 'multiple' class is retained for main multiplier styling.
+ * FIX 4: Implemented a strict limit of 10 items for the Recent Multipliers grid (per request).
+ * UPDATE: Enhanced renderPrediction to handle structured output and error states from CrashPredictor.
  */
 
 export class UIController { 
@@ -22,14 +22,15 @@ export class UIController {
     updateLiveMultiplier(multiplier) {
         if (this.elements.currentMultiplier) {
             
-            // 1. DEFINE the numericMultiplier variable (This was the missing part!)
+            // Use parseFloat() to ensure the input is always treated as a number.
             const numericMultiplier = parseFloat(multiplier) || 0.00;
             
-            // 2. Format and display the text
+            // Implement the required two-decimal rounding (toFixed(2)) and append 'x'
             const formattedMultiplier = numericMultiplier.toFixed(2); 
+            
             this.elements.currentMultiplier.textContent = formattedMultiplier + 'x';
             
-            // 3. Apply the class name, including the required 'multiple' class
+            // FIX APPLIED: Ensure the 'multiple' class is retained for styling
             this.elements.currentMultiplier.className = 
                 `multiple text-6xl font-extrabold transition-colors duration-200 ${numericMultiplier >= 2.00 ? 'text-green-500' : 'text-red-500'}`;
         }
@@ -72,11 +73,13 @@ export class UIController {
             // Apply Tailwind classes for styling
             newItem.className = `p-2 rounded-lg text-sm font-semibold ${colorClass} text-white transition-all duration-300 transform hover:scale-105`;
             
-            // --- FIX 1: Set the content ---
+            // Set the content
             newItem.textContent = `${round.finalMultiplier.toFixed(2)}x ${icon}`;
 
-            // --- FIX 2 & 3: Find the existing item and set the ID ---
+            // Find the existing item
             const existingItem = this.elements.recentGrid.querySelector(`[data-game-id="${round.gameId}"]`);
+            
+            // Set the game ID attribute for later identification/updates
             newItem.setAttribute('data-game-id', round.gameId);
 
             if (existingItem) {
@@ -87,9 +90,10 @@ export class UIController {
                 this.elements.recentGrid.prepend(newItem);
             }
 
-            // --- FIX 4: Grid Cleanup ---
-            // Keep the grid clean, only showing the last 20 results (optional cleanup)
-            while (this.elements.recentGrid.children.length > 20) {
+            // --- Grid Cleanup to maintain a fixed size ---
+            const MAX_HISTORY_ITEMS = 10; 
+            while (this.elements.recentGrid.children.length > MAX_HISTORY_ITEMS) {
+                // Remove the last child (the oldest item)
                 this.elements.recentGrid.removeChild(this.elements.recentGrid.lastChild);
             }
         }
@@ -97,20 +101,44 @@ export class UIController {
     
     /**
      * Renders the prediction analysis results (risk, average, volatility).
+     * Expected result structure from CrashPredictor.
      */
     renderPrediction(result) {
-        if (this.elements.riskZone) {
-            let riskColor = '';
-            if (result.risk === 'HIGH') riskColor = 'text-red-500';
-            else if (result.risk === 'EXTREME') riskColor = 'text-purple-500';
-            else riskColor = 'text-green-500';
+        const predictedValueEl = this.elements.predictedValue;
+        const riskZoneEl = this.elements.riskZone;
 
-            this.elements.riskZone.textContent = result.risk;
-            this.elements.riskZone.className = `font-bold ${riskColor}`;
+        if (predictedValueEl && riskZoneEl) {
             
+            // Handle error state first (e.g., less than 20 rounds)
+            if (result.error) {
+                predictedValueEl.textContent = '--';
+                riskZoneEl.textContent = 'N/A';
+                riskZoneEl.className = `font-bold text-gray-400`;
+                this.elements.analysisMessage.textContent = result.message;
+                this.elements.avgMultiplier.textContent = '--';
+                this.elements.volatility.textContent = '--';
+                // Also reset the data-risk attribute
+                riskZoneEl.setAttribute('data-risk', 'na');
+                return;
+            }
+            
+            // Update main predicted value
+            predictedValueEl.textContent = result.predictedValue.toFixed(2) + 'x';
+            
+            // Determine risk color
+            let riskColor = '';
+            const risk = result.riskLevel.toUpperCase();
+            if (risk === 'HIGH') { riskColor = 'text-red-500'; riskZoneEl.setAttribute('data-risk', 'high'); }
+            else if (risk === 'MEDIUM') { riskColor = 'text-yellow-500'; riskZoneEl.setAttribute('data-risk', 'medium'); }
+            else { riskColor = 'text-green-500'; riskZoneEl.setAttribute('data-risk', 'low'); } // LOW
+
+            riskZoneEl.textContent = risk;
+            riskZoneEl.className = `font-bold ${riskColor}`;
+            
+            // Update details
             this.elements.analysisMessage.textContent = result.message;
-            this.elements.avgMultiplier.textContent = result.avg;
-            this.elements.volatility.textContent = result.volatility;
+            this.elements.avgMultiplier.textContent = result.averageTarget.toFixed(2) + 'x';
+            this.elements.volatility.textContent = result.volatility.toFixed(2) + 'x';
         }
     }
     
