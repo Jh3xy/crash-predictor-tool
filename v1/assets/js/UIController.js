@@ -21,14 +21,17 @@ export class UIController {
      */
     updateLiveMultiplier(multiplier) {
         if (this.elements.currentMultiplier) {
-            // Implement the required two-decimal rounding (toFixed(2)) and append 'x'
-            const formattedMultiplier = multiplier.toFixed(2); 
             
+            // 1. DEFINE the numericMultiplier variable (This was the missing part!)
+            const numericMultiplier = parseFloat(multiplier) || 0.00;
+            
+            // 2. Format and display the text
+            const formattedMultiplier = numericMultiplier.toFixed(2); 
             this.elements.currentMultiplier.textContent = formattedMultiplier + 'x';
             
-            // Apply dynamic styling based on multiplier value
+            // 3. Apply the class name, including the required 'multiple' class
             this.elements.currentMultiplier.className = 
-                `text-6xl font-extrabold transition-colors duration-200 ${multiplier >= 2.00 ? 'text-green-500' : 'text-red-500'}`;
+                `multiple text-6xl font-extrabold transition-colors duration-200 ${numericMultiplier >= 2.00 ? 'text-green-500' : 'text-red-500'}`;
         }
     }
 
