@@ -1,39 +1,34 @@
 
-
 /**
  * js/UIController.js
- * * This module is now solely the UI Renderer for the LiveSync Dashboard.
+ * * This module handles all DOM manipulation and rendering for the LiveSync Dashboard.
  *
- * FIX 1: Removed outdated dependencies (like CrashPredictor) and methods 
- * (like handleCalculateClick, displayResult) that belonged to the single-round calculator.
- * FIX 2: Corrected the constructor to receive and use the DOM elements mapped by main.js.
- * FIX 3: Implemented the required methods (updateLiveMultiplier, renderNewRound, etc.)
- * that your main script expects to exist.
+ * FIX 1: The UIController class now receives the mapped DOM elements in its constructor
+ * (Dependency Injection) to keep it clean and testable.
+ * FIX 2: Contains the correct logic for renderNewRound to fix the 't is not defined' error.
+ * FIX 3: Includes all required methods (updateLiveMultiplier, updateStatus, renderPrediction).
  */
 
-// We no longer need CrashPredictor here, as main.js handles the prediction module call.
-// The UIController just needs to render the results.
-
 export class UIController { 
-    // FIX: The constructor MUST accept the elements object from main.js
+    // The constructor receives the mapped elements from main.js
     constructor(elements) {
         this.elements = elements; 
         console.log('UIController: Initialized. Ready to render the application.');
     }
     
-    // ----------------------------------------------------------------------
-    // --- REQUIRED METHODS FOR LIVE-SYNC DASHBOARD (Fixes "is not a function" errors) ---
-    // ----------------------------------------------------------------------
-
     /**
      * Updates the main multiplier display during a live round.
-     * Fixes: uiController.updateLiveMultiplier is not a function
      */
     updateLiveMultiplier(multiplier) {
         if (this.elements.currentMultiplier) {
-            this.elements.currentMultiplier.textContent = multiplier;
-            // Simple styling based on multiplier value
-            this.elements.currentMultiplier.className = multiplier >= 2.00 ? 'text-green-500' : 'text-red-500';
+            // Implement the required two-decimal rounding (toFixed(2)) and append 'x'
+            const formattedMultiplier = multiplier.toFixed(2); 
+            
+            this.elements.currentMultiplier.textContent = formattedMultiplier + 'x';
+            
+            // Apply dynamic styling based on multiplier value
+            this.elements.currentMultiplier.className = 
+                `text-6xl font-extrabold transition-colors duration-200 ${multiplier >= 2.00 ? 'text-green-500' : 'text-red-500'}`;
         }
     }
 
@@ -48,32 +43,52 @@ export class UIController {
             else if (level === 'mock') color = 'bg-blue-500';
             else color = 'bg-gray-500';
 
+            // Use the appropriate Tailwind classes for the status dot
             this.elements.statusDot.className = `w-3 h-3 rounded-full ${color} mr-2 animate-pulse`;
             this.elements.statusMessage.textContent = message;
+            // Also update the parent container's data attribute for CSS styling
+            this.elements.statusMessage.setAttribute('data-status', level);
         }
     }
 
     /**
-     * Renders a new round result into the history grid.
-     * Fixes: uiController.renderNewRound is not a function
+     * Renders a new round result into the history grid (Recent Multipliers). 
+     * This function is called when the round completes (newRoundCompleted event).
+     * @param {Object} round - The round data object.
      */
     renderNewRound(round) {
         if (this.elements.recentGrid) {
             const newItem = document.createElement('div');
+            
+            // Determine color based on multiplier
             const colorClass = round.finalMultiplier >= 2.00 ? 'bg-green-700' : 'bg-red-700';
+            
+            // Determine icon for verification status
             const icon = round.verificationStatus === 'Verified' ? '✅' : round.verificationStatus === 'Low Payout Verified' ? '🔒' : '';
 
+            // Apply Tailwind classes for styling
             newItem.className = `p-2 rounded-lg text-sm font-semibold ${colorClass} text-white transition-all duration-300 transform hover:scale-105`;
+            
+            // --- FIX 1: Set the content ---
             newItem.textContent = `${round.finalMultiplier.toFixed(2)}x ${icon}`;
 
-            // Check if item needs to be replaced (for verification updates) or added
-            const existingItem = t`his.elements.recentGrid.querySelector([data-game-id="${round.gameId}"])`;
+            // --- FIX 2 & 3: Find the existing item and set the ID ---
+            const existingItem = this.elements.recentGrid.querySelector(`[data-game-id="${round.gameId}"]`);
+            newItem.setAttribute('data-game-id', round.gameId);
+
             if (existingItem) {
+                // If it exists, replace it (used for updating the status/color after verification)
                 this.elements.recentGrid.replaceChild(newItem, existingItem);
             } else {
+                // Otherwise, prepend the new result to the start of the grid
                 this.elements.recentGrid.prepend(newItem);
             }
-            newItem.setAttribute('data-game-id', round.gameId);
+
+            // --- FIX 4: Grid Cleanup ---
+            // Keep the grid clean, only showing the last 20 results (optional cleanup)
+            while (this.elements.recentGrid.children.length > 20) {
+                this.elements.recentGrid.removeChild(this.elements.recentGrid.lastChild);
+            }
         }
     }
     
@@ -100,4 +115,3 @@ export class UIController {
         console.error(`UIController Error: ${msg}`);
     }
 }
-

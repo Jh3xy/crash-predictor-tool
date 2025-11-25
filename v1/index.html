@@ -77,7 +77,7 @@
                 <h2>Dashboard Overview</h2>
                 <p>Real-time crash analytics and AI-powered predictions</p>
                 <div class="cards">
-                    <div class="card glass" id="live-sync">
+                    <!-- <div class="card glass" id="live-sync">
                         <div class="card-title">
                             <div class="tag">
                                 <span>
@@ -93,6 +93,41 @@
                             <div class="recents">
                                 <span>Recent Multipliers</span>
                                 <div class="multiples-grid">
+                                    <div class="center">1.52x</div>
+                                    <div class="center">3.21x</div>
+                                    <div class="center">1.08x</div>
+                                    <div class="center">2.47x</div>
+                                    <div class="center">5.67x</div>
+                                    <div class="center">1.23x</div>
+                                    <div class="center">2.38x</div>
+                                    <div class="center">1.76x</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div> -->
+                    <div class="card glass" id="live-sync">
+                        <div class="card-title">
+                            <div class="tag">
+                                <span>
+                                    <i class="fa-solid fa-tower-broadcast"></i>
+                                </span>
+                                <h3>Live Sync</h3>
+                            </div>
+                            <!-- Status Elements for JS Control -->
+                            <span class="status" id="status-message" data-status="initializing">
+                                <span class="status-dot" id="status-dot"></span>
+                                Initializing...
+                            </span>
+                        </div>
+                        <div class="multipliers">
+                            <span>Current Multiplier</span>
+                            <!-- ID ADDED HERE -->
+                            <p class="multiple" id="current-multiplier">4.37x</p> 
+                            <div class="recents">
+                                <span>Recent Multipliers</span>
+                                <!-- ID ADDED HERE -->
+                                <div class="multiples-grid" id="recent-grid">
+                                    <!-- Dynamic content will replace these placeholders -->
                                     <div class="center">1.52x</div>
                                     <div class="center">3.21x</div>
                                     <div class="center">1.08x</div>
