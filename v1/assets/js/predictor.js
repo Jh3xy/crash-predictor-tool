@@ -1,62 +1,66 @@
 
+/**
+ * js/predictor.js
+ * * This module is the Crash Predictor. It runs analysis on historical data,
+ * * which is required by the main application's event loop.
+ *
+ * FIX: Implements the runAnalysis() method and accepts the dataStore dependency.
+ */
 
-
-// predictor.js
-export function initPredictor(callbacks = {}) {
-  
-  console.log("[predictor] initialized.");
-
-  let lastMultiplier = 1.00;
-  let status = "disconnected";
-
-  // --- INTERNAL UTILS -----------------------------------
-
-  function setStatus(newStatus) {
-    status = newStatus;
-    if (callbacks.onStatusChange) {
-      callbacks.onStatusChange(newStatus);
+export class CrashPredictor {
+    // Must accept dataStore as dependency for historical analysis
+    constructor(dataStore) {
+        this.dataStore = dataStore;
+        // Log to confirm the module loaded correctly
+        console.log('CrashPredictor: Initialized. Ready to analyze DataStore.');
     }
-  }
 
-  function updateMultiplier(value) {
-    lastMultiplier = value;
-    if (callbacks.onMultiplierUpdate) {
-      callbacks.onMultiplierUpdate(value);
+    /**
+     * Runs a statistical analysis on recent history to determine risk and volatility.
+     * This function is required by the 'newRoundCompleted' event listener in main.js.
+     * @returns {object} Analysis result.
+     */
+    runAnalysis() {
+        const recentRounds = this.dataStore.getRecentRounds(20); // Analyze 20 rounds
+        
+        if (recentRounds.length < 5) {
+            return {
+                message: "Gathering more data for reliable analysis...",
+                risk: 'UNKNOWN',
+                avg: 0,
+                volatility: 0
+            };
+        }
+
+        const multipliers = recentRounds.map(r => r.finalMultiplier);
+        const sum = multipliers.reduce((a, b) => a + b, 0);
+        const avgMultiplier = sum / multipliers.length;
+
+        // Calculate Volatility (Standard Deviation Mock)
+        const squaredDifferences = multipliers.map(m => (m - avgMultiplier) ** 2);
+        const variance = squaredDifferences.reduce((a, b) => a + b, 0) / multipliers.length;
+        const volatility = Math.sqrt(variance);
+
+        let riskZone;
+        let message;
+        if (avgMultiplier < 2.0) {
+            riskZone = 'HIGH';
+            message = 'Recent average is low. Caution advised.';
+        } else if (volatility > 5.0) {
+             riskZone = 'EXTREME';
+             message = 'Extreme volatility detected! Wide swings in results.';
+        } else {
+            riskZone = 'MODERATE';
+            message = 'Stable average multiplier detected. Standard risk.';
+        }
+        
+        console.log(`CrashPredictor: Analysis complete. Avg: ${avgMultiplier.toFixed(2)}x, Volatility: ${volatility.toFixed(2)}.`);
+        
+        return {
+            message: message,
+            risk: riskZone,
+            avg: avgMultiplier.toFixed(2),
+            volatility: volatility.toFixed(2)
+        };
     }
-  }
-
-  // --- PUBLIC API ----------------------------------------
-
-  function getLatestMultiplier() {
-    return lastMultiplier;
-  }
-
-  async function predictNext(currentValue) {
-    // TEMPORARY MOCK PREDICTOR
-    // (so UI works even before we create real logic)
-    await sleep(300);
-
-    // mock random logic
-    const noise = (Math.random() * 0.25);
-    const base = currentValue * (0.90 + noise);
-
-    const result = Math.max(1.00, base);
-
-    return parseFloat(result.toFixed(2));
-  }
-
-  function sleep(ms) {
-    return new Promise(res => setTimeout(res, ms));
-  }
-
-  // Return predictor API
-  return {
-    getLatestMultiplier,
-    predictNext,
-    // called from liveFeed.js later
-    __feed_updateMultiplier: updateMultiplier,
-    __feed_setStatus: setStatus
-  };
 }
-
-
