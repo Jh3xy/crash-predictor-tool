@@ -1,4 +1,3 @@
-
 // Import all the core modules from the assets/js folder
 import { DataStore } from './js/DataStore.js';
 import { LiveSync } from './js/LiveSyncing.js'; 
@@ -20,8 +19,8 @@ function getDOMElements() {
         statusMessage: document.getElementById('status-message'),
         
         // Prediction Report Elements (from index.html)
-        predictBtn: document.getElementById('predict-btn'), // <-- NEW: Added button element
-        predictedValue: document.getElementById('predicted-value'), // Assuming you added this ID in HTML
+        predictBtn: document.getElementById('predict-btn'),
+        predictedValue: document.getElementById('predicted-value'),
         riskZone: document.getElementById('risk-zone'),
         analysisMessage: document.getElementById('analysis-message'),
         avgMultiplier: document.getElementById('avg-multiplier'),
@@ -36,6 +35,9 @@ function getDOMElements() {
  * NOTE: This is separate from the automated prediction triggered by 'newRoundCompleted'.
  */
 function handlePredictClick(dataStore, predictor, uiController) {
+    // *** NEW DEBUG LOG: Check if the click handler is executing ***
+    console.log('✅ Click Handler Fired: Starting analysis process...');
+    
     // 1. Retrieve only the multipliers (numbers) from the DataStore
     // We use the new DataStore.getMultipliers() method (which retrieves up to 200).
     const historyMultipliers = dataStore.getMultipliers();
@@ -48,6 +50,10 @@ function handlePredictClick(dataStore, predictor, uiController) {
         // 3. Run the prediction logic using the history array
         const result = predictor.predictNext(historyMultipliers);
         
+        // *** CRITICAL NEW DEBUG STEP ***
+        // Print the actual prediction result object to the console.
+        console.log('🔮 Prediction Result Object:', result);
+
         // 4. Update the prediction card in the UI
         uiController.renderPrediction(result);
         
@@ -55,6 +61,8 @@ function handlePredictClick(dataStore, predictor, uiController) {
         const confidence = result.confidence.toFixed(0);
         const risk = result.riskLevel.toUpperCase();
         uiController.updateStatus('mock', `Analysis Complete. Risk: ${risk} (${confidence}%)`);
+        
+        console.log('✅ Analysis complete and UI updated.');
     }, 500); // 500ms delay
 }
 
@@ -79,11 +87,17 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Add Event Listener for the "Predict Now" Button
     if (domElements.predictBtn) {
+        // *** NEW DEBUG LOG: Check if the button element was found ***
+        console.log('👍 DOM Ready: Found predict-btn element. Attaching listener...');
+
         // We wrap the logic so we can pass our instantiated modules (dataStore, predictor, uiController)
         domElements.predictBtn.addEventListener('click', () => {
             handlePredictClick(dataStore, predictor, uiController);
         });
         console.log('Event Listener: Predict button connected.');
+    } else {
+        // *** CRITICAL DEBUG LOG: Log failure to find the element ***
+        console.error('❌ CRITICAL ERROR: Could not find element with ID "predict-btn". Check index.html!');
     }
 
     // Connect to the real-time feed (will fall back to emulation if URL fails)
@@ -111,10 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const round = e.detail;
         console.log(`✨ APP: New round processed! Crash at ${round.finalMultiplier}x.`);
         
-        // *AUTOMATED PREDICTION* (Old predictor logic, still useful for automatic updates)
-        // NOTE: Since your predictor.js file has been replaced, 
-        // you should decide if you still want an *automatic* prediction update after every round.
-        // If so, you'd replace the old runAnalysis() call with this:
+        // 1. Run the Automated Prediction immediately after a new round
         const predictionResult = predictor.predictNext(dataStore.getMultipliers());
         
         // 2. Update UI (renders the new item in the history grid)
@@ -140,5 +151,6 @@ document.addEventListener('DOMContentLoaded', () => {
         uiController.renderNewRound(round);
     });
 });
+
 
 

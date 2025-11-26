@@ -121,44 +121,53 @@
                         </div>
                         <div class="multipliers">
                             <span>Current Multiplier</span>
-                            <p class="multiple" id="current-multiplier">4.37x</p> 
+                            <p class="multiple" id="current-multiplier">--x</p> 
                             <div class="recents">
                                 <span>Recent Multipliers</span>
                                 <div class="multiples-grid" id="recent-grid">
-                                    <div class="center">1.52x</div>
-                                    <div class="center">3.21x</div>
-                                    <div class="center">1.08x</div>
-                                    <div class="center">2.47x</div>
-                                    <div class="center">5.67x</div>
-                                    <div class="center">1.23x</div>
-                                    <div class="center">2.38x</div>
-                                    <div class="center">1.76x</div>
+                                    <div class="center">--</div>
+                                    <div class="center">--</div>
+                                    <div class="center">--</div>
+                                    <div class="center">--</div>
+                                    <div class="center">--</div>
+                                    <div class="center">--</div>
+                                    <div class="center">--</div>
+                                    <div class="center">--</div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="card glass predictor" id="ai-predictor">
-                         <div class="tag">
-                                <span>
-                                    <i class="fa-solid fa-arrow-trend-up"></i>
-                                </span>
-                                <h3>AI Predictor</h3>
-                            </div>
-                        <div class="info">
-                                    <div class="info-icon center">
-                                        <i class="fa-solid fa-arrow-trend-up"></i>
-                                    </div>
-                                    <p class="info-desc">Click Predict to analyze</p>
-                                </div>
-                                <div class="prediction">
-                                </div>
-                                                    <div class="prediction">
-                            <p>Next Prediction:</p>
-                            <h2 id="predicted-value">--</h2>
+                   <div class="card glass predictor" id="ai-predictor">
+                        <div class="tag">
+                            <span>
+                                <i class="fa-solid fa-arrow-trend-up"></i>
+                            </span>
+                            <h3>AI Predictor</h3>
                         </div>
-
+                        <div class="prediction-section">
+                            <p>Next Prediction Target:</p>
+                            <h2 id="predicted-value">--</h2>
+                            <!-- New structure for prediction details -->
+                            <div class="prediction-details">
+                                <div class="detail-item">
+                                    <small>Risk Zone</small>
+                                    <!-- CRITICAL FIX: Added 'risk-zone' class to link up with CSS styling -->
+                                    <strong id="risk-zone" class="risk-zone font-bold" data-risk="medium">--</strong>
+                                </div>
+                                <div class="detail-item">
+                                    <small>Avg. Target</small>
+                                    <strong id="avg-multiplier">--</strong>
+                                </div>
+                                <div class="detail-item">
+                                    <small>Volatility</small>
+                                    <strong id="volatility">--</strong>
+                                </div>
+                            </div>
+                            <p id="analysis-message" class="info-desc">Press Predict to analyze the history log and generate an oracle report.</p>
+                        </div>
+                        
                         <!-- PREDICT BUTTON -->
-                        <button class="btn" id="predict-btn">Predict</button>
+                        <button class="btn" id="predict-btn">Predict Now</button>
                     </div>
                     <div class="card glass verifier" id="crash-verfier">
                         <div class="tag">
