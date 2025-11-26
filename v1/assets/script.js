@@ -1,3 +1,4 @@
+
 // Import all the core modules from the assets/js folder
 import { DataStore } from './js/DataStore.js';
 import { LiveSync } from './js/LiveSyncing.js'; 
@@ -26,44 +27,43 @@ function getDOMElements() {
         avgMultiplier: document.getElementById('avg-multiplier'),
         volatility: document.getElementById('volatility'),
         
-        // Assuming other IDs are present for the full UIController
+        // New elements for UX control
+        loadingOverlay: document.getElementById('loading-overlay'), // The spinning overlay
+        predictionOutputDetails: document.getElementById('prediction-output-details'), // The container for the output data
     };
 }
 
 /**
  * Core function to run the prediction logic and update the UI when the button is clicked.
- * NOTE: This is separate from the automated prediction triggered by 'newRoundCompleted'.
+ * NOTE: This is the ONLY function that should trigger a new prediction.
  */
 function handlePredictClick(dataStore, predictor, uiController) {
-    // *** NEW DEBUG LOG: Check if the click handler is executing ***
     console.log('✅ Click Handler Fired: Starting analysis process...');
     
-    // 1. Retrieve only the multipliers (numbers) from the DataStore
-    // We use the new DataStore.getMultipliers() method (which retrieves up to 200).
-    const historyMultipliers = dataStore.getMultipliers();
+    // 1. Show Loading State immediately
+    uiController.showLoadingState(); 
     
-    // 2. Set a quick status while analysis runs
+    // 2. Set Status (optional, but nice)
     uiController.updateStatus('reconnecting', 'Analyzing History...');
+    
+    // 3. Retrieve only the multipliers (numbers) from the DataStore
+    const historyMultipliers = dataStore.getMultipliers();
     
     // Simulate a brief delay for a complex analysis feel
     setTimeout(() => {
-        // 3. Run the prediction logic using the history array
+        // 4. Run the prediction logic using the history array
         const result = predictor.predictNext(historyMultipliers);
         
-        // *** CRITICAL NEW DEBUG STEP ***
-        // Print the actual prediction result object to the console.
-        console.log('🔮 Prediction Result Object:', result);
-
-        // 4. Update the prediction card in the UI
+        // 5. Update the prediction card in the UI (this handles hiding the loading screen)
         uiController.renderPrediction(result);
         
-        // 5. Reset status after analysis
+        // 6. Reset status after analysis
         const confidence = result.confidence.toFixed(0);
         const risk = result.riskLevel.toUpperCase();
-        uiController.updateStatus('mock', `Analysis Complete. Risk: ${risk} (${confidence}%)`);
+        uiController.updateStatus(`'mock', Analysis Complete. Risk: ${risk} (${confidence}%)`);
         
         console.log('✅ Analysis complete and UI updated.');
-    }, 500); // 500ms delay
+    }, 1000); // Increased delay slightly to make the "Analyzing..." state more noticeable
 }
 
 /**
@@ -76,9 +76,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // 2. Instantiate all core logic modules (the brain)
     const dataStore = new DataStore();
     const verifier = new Verifier(dataStore); 
-    // FIX: The new CrashPredictor does not accept dataStore in the constructor.
     const predictor = new CrashPredictor(); 
     const uiController = new UIController(domElements); 
+
+    // FIX: Set the initial state of the prediction card (hides the output)
+    uiController.showInitialState();
 
     // 3. Instantiate LiveSync, passing it the DataStore and Verifier (the input layer)
     const liveSync = new LiveSync(dataStore, verifier); 
@@ -87,16 +89,17 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Add Event Listener for the "Predict Now" Button
     if (domElements.predictBtn) {
-        // *** NEW DEBUG LOG: Check if the button element was found ***
         console.log('👍 DOM Ready: Found predict-btn element. Attaching listener...');
 
-        // We wrap the logic so we can pass our instantiated modules (dataStore, predictor, uiController)
         domElements.predictBtn.addEventListener('click', () => {
+            // Disable button briefly to prevent spamming while analysis runs
+            domElements.predictBtn.disabled = true;
             handlePredictClick(dataStore, predictor, uiController);
+            // Re-enable button after the simulated analysis delay (must match setTimeout in handlePredictClick)
+            setTimeout(() => { domElements.predictBtn.disabled = false; }, 1000);
         });
         console.log('Event Listener: Predict button connected.');
     } else {
-        // *** CRITICAL DEBUG LOG: Log failure to find the element ***
         console.error('❌ CRITICAL ERROR: Could not find element with ID "predict-btn". Check index.html!');
     }
 
@@ -123,26 +126,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // B. Listen for Round Completion (New Data Stored)
     document.addEventListener('newRoundCompleted', (e) => {
         const round = e.detail;
-        console.log(`✨ APP: New round processed! Crash at ${round.finalMultiplier}x.`);
+        console.log(`✨ APP: New round processed! Crash at ${round.finalMultiplier}x. (NO AUTOMATED PREDICTION)`);
         
-        // 1. Run the Automated Prediction immediately after a new round
-        const predictionResult = predictor.predictNext(dataStore.getMultipliers());
+        // *** CRITICAL FIX: Removed the prediction logic here. Prediction is now ONLY triggered by the button. ***
         
-        // 2. Update UI (renders the new item in the history grid)
+        // 1. Update UI (renders the new item in the history grid)
         uiController.renderNewRound(round);
-        
-        // 3. Notify the UI that the prediction is ready
-        document.dispatchEvent(new CustomEvent('predictionReady', { detail: predictionResult }));
     });
 
-    // C. Listen for Prediction Completion
-    document.addEventListener('predictionReady', (e) => {
-        const result = e.detail;
-        // Update the Oracle report card
-        uiController.renderPrediction(result);
-    });
-
-    // D. Listen for Round Verification Completion
+    // C. Listen for Round Verification Completion
     document.addEventListener('roundVerified', (e) => {
         const round = e.detail;
         console.log(`🎯 APP: Verified round ${round.gameId}. Status: ${round.verificationStatus}`);
@@ -151,6 +143,4 @@ document.addEventListener('DOMContentLoaded', () => {
         uiController.renderNewRound(round);
     });
 });
-
-
 

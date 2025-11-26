@@ -8,11 +8,7 @@
  * FIX 3: Ensured the 'multiple' class is retained for main multiplier styling.
  * FIX 4: Implemented a strict limit of 10 items for the Recent Multipliers grid (per request).
  * UPDATE: Enhanced renderPrediction to handle structured output and error states from CrashPredictor.
- *
- * FIX 5 (CRITICAL FIX): The prediction UI was not updating because of incorrect class handling.
- * - Removed the overriding riskZoneEl.className assignment.
- * - Now relies only on setting the 'data-risk' attribute to trigger the styling defined in index.html CSS.
- * - Added defensive checks for all prediction details.
+ * FIX 5: Implemented showInitialState and showLoadingState to manage UX visibility.
  */
 
 export class UIController { 
@@ -22,6 +18,43 @@ export class UIController {
         console.log('UIController: Initialized. Ready to render the application.');
     }
     
+    /**
+     * Sets the initial, clean state of the Prediction card.
+     */
+    showInitialState() {
+        if (this.elements.analysisMessage) {
+            this.elements.analysisMessage.textContent = 'Press Predict to analyze the history log and generate an oracle report.';
+        }
+        
+        // Hide output details
+        if (this.elements.predictionOutputDetails) {
+            this.elements.predictionOutputDetails.style.display = 'none';
+        }
+        
+        // Hide loading overlay
+        if (this.elements.loadingOverlay) {
+            this.elements.loadingOverlay.style.display = 'none';
+        }
+    }
+    
+    /**
+     * Displays the loading overlay when prediction starts.
+     */
+    showLoadingState() {
+        if (this.elements.loadingOverlay) {
+            this.elements.loadingOverlay.style.display = 'flex';
+        }
+        
+        // Hide output details during analysis
+        if (this.elements.predictionOutputDetails) {
+            this.elements.predictionOutputDetails.style.display = 'none';
+        }
+        
+        if (this.elements.analysisMessage) {
+            this.elements.analysisMessage.textContent = 'Running advanced regression analysis on last 200 rounds...';
+        }
+    }
+
     /**
      * Updates the main multiplier display during a live round.
      */
@@ -54,7 +87,7 @@ export class UIController {
             else color = 'bg-gray-500';
 
             // Use the appropriate classes for the status dot, retaining the original CSS structure
-            this.elements.statusDot.className = `status-dot ${color}`; // Assuming 'status-dot' is the base class for styling/size
+            this.elements.statusDot.className = `status-dot ${color}`; 
             this.elements.statusMessage.textContent = message;
             // Also update the parent container's data attribute for CSS styling
             this.elements.statusMessage.setAttribute('data-status', level);
@@ -71,14 +104,13 @@ export class UIController {
             const newItem = document.createElement('div');
             
             // Determine color based on multiplier
-            // Using existing CSS classes from index.html: green or red background
             const colorClass = round.finalMultiplier >= 2.00 ? 'bg-green-700' : 'bg-red-700'; 
             
             // Determine icon for verification status
             const icon = round.verificationStatus === 'Verified' ? '✅' : round.verificationStatus === 'Low Payout Verified' ? '🔒' : '';
 
             // Apply Tailwind classes for styling (simplified for the provided CSS)
-            newItem.className = `center ${colorClass}`; // Use 'center' class from index.html CSS
+            newItem.className = `center ${colorClass}`; 
             
             // Set the content
             newItem.textContent = `${round.finalMultiplier.toFixed(2)}x ${icon}`;
@@ -111,10 +143,16 @@ export class UIController {
      * Expected result structure from CrashPredictor.
      */
     renderPrediction(result) {
-        // *** DEBUG LOG: Verify the incoming data and element availability ***
-        console.log('--- UIController: Starting Prediction Render ---');
-        console.log('Result Data:', result);
+        // Hide the loading overlay immediately
+        if (this.elements.loadingOverlay) {
+            this.elements.loadingOverlay.style.display = 'none';
+        }
         
+        // Show the output details container
+        if (this.elements.predictionOutputDetails) {
+            this.elements.predictionOutputDetails.style.display = 'block';
+        }
+
         const predictedValueEl = this.elements.predictedValue;
         const riskZoneEl = this.elements.riskZone;
 
@@ -129,15 +167,12 @@ export class UIController {
             predictedValueEl.textContent = '--';
             riskZoneEl.textContent = 'N/A';
             
-            // Use defensive check for message element
             if (this.elements.analysisMessage) this.elements.analysisMessage.textContent = result.message || 'Not enough data for reliable analysis.';
             if (this.elements.avgMultiplier) this.elements.avgMultiplier.textContent = '--';
             if (this.elements.volatility) this.elements.volatility.textContent = '--';
             
-            // Also set the data-risk attribute
             riskZoneEl.setAttribute('data-risk', 'na');
             
-            console.log('--- UIController: Prediction Render Complete (Error State) ---');
             return;
         }
         
@@ -147,7 +182,6 @@ export class UIController {
         predictedValueEl.textContent = result.predictedValue.toFixed(2) + 'x';
         
         // 2. Determine risk color and update risk zone
-        // We rely on the 'data-risk' attribute to trigger the CSS styling defined in index.html.
         const risk = (result.riskLevel || 'LOW').toUpperCase(); 
         let dataRiskAttribute = 'low';
 
@@ -155,13 +189,10 @@ export class UIController {
         else if (risk === 'MEDIUM') { dataRiskAttribute = 'medium'; }
 
         riskZoneEl.textContent = risk;
-        // CRITICAL FIX: Set the data-risk attribute to apply the correct color via CSS
         riskZoneEl.setAttribute('data-risk', dataRiskAttribute);
         
-        // 3. Update details (with defensive checks for missing elements and data)
-        
-        // FIX: Ensure 'message' property exists, otherwise use a default string using the confidence.
-        const analysisMessage = result.message || `Confidence: ${result.confidence.toFixed(1)}%. Trend analysis complete.`;
+        // 3. Update details
+        const analysisMessage = `result.message || Confidence: ${result.confidence.toFixed(1)}%. Trend analysis complete.`;
         if (this.elements.analysisMessage) this.elements.analysisMessage.textContent = analysisMessage;
         
         if (this.elements.avgMultiplier) this.elements.avgMultiplier.textContent = result.averageTarget.toFixed(2) + 'x';

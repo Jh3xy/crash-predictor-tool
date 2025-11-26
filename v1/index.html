@@ -145,24 +145,33 @@
                             <h3>AI Predictor</h3>
                         </div>
                         <div class="prediction-section">
-                            <p>Next Prediction Target:</p>
-                            <h2 id="predicted-value">--</h2>
-                            <!-- New structure for prediction details -->
-                            <div class="prediction-details">
-                                <div class="detail-item">
-                                    <small>Risk Zone</small>
-                                    <!-- CRITICAL FIX: Added 'risk-zone' class to link up with CSS styling -->
-                                    <strong id="risk-zone" class="risk-zone font-bold" data-risk="medium">--</strong>
-                                </div>
-                                <div class="detail-item">
-                                    <small>Avg. Target</small>
-                                    <strong id="avg-multiplier">--</strong>
-                                </div>
-                                <div class="detail-item">
-                                    <small>Volatility</small>
-                                    <strong id="volatility">--</strong>
+                            <!-- Loading Overlay: Hidden by default, shown by JS -->
+                            <div class="loading-overlay" id="loading-overlay" style="display: none;">
+                                <i class="fa-solid fa-rotate-right"></i>
+                                <span>Analyzing Data...</span>
+                            </div>
+                            
+                            <!-- Prediction Content: Initially hidden by JS via its wrapper -->
+                            <div id="prediction-output-details" style="display: block;">
+                                <p>Next Prediction Target:</p>
+                                <h2 id="predicted-value">--</h2>
+                                <!-- New structure for prediction details -->
+                                <div class="prediction-details">
+                                    <div class="detail-item">
+                                        <small>Risk Zone</small>
+                                        <strong id="risk-zone" class="risk-zone font-bold" data-risk="na">--</strong>
+                                    </div>
+                                    <div class="detail-item">
+                                        <small>Avg. Target</small>
+                                        <strong id="avg-multiplier">--</strong>
+                                    </div>
+                                    <div class="detail-item">
+                                        <small>Volatility</small>
+                                        <strong id="volatility">--</strong>
+                                    </div>
                                 </div>
                             </div>
+
                             <p id="analysis-message" class="info-desc">Press Predict to analyze the history log and generate an oracle report.</p>
                         </div>
                         
