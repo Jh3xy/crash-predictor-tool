@@ -1,4 +1,3 @@
-
 // Import all the core modules from the assets/js folder
 import { DataStore } from './js/DataStore.js';
 import { LiveSync } from './js/LiveSyncing.js'; 
@@ -27,9 +26,12 @@ function getDOMElements() {
         avgMultiplier: document.getElementById('avg-multiplier'),
         volatility: document.getElementById('volatility'),
         
-        // New elements for UX control
-        loadingOverlay: document.getElementById('loading-overlay'), // The spinning overlay
-        predictionOutputDetails: document.getElementById('prediction-output-details'), // The container for the output data
+        // New elements for UX control, mapping to the Figma design structure
+        loadingOverlay: document.getElementById('loading-overlay'), 
+        predictionOutputDetails: document.getElementById('prediction-output-details'),
+        initialStateContent: document.getElementById('initial-state-content'), // NEW ID
+        confidenceBar: document.getElementById('confidence-bar'), // NEW ID
+        confidencePercentage: document.getElementById('confidence-percentage'), // NEW ID
     };
 }
 
@@ -37,7 +39,26 @@ function getDOMElements() {
  * Core function to run the prediction logic and update the UI when the button is clicked.
  * NOTE: This is the ONLY function that should trigger a new prediction.
  */
-function handlePredictClick(dataStore, predictor, uiController) {
+function handlePredictClick(dataStore, predictor, uiController, liveSync) {
+    
+    // DEBUG: Log the state read from LiveSync immediately upon click
+    console.log(`[CLICK CHECK] liveSync.isRoundRunning is currently: ${liveSync.isRoundRunning}`);
+    
+    // Check if there is enough data before proceeding with the heavy computation
+    const historyMultipliers = dataStore.getMultipliers();
+    if (historyMultipliers.length < 5) {
+        uiController.showInitialState();
+        uiController.updateStatus('error', 'Need at least 5 rounds of history to analyze.');
+        if (uiController.elements.analysisMessage) {
+            uiController.elements.analysisMessage.textContent = 'Insufficient history data.';
+        }
+        // Ensure button text is correct if we block here
+        uiController.elements.predictBtn.textContent = 'Predict Next Crash'; 
+        return 0; 
+    }
+
+    // Since we agreed to allow prediction during the pause OR running phase, we proceed.
+    
     console.log('✅ Click Handler Fired: Starting analysis process...');
     
     // 1. Show Loading State immediately
@@ -46,24 +67,30 @@ function handlePredictClick(dataStore, predictor, uiController) {
     // 2. Set Status (optional, but nice)
     uiController.updateStatus('reconnecting', 'Analyzing History...');
     
-    // 3. Retrieve only the multipliers (numbers) from the DataStore
-    const historyMultipliers = dataStore.getMultipliers();
-    
-    // Simulate a brief delay for a complex analysis feel
+    // --- FIX: Reduced delay from 1500ms to 250ms for faster perceived performance ---
+    const ANALYSIS_DELAY_MS = 250; 
+
     setTimeout(() => {
-        // 4. Run the prediction logic using the history array
+        // 3. Run the prediction logic using the history array
         const result = predictor.predictNext(historyMultipliers);
         
-        // 5. Update the prediction card in the UI (this handles hiding the loading screen)
+        // 4. Update the prediction card in the UI (this handles hiding the loading screen)
         uiController.renderPrediction(result);
         
-        // 6. Reset status after analysis
-        const confidence = result.confidence.toFixed(0);
-        const risk = result.riskLevel.toUpperCase();
-        uiController.updateStatus(`'mock', Analysis Complete. Risk: ${risk} (${confidence}%)`);
+        // 5. Reset status after analysis
+        if (!result.error) {
+            const confidence = result.confidence.toFixed(0);
+            const risk = result.riskLevel.toUpperCase();
+            uiController.updateStatus('mock', `Analysis Complete. Risk: ${risk} (${confidence}%)`);
+        } else {
+            // This is only triggered if there was a logic error in the predictor or not enough data (which is checked above)
+            uiController.updateStatus('mock', 'Analysis Failed: Not enough data.');
+        }
         
         console.log('✅ Analysis complete and UI updated.');
-    }, 1000); // Increased delay slightly to make the "Analyzing..." state more noticeable
+    }, ANALYSIS_DELAY_MS); 
+    
+    return ANALYSIS_DELAY_MS; // Return delay so the button can be re-enabled
 }
 
 /**
@@ -79,7 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const predictor = new CrashPredictor(); 
     const uiController = new UIController(domElements); 
 
-    // FIX: Set the initial state of the prediction card (hides the output)
+    // CRITICAL: Call showInitialState immediately to hide the prediction card and set defaults.
     uiController.showInitialState();
 
     // 3. Instantiate LiveSync, passing it the DataStore and Verifier (the input layer)
@@ -94,9 +121,12 @@ document.addEventListener('DOMContentLoaded', () => {
         domElements.predictBtn.addEventListener('click', () => {
             // Disable button briefly to prevent spamming while analysis runs
             domElements.predictBtn.disabled = true;
-            handlePredictClick(dataStore, predictor, uiController);
-            // Re-enable button after the simulated analysis delay (must match setTimeout in handlePredictClick)
-            setTimeout(() => { domElements.predictBtn.disabled = false; }, 1000);
+            
+            // Pass liveSync instance to check round status before predicting
+            const delay = handlePredictClick(dataStore, predictor, uiController, liveSync); 
+            
+            // Re-enable button after the calculated delay.
+            setTimeout(() => { domElements.predictBtn.disabled = false; }, delay);
         });
         console.log('Event Listener: Predict button connected.');
     } else {
@@ -114,23 +144,19 @@ document.addEventListener('DOMContentLoaded', () => {
         uiController.updateLiveMultiplier(e.detail);
         
         // Update the connection status display
-        if (!liveSync.isEmulating && liveSync.ws?.readyState === WebSocket.OPEN) {
-             uiController.updateStatus('connected', 'Connected');
-        } else if (liveSync.isEmulating) {
-             uiController.updateStatus('mock', 'Mock Mode (No Real Connection)');
+        if (liveSync.isRoundRunning) {
+            uiController.updateStatus('mock', `Round ${liveSync.currentGameId} running...`);
         } else {
-             uiController.updateStatus('reconnecting', 'Reconnecting...');
+            uiController.updateStatus('mock', 'Awaiting next round');
         }
     });
     
     // B. Listen for Round Completion (New Data Stored)
     document.addEventListener('newRoundCompleted', (e) => {
         const round = e.detail;
-        console.log(`✨ APP: New round processed! Crash at ${round.finalMultiplier}x. (NO AUTOMATED PREDICTION)`);
+        console.log(`✨ APP: New round processed! Crash at ${round.finalMultiplier}x.`);
         
-        // *** CRITICAL FIX: Removed the prediction logic here. Prediction is now ONLY triggered by the button. ***
-        
-        // 1. Update UI (renders the new item in the history grid)
+        // 1. Update UI (renders the new item in the recent grid)
         uiController.renderNewRound(round);
     });
 
@@ -143,4 +169,3 @@ document.addEventListener('DOMContentLoaded', () => {
         uiController.renderNewRound(round);
     });
 });
-

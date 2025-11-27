@@ -273,7 +273,6 @@ header{
 }
 nav{
   padding:  18px 0 2rem;
-  
 }
 .tab{
   padding:  1rem;
@@ -342,7 +341,12 @@ nav{
   display: flex;
   align-items: center;
   gap:  10px;
+  margin-bottom:  1rem;
 }
+#predict-btn{
+  margin-top:  1rem;
+}
+
 .tag h3{
   font-weight: 600;
   font-size:  1.1rem;
@@ -359,6 +363,186 @@ nav{
 }
 .status{
   position:  relative;
+}
+/* -------------------------------------------------------------------------
+   Status Bar Styles
+   ------------------------------------------------------------------------- */
+#status-bar {
+    display: flex;
+    align-items: center;
+    background-color: #3e4453; /* Using a dark grey for connection status */
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    justify-content: center;
+    font-size: 0.9rem;
+}
+
+#status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 8px;
+    transition: background-color var(--transition-slow);
+}
+
+/* Status dot colors set dynamically in JS, but here are fallbacks */
+ .status-online { background-color: var(--color-success); } 
+.status-reconnecting { background-color: var(--color-secondary); } 
+.status-error { background-color: var(--cell-low); }
+
+.prediction-section {
+  margin-bottom: 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#initial-state-content {
+    text-align: center;
+}
+
+.analyze-icon {
+    margin-bottom: var(--spacing-base);
+    color: var(--text-secondary);
+    font-size: 3rem;
+}
+
+#loading-overlay {
+    text-align: center;
+    /* Styles for the spinner can be added here */
+}
+
+.spinner {
+    border: 4px solid var(--text-secondary);
+    border-top: 4px solid var(--color-accent);
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto var(--spacing-base) auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Prediction Output Details */
+
+.label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    text-align: center;
+    margin-bottom: var(--spacing-small);
+}
+
+#predicted-value {
+    font-size: 3rem;
+    color: var(--color-accent);
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: var(--spacing-large);
+    font-family: var(--ff-secondary); /* Monospaced font for numbers */
+}
+
+/* -------------------------------------------------------------------------
+   Stats Grid (New Structure)
+   ------------------------------------------------------------------------- */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-small);
+    margin-bottom: var(--spacing-large);
+    width: 100%;
+}
+.full-column-width{
+  grid-column:  1 / -1;
+}
+.stat-item {
+    background-color: var(--color-primary-glass);
+    padding: 10px;
+    border-radius: 6px;
+    text-align: center;
+    border: 1px solid var(--border-glass);
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-bottom: 2px;
+}
+
+.stat-value {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    font-family: var(--ff-secondary);
+}
+
+/* Special styling for the analysis message */
+#analysis-message {
+    font-size: 0.7rem !important;
+    line-height: 1.3;
+    color: var(--color-accent) !important;
+}
+
+/* -------------------------------------------------------------------------
+   Confidence Bar (Using JS to set CSS Variable)
+   ------------------------------------------------------------------------- */
+.confidence-bar-container {
+    width: 100%;
+}
+
+.progress-bar-wrapper {
+    background-color: #3e4453; /* Dark track */
+    height: 10px;
+    border-radius: 5px;
+    margin-top: var(--spacing-small);
+    position: relative;
+    overflow: hidden;
+}
+
+/* The magic: Use ::before to create the bar based on the CSS variable */
+.progress-bar-wrapper::before {
+    content: '';
+    display: block;
+    height: 100%;
+    /* Read the variable set by JS on the card element */
+    width: var(--confidence-level); 
+    background-color: var(--color-secondary);
+    border-radius: 5px;
+    transition: width 0.5s ease-out;
+}
+
+.confidence-footer {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 5px;
+}
+
+#confidence-percentage {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+/* Utility classes for coloring the cells based on value */
+.m-low {
+    background-color: var(--cell-low);
+}
+
+.m-moderate {
+    background-color: var(--cell-moderate);
+}
+
+.m-medium {
+    background-color: var(--cell-medium);
+}
+
+.m-high {
+    background-color: var(--cell-high);
 }
 .multipliers  span{
   font-size: .9rem;
@@ -397,6 +581,7 @@ nav{
 .predictor .tag{
   align-self:  flex-start;
 }
+
 .card .info{
   margin-top: 1.4rem;
   padding:  3.4rem 0 1rem;

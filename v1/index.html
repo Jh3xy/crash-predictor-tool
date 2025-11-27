@@ -113,11 +113,11 @@
                                 </span>
                                 <h3>Live Sync</h3>
                             </div>
-                            <!-- Status Elements for JS Control -->
-                            <span class="status" id="status-message" data-status="initializing">
-                                <span class="status-dot" id="status-dot"></span>
-                                Initializing...
-                            </span>
+                            <!-- Status Bar -->
+                            <div id="status-bar">
+                                <span id="status-dot"></span>
+                                <span id="status-message">Connecting...</span>
+                            </div>
                         </div>
                         <div class="multipliers">
                             <span>Current Multiplier</span>
@@ -144,39 +144,65 @@
                             </span>
                             <h3>AI Predictor</h3>
                         </div>
-                        <div class="prediction-section">
-                            <!-- Loading Overlay: Hidden by default, shown by JS -->
-                            <div class="loading-overlay" id="loading-overlay" style="display: none;">
-                                <i class="fa-solid fa-rotate-right"></i>
-                                <span>Analyzing Data...</span>
-                            </div>
-                            
-                            <!-- Prediction Content: Initially hidden by JS via its wrapper -->
-                            <div id="prediction-output-details" style="display: block;">
-                                <p>Next Prediction Target:</p>
-                                <h2 id="predicted-value">--</h2>
-                                <!-- New structure for prediction details -->
-                                <div class="prediction-details">
-                                    <div class="detail-item">
-                                        <small>Risk Zone</small>
-                                        <strong id="risk-zone" class="risk-zone font-bold" data-risk="na">--</strong>
-                                    </div>
-                                    <div class="detail-item">
-                                        <small>Avg. Target</small>
-                                        <strong id="avg-multiplier">--</strong>
-                                    </div>
-                                    <div class="detail-item">
-                                        <small>Volatility</small>
-                                        <strong id="volatility">--</strong>
-                                    </div>
+                        <!-- 1. INITIAL STATE: Click to Analyze (Default View) -->
+            <!-- The prediction-section class manages the min-height -->
+            <div id="initial-state-content" class="prediction-section">
+                <div class="analyze-icon">
+                    <i class="fa-solid fa-chart-line"></i>
+                </div>
+                <p>Click predict to analyze</p>
+            </div>
+
+                <!-- 2. LOADING STATE: Spinner (Hidden by default) -->
+                <div id="loading-overlay" class="prediction-section" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Analyzing history...</p>
+                </div>
+
+                         <!-- 3. PREDICTION RESULT STATE (Hidden by default) -->
+                        <div id="prediction-output-details">
+                            <!-- Label -->
+                            <p class="label">Predicted Multiplier</p>
+                
+                            <!-- Large Predicted Value (Targeted by JS) -->
+                            <h3 id="predicted-value">7.94x</h3>
+                
+                            <!-- STATS GRID for Avg. Target, Risk, Volatility -->
+                            <div class="stats-grid">
+                                <div class="stat-item">
+                                    <div class="stat-label">Risk Zone</div>
+                                    <div class="stat-value" id="risk-zone">--</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-label">Avg. Target</div>
+                                    <div class="stat-value" id="avg-multiplier">--</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-label">Volatility</div>
+                                    <div class="stat-value" id="volatility">--</div>
+                                </div>
+                                <div class="stat-item full-column-width">
+                                    <div class="stat-label">Analysis Message</div>
+                                    <div class="stat-value" id="analysis-message">Ready for analysis.</div>
                                 </div>
                             </div>
 
-                            <p id="analysis-message" class="info-desc">Press Predict to analyze the history log and generate an oracle report.</p>
+                            <!-- Confidence Bar Section -->
+                            <div class="confidence-bar-container">
+                                <p class="label">Confidence Level</p>
+                                <div class="progress-bar-wrapper">
+                                    <!-- We now rely on the ::before pseudo-element in CSS to display the bar's width -->
+                                </div>
+                                <div class="confidence-footer">
+                                    <span>Low</span>
+                                    <span id="confidence-percentage">--%</span>
+                                    <span>High</span>
+                                </div>
+                            </div>
                         </div>
-                        
-                        <!-- PREDICT BUTTON -->
-                        <button class="btn" id="predict-btn">Predict Now</button>
+            
+                        <!-- Global Predict Button (Always visible) -->
+                        <button id="predict-btn" class ="btn">Predict Next Crash</button>
                     </div>
                     <div class="card glass verifier" id="crash-verfier">
                         <div class="tag">

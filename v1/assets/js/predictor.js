@@ -1,6 +1,6 @@
 
 /**
- * js/predictor.js
+ * js/CrashPredictor.js
  * * This module implements the detailed hybrid statistical and rules-based model
  * * for predicting the next crash multiplier, as defined in the project scope.
  */
@@ -160,7 +160,7 @@ export class CrashPredictor {
                 confidence: 0,
                 riskLevel: "n/a",
                 volatility: 0,
-                averageTarget: 0,
+                avgMultiplier: 0, // Changed from averageTarget to match UIController
                 message: `ERROR: Insufficient history (${length} rounds). Minimum ${MIN_LENGTH} required.`,
                 error: true
             };
@@ -210,11 +210,11 @@ export class CrashPredictor {
             confidence: confidence,
             riskLevel: riskLevel, // 'low', 'medium', 'high'
             volatility: volatility,
-            averageTarget: averageTarget,
+            // FIX: Renamed from 'averageTarget' to 'avgMultiplier' to match UIController
+            avgMultiplier: averageTarget,
             // Combine notes into a single message string for the UI
             message: `CONFIDENCE: ${confidence}%. ${notes.join(' ')}`,
             error: false
         };
     }
 }
-
