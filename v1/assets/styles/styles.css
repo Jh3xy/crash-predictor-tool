@@ -446,16 +446,24 @@ nav{
     margin-bottom: var(--spacing-large);
     font-family: var(--ff-secondary); /* Monospaced font for numbers */
 }
-
+.predicted-round-id{
+  font-size: 0.8rem;
+  font-weight:  600;
+  color:  rgba(255 255 255 / 0.6);
+  /* margin-top: 0.25rem; */
+  margin:  0.25 auto 0;
+}
 /* -------------------------------------------------------------------------
    Stats Grid (New Structure)
    ------------------------------------------------------------------------- */
 .stats-grid {
-    display: grid;
+        display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: var(--spacing-small);
-    margin-bottom: var(--spacing-large);
-    width: 100%;
+    /* margin-bottom: var(--spacing-large); */
+    width: 80%;
+    max-width: 800px;
+    margin: 0 auto 2rem;
 }
 .full-column-width{
   grid-column:  1 / -1;
@@ -487,35 +495,38 @@ nav{
     line-height: 1.3;
     color: var(--color-accent) !important;
 }
-
-/* -------------------------------------------------------------------------
-   Confidence Bar (Using JS to set CSS Variable)
-   ------------------------------------------------------------------------- */
 .confidence-bar-container {
-    width: 100%;
-}
+            width: 90%;
+            margin: 0 auto;
+        }
 
-.progress-bar-wrapper {
-    background-color: #3e4453; /* Dark track */
-    height: 10px;
-    border-radius: 5px;
-    margin-top: var(--spacing-small);
-    position: relative;
-    overflow: hidden;
-}
-
-/* The magic: Use ::before to create the bar based on the CSS variable */
-.progress-bar-wrapper::before {
-    content: '';
-    display: block;
-    height: 100%;
-    /* Read the variable set by JS on the card element */
-    width: var(--confidence-level); 
-    background-color: var(--color-secondary);
-    border-radius: 5px;
-    transition: width 0.5s ease-out;
-}
-
+        .progress-bar-wrapper {
+            background-color: #3e4453; /* Dark track */
+            height: 10px;
+            border-radius: 5px;
+            margin-top: var(--spacing-small);
+            position: relative;
+            overflow: hidden;
+        }
+        /* This ::before element is the actual progress bar */
+        .progress-bar-wrapper::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            display: block;
+            height: 100%;
+            /* Default: Use a CSS variable that will be set by JS */
+            width: var(--confidence-level); 
+            background: linear-gradient(90deg, var(--color-accent), var(--color-secondary));
+            border-radius: 5px;
+            transition: width 0.5s ease-out;
+        }
+        /* Mocking the progress bar state for initial render */
+        /* .card.predictor {
+            --confidence-level: 50%;
+        } */
 .confidence-footer {
     display: flex;
     justify-content: space-between;
@@ -527,6 +538,8 @@ nav{
 #confidence-percentage {
     color: var(--text-primary);
     font-weight: 600;
+    color:  #1f2937;
+    z-index: 10;
 }
 /* Utility classes for coloring the cells based on value */
 .m-low {
@@ -763,6 +776,15 @@ form input{
   box-shadow: 0 0 8px rgba(239,68,68,0.28);
 }
 #live-sync .status.disconnected { color: #ffbfcf; }
-
-
+.card.predictor{
+  position: relative;
+}
+.card.predictor .predicted-round-id{
+  position:  absolute;
+  top: 2rem;
+  right: 2rem;
+  background: #3e4453;
+  padding: .5rem;
+  border-radius: 8px;
+}
 

@@ -105,7 +105,7 @@
                             </div>
                         </div>
                     </div> -->
-                    <div class="card glass" id="live-sync">
+                    <div class="card glass full-width" id="live-sync">
                         <div class="card-title">
                             <div class="tag">
                                 <span>
@@ -137,7 +137,7 @@
                             </div>
                         </div>
                     </div>
-                   <div class="card glass predictor" id="ai-predictor">
+                   <div class="card glass predictor full-width" id="ai-predictor">
                         <div class="tag">
                             <span>
                                 <i class="fa-solid fa-arrow-trend-up"></i>
@@ -166,7 +166,7 @@
                 
                             <!-- Large Predicted Value (Targeted by JS) -->
                             <h3 id="predicted-value">7.94x</h3>
-                
+                            <div class="predicted-round-id" id="predicted-round-id">Round: --</div>
                             <!-- STATS GRID for Avg. Target, Risk, Volatility -->
                             <div class="stats-grid">
                                 <div class="stat-item">
@@ -190,15 +190,14 @@
                             <!-- Confidence Bar Section -->
                             <div class="confidence-bar-container">
                                 <p class="label">Confidence Level</p>
-                                <div class="progress-bar-wrapper">
-                                    <!-- We now rely on the ::before pseudo-element in CSS to display the bar's width -->
+                                <div class="progress-bar-wrapper confidence-bar">
                                 </div>
                                 <div class="confidence-footer">
                                     <span>Low</span>
-                                    <span id="confidence-percentage">--%</span>
+                                    <span id="confidence-percentage">50%</span>
                                     <span>High</span>
                                 </div>
-                            </div>
+                            </div>  
                         </div>
             
                         <!-- Global Predict Button (Always visible) -->
