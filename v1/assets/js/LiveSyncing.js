@@ -1,123 +1,100 @@
 
+
+
 /**
  * js/LiveSyncing.js
  * This module simulates a real-time crash game feed, emitting events 
- * for live multiplier updates and round completion.
- * It also handles the connection status (mock/real).
+ * for live multiplier updates and round completion via the Event Bus.
  */
 
 export class LiveSync {
-    constructor(dataStore, verifier) {
+    // --- ACCEPT EVENT BUS IN CONSTRUCTOR ---
+    constructor(dataStore, verifier, eventBus) {
         this.dataStore = dataStore;
         this.verifier = verifier;
+        this.eventBus = eventBus; // NEW
         this.isEmulating = true;
         this.ws = null;
         this.currentMultiplier = 1.00;
         this.currentGameId = 0;
-        
-        // STATE TRACKER: Tracks if the multiplier is actively counting up
         this.isRoundRunning = false;
         console.log("LiveSync: Initialized. isRoundRunning = false.");
     }
-
-    // Placeholder for real connection logic (omitted for emulation)
+    
+    /**
+     * Initializes the connection to the game feed (simulated here).
+     */
     connect() {
-        console.log("LiveSync: Attempting connection...");
-        // Fallback to emulation immediately for consistency
-        this.startEmulation();
+        if (this.isEmulating) {
+            console.log('🔗 LiveSync: Starting emulation mode...');
+            this.startEmulation();
+        } else {
+            // In a real app, this would be: this.ws = new WebSocket('ws://...')
+            console.warn('🔗 LiveSync: Real connection logic not implemented in mock.');
+        }
     }
 
-    // Starts the mock game loop
+    /**
+     * Starts the continuous loop to simulate crash rounds.
+     */
     startEmulation() {
-        if (!this.isEmulating) return;
-
-        console.log("LiveSync: Starting mock game emulation.");
-        
-        // Start the first round loop after a short delay
-        console.log("LiveSync: Initial 2s delay before first round starts...");
-        setTimeout(() => this.runRoundLoop(), 2000); 
+        // Start the first round immediately
+        setTimeout(() => this.runRoundLoop(), 1000); 
     }
 
     // Core loop: runs one round, then calls itself to run the next
     runRoundLoop() {
-        // Generate a new, unique game ID
-        this.currentGameId = Date.now();
-        this.currentMultiplier = 1.00;
+        this.isRoundRunning = true;
+        this.currentGameId++;
+        this.currentMultiplier = 1.00; // Reset for the new round
         
-        // 1. Set the new round as RUNNING (CRITICAL STATE CHANGE)
-        this.isRoundRunning = true; 
-        console.log(`LiveSync: Round ${this.currentGameId} ACTIVATED. isRoundRunning = TRUE.`);
-        
-        // Generate a realistic crash point (1.00 to 10.00, skewed low)
-        const randomValue = Math.random(); 
-        let crashPoint;
-        if (randomValue < 0.7) { 
-            crashPoint = 1.00 + Math.pow(randomValue, 2) * 4; // Skew low (1.00 to ~2.00)
-        } else if (randomValue < 0.95) {
-            crashPoint = 2.00 + Math.pow(randomValue - 0.7, 2) * 50; // Skew medium (2.00 to ~5.00)
-        } else {
-            crashPoint = 5.00 + Math.random() * 5; // Higher (5.00 to 10.00)
-        }
+        // Mock the crash point (random number between 1.01 and 10.00)
+        const crashPoint = 1.01 + Math.random() * 8.99; 
         
         const finalCrash = parseFloat(crashPoint.toFixed(2));
-        
         const updateInterval = 50; // Milliseconds per update
-        let loopCount = 0;
-
+        
         const intervalId = setInterval(() => {
             
             // Increment the multiplier
             this.currentMultiplier += 0.01 + Math.random() * 0.01; 
             
-            // Dispatch the live update event
-            document.dispatchEvent(new CustomEvent('liveUpdate', { detail: this.currentMultiplier }));
+            // --- CRITICAL CHANGE: Use eventBus.emit instead of document.dispatchEvent ---
+            this.eventBus.emit('liveUpdate', this.currentMultiplier);
 
             // Check for crash condition
             if (this.currentMultiplier >= finalCrash) {
                 
-                // --- CRITICAL FIX START: Prevent Race Condition ---
-                // If isRoundRunning is already false, it means a previous queued tick 
-                // has already processed the crash, and we must exit immediately.
-                if (!this.isRoundRunning) {
-                     return; 
+                // Add a small buffer to ensure the final value is displayed
+                if (this.currentMultiplier > finalCrash) {
+                    this.currentMultiplier = finalCrash;
                 }
-                
-                // Immediately flag the round as stopped to prevent any other queued interval ticks from processing it.
-                this.isRoundRunning = false; 
-                // --- CRITICAL FIX END ---
-                
                 
                 // --- Round Crash & Completion ---
                 clearInterval(intervalId);
+                this.isRoundRunning = false;
                 
-                console.log(`LiveSync: Round ${this.currentGameId} CRASHED at ${finalCrash}x. isRoundRunning = FALSE.`);
-
                 const roundData = {
                     gameId: this.currentGameId,
                     finalMultiplier: finalCrash,
-                    // Verification data will be added by the Verifier module
-                    verificationStatus: 'Pending', 
-                    clientSeed: 'mock-client',
-                    serverSeed: 'mock-server',
-                    nonce: 1000 + this.currentGameId % 1000
+                    clientSeed: `mock_client_${this.currentGameId}`,
+                    nonce: this.currentGameId,
+                    verificationStatus: 'Pending'
                 };
                 
-                // 1. Store the new round data
+                // 1. Store the round data
                 this.dataStore.addRound(roundData);
                 
-                // 2. Run verification (asynchronously)
-                this.verifier.verify(roundData); 
-
+                // 2. Start verification (asynchronous process)
+                this.verifier.verify(roundData);
+                
                 // 3. Notify the application that the round is complete
-                document.dispatchEvent(new CustomEvent('newRoundCompleted', { detail: roundData }));
+                // --- CRITICAL CHANGE: Use eventBus.emit instead of document.dispatchEvent ---
+                this.eventBus.emit('newRoundCompleted', roundData);
                 
-                // Log and prepare for the next round
-                console.log(`LiveSync: Waiting for next round (3s delay) during which isRoundRunning is FALSE.`);
-                
-                // Wait for a few seconds before starting the next round
+                // Start the next round after a short delay
                 setTimeout(() => this.runRoundLoop(), 3000);
             }
         }, updateInterval);
     }
 }
-

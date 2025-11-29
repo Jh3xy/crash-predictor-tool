@@ -503,6 +503,8 @@ nav{
         .progress-bar-wrapper {
             background-color: #3e4453; /* Dark track */
             height: 10px;
+            width: 90%;
+            margin: 0 auto;
             border-radius: 5px;
             margin-top: var(--spacing-small);
             position: relative;

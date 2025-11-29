@@ -1,9 +1,13 @@
-
 /**
  * js/crypto_engine.js
  * * The CryptoEngine is a new, separate module responsible for handling all
  * cryptographic operations, such as generating HMAC hashes.
  */
+
+// Helper function to convert an ArrayBuffer to a hexadecimal string
+function bufferToHex(buffer) {
+    return Array.prototype.map.call(new Uint8Array(buffer), x => (('00' + x.toString(16)).slice(-2))).join('');
+}
 
 export class CryptoEngine {
     constructor() {
@@ -12,26 +16,45 @@ export class CryptoEngine {
     }
 
     /**
-     * Generates an HMAC SHA-256 hash (mock implementation for demonstration).
+     * Generates an HMAC SHA-256 hash (using browser crypto.subtle).
      * @param {string} key The server seed.
      * @param {string} data The combined client seed and nonce (e.g., '1337:1').
-     * @returns {string} A mock 40-character hash output.
+     * @returns {Promise<string|Object>} A promise that resolves to the hash string, or an error object.
      */
-    generateHmacSha256(key, data) {
-        console.log('CryptoEngine: START HASHING.');
-        console.log(`  -> Key: ${key.substring(0, 10)}... | Data: ${data}`);
+    async hmacSha256(key, data) {
+        try {
+            // Defensive check for empty key (FIX 1 from original file)
+            if (!key || key.length === 0) {
+                console.error("CRYPTO ERROR: HMAC calculation failed. The server seed (key) is empty.");
+                return { error: true, message: "HMAC_KEY_EMPTY" };
+            }
+            
+            // Note: The mock hash calculation logic has been removed and replaced with the robust, real browser crypto logic.
 
-        // Mock hashing logic: Combines key and data and returns a consistent hexadecimal string.
-        let combined = key + data;
-        let hash = 0;
-        for (let i = 0; i < combined.length; i++) {
-            hash = combined.charCodeAt(i) + ((hash << 5) - hash);
+            const keyData = new TextEncoder().encode(key);
+            const dataData = new TextEncoder().encode(data);
+            
+            // Import the key as HMAC-SHA-256
+            const cryptoKey = await crypto.subtle.importKey(
+                'raw',
+                keyData,
+                { name: 'HMAC', hash: 'SHA-256' },
+                false,
+                ['sign']
+            );
+
+            // Sign the data
+            const signature = await crypto.subtle.sign(
+                'HMAC',
+                cryptoKey,
+                dataData
+            );
+
+            return bufferToHex(signature);
+
+        } catch (e) {
+            console.error("CRYPTO ERROR: HMAC calculation failed. Ensure environment supports crypto.subtle.", e.name + ': ' + e.message);
+            return { error: true, message: "HMAC_CALCULATION_FAILED" };
         }
-        const mockHash = Math.abs(hash).toString(16).padStart(40, '0');
-
-        // This line is CORRECTED: uses backticks (`) for the template literal and lowercase 'c'
-        console.log(`CryptoEngine: Hashing COMPLETE. Mock Hash: ${mockHash.substring(0, 15)}...`);
-        return mockHash;
     }
 }
-
