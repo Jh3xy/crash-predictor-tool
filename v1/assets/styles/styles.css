@@ -685,11 +685,22 @@ form input{
   font-weight:  600;
   letter-spacing: 1px;
 }
-.table-header,
-.table-content{
-  display: grid;
-  grid-template-columns:  repeat(6, 1fr);
+.table-header{
   padding: 1.03rem;
+}
+
+.table-header,
+.log-row{
+  display:  grid;
+  grid-template-columns:  repeat(6, minmax(0, 1fr));
+}
+.log-row{
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border-bottom:  1px solid hsla(0, 0%, 80%, 0.1);
+}
+.log-row:hover{
+  background: rgba(255, 255, 255, 0.06);
 }
 .table-header{
   border-bottom:  1px solid hsla(212, 100%, 64%, 0.3);
@@ -698,22 +709,23 @@ form input{
 .time{
   grid-column:  span 2;
 }
+.table-header h4{
+  padding-right: 0;
+  justify-self: end;
+}
+.table-header h4:first-child{
+  justify-self: start;
+}
 .table-content > *,
 .table-header > *{
   padding-right:  2rem;
 }
-.table-content{
-  border-bottom:  1px solid hsla(0, 0%, 80%, 0.1);
-}
-.table-content:hover{
-  background: rgba(255, 255, 255, 0.06);
-}
 .table-content > *{
   font-size:  .82rem;
 }
-.table-header h4:not(:first-child),
-.table-content div:not(:first-child){
+.log-row div:not(:first-child){
   justify-self: end;
+  color: red;
 }
 .predicted span{
   color:  var(--color-secondary);
@@ -732,6 +744,22 @@ form input{
 .accuracy span.blue{
   color:  hsla(212, 100%, 64%, 0.85);
   background-color:  hsla(212, 100%, 64%, 0.3);
+}
+#history{
+  position: relative;
+}
+#clear-history-btn{
+  background: linear-gradient(135deg, hsla(225, 45%, 18%, 0.70), hsla(225, 45%, 10%, 0.55));
+  border: 1px solid hsla(212, 100%, 64%, 0.28);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  padding: .5rem .7rem;
+  border-radius: 8px;
+  font-size:  .78rem;
+  color:  var(--text-secondary);
+  position: absolute;
+  top: 25px;
+  right: 25px;
 }
 .table .stat-summary{
   margin-top: 2.5rem;

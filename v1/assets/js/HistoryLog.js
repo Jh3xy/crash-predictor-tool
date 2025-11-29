@@ -26,8 +26,7 @@ export class HistoryLog {
         this.eventBus.on('newRoundCompleted', this.handleRoundCompleted.bind(this)); 
         
         // 2. Listen for a prediction run for the PREDICTED multiplier
-        // NOTE: We need a new event for this, which we will add in script.js later.
-        // this.eventBus.on('newPredictionMade', this.handleNewPrediction.bind(this));
+        this.eventBus.on('newPredictionMade', this.handleNewPrediction.bind(this));
         
         // 3. Attach clear history button listener
         if (this.elements.clearHistoryBtn) {
@@ -77,18 +76,24 @@ export class HistoryLog {
     
     /**
      * Handles when a prediction is made. Adds a new placeholder entry to the log.
-     * This relies on the new `runPredictionAndRender` function in script.js.
      * @param {object} predictionResult - The result object from CrashPredictor.
      */
     handleNewPrediction(predictionResult) {
         if (predictionResult.error) return; // Only log successful predictions
+        
+        const logId = predictionResult.gameId; 
+
+        // Check if an entry for this specific gameId already exists (important for reloads)
+        const existingEntry = this.log.find(entry => entry.id === logId);
+        if (existingEntry) return;
 
         const newEntry = {
-            id: predictionResult.gameId, // Use the predicted gameId as the unique ID
+            id: logId, 
             predicted: predictionResult.predictedValue,
             actual: null, // Actual is unknown until round completes
             timestamp: new Date().toISOString(),
-            roundStatus: 'PENDING'
+            roundStatus: 'PENDING',
+            successRate: 0, // Initialize the new field
         };
         
         // Add new entry to the start (most recent first)
@@ -98,71 +103,85 @@ export class HistoryLog {
     
     /**
      * Handles a round completion. Finds the matching PENDING entry and updates it 
-     * with the actual crash value and calculates accuracy.
+     * with the actual crash value and calculates the SUCCESS RATE.
      * @param {object} roundData - The round data (with finalMultiplier).
      */
     handleRoundCompleted(roundData) {
-        // Find the log entry matching the round that just completed
         const logEntry = this.log.find(entry => entry.id === roundData.gameId);
 
         if (logEntry && logEntry.roundStatus === 'PENDING') {
             logEntry.actual = roundData.finalMultiplier;
             logEntry.roundStatus = 'COMPLETED';
             
-            // Recalculate difference and accuracy
+            // Recalculate difference (still useful for the 'Difference' column)
             const diff = Math.abs(logEntry.actual - logEntry.predicted);
             
-            // Simple accuracy: 100% - (Difference % of Predicted Value)
-            // Clamp accuracy at 0%
-            logEntry.accuracy = Math.max(0, 100 - (diff / logEntry.predicted) * 100); 
+            // --- SUCCESS RATE CALCULATION (STRICTLY GREATER THAN) ---
+            let successRate = 0;
+            
+            // If actual crash value is STRICTLY GREATER than predicted, the bet succeeded.
+            if (logEntry.actual > logEntry.predicted) { 
+                successRate = 100;
+            } 
+            
+            // Store the success rate (100 or 0)
+            logEntry.successRate = successRate; 
+            logEntry.diff = diff;
 
-            console.log(`HistoryLog: Updated prediction log for Round ${logEntry.id}.`);
-            this.saveLog();
+            console.log(`HistoryLog: Updated prediction log for Round ${logEntry.id} with actual crash at ${logEntry.actual}x. Success Rate: ${successRate}%`);
+            
+            // Crucially, this calls renderLog() and renders the updated table
+            this.saveLog(); 
         } else {
-            // This happens if the user reloads the page before the round completes, or if
-            // the round was never predicted.
+            // This is the expected warning for historical rounds or rounds missed by prediction
             console.warn(`HistoryLog: No pending log entry found for round ${roundData.gameId}.`);
         }
     }
     
     // --- UI RENDERING ---
     
-    /** Renders the statistical summary (Overall Accuracy, Total Predictions). */
+    /** Renders the statistical summary (Total Predictions and Overall Success Rate). */
     renderStats() {
         // Calculate Total Predictions
         const totalPredictions = this.log.length;
         
-        // Calculate Overall Accuracy
+        // Calculate Overall Success Rate (using the new logEntry.successRate)
         const completedLogs = this.log.filter(l => l.roundStatus === 'COMPLETED');
-        const totalAccuracy = completedLogs.reduce((sum, entry) => sum + entry.accuracy, 0);
-        const overallAccuracy = completedLogs.length > 0 ? (totalAccuracy / completedLogs.length) : 0;
+        const totalSuccessRate = completedLogs.reduce((sum, entry) => sum + entry.successRate, 0);
+        const overallSuccessRate = completedLogs.length > 0 ? (totalSuccessRate / completedLogs.length) : 0;
         
+        // Handle element updates safely
         if (this.elements.totalPredictions) {
             this.elements.totalPredictions.textContent = totalPredictions.toLocaleString();
         }
         
-        if (this.elements.overallAccuracy) {
-            const accText = overallAccuracy.toFixed(1) + '%';
+        // NOTE: Uses the existing DOM ID 'overallAccuracy' but displays the Success Rate
+        if (this.elements.overallAccuracy) { 
+            const accText = overallSuccessRate.toFixed(1) + '%';
             this.elements.overallAccuracy.textContent = accText;
-            this.elements.overallAccuracy.className = overallAccuracy >= 95 ? 'up' : overallAccuracy >= 90 ? 'moderate' : 'down';
+            // Update color logic based on success rate threshold
+            this.elements.overallAccuracy.className = overallSuccessRate >= 60 ? 'up' : overallSuccessRate >= 50 ? 'moderate' : 'down';
         }
         
         if (this.elements.clearHistoryBtn) {
             this.elements.clearHistoryBtn.disabled = totalPredictions === 0;
         }
         
-        this.renderLog(); // Ensure main log is rendered/updated too
+        // Calling renderLog from here ensures the UI is updated immediately after stats are calculated
+        this.renderLog(); 
     }
     
     /** Renders the history table rows. */
     renderLog() {
-        if (!this.elements.historyLogBody) return;
+        if (!this.elements.historyLogBody) {
+             console.error("HistoryLog: Target element 'history-log-body' not found in DOM.");
+             return;
+        }
 
         // Clear existing rows quickly
         this.elements.historyLogBody.innerHTML = ''; 
 
-        // Reverse the log to show newest at the top (even though unshift was used, 
-        // this ensures the latest saved data is always correct)
+        // Append the new rows (newest first)
         this.log.forEach(item => {
             const row = this.createHistoryRow(item);
             this.elements.historyLogBody.appendChild(row);
@@ -170,51 +189,64 @@ export class HistoryLog {
     }
 
     /**
-     * Helper to dynamically create a single history row (the table-content div).
+     * Helper to dynamically create a single history row (the log-row div).
      * @param {object} item The log entry item.
      * @returns {HTMLElement} The created <div> element for the row.
      */
     createHistoryRow(item) {
         const rowDiv = document.createElement('div');
-        rowDiv.classList.add('table-content');
-        
-        const predictedText = item.predicted ? item.predicted.toFixed(2) + 'x' : '--';
-        const actualText = item.actual ? item.actual.toFixed(2) + 'x' : '--';
-        
-        let diffText = '--';
-        let accuracyText = 'N/A';
-        let accClass = '';
+    rowDiv.classList.add('log-row');
+    
+    // Defensive check: Use existing successRate, otherwise default to 0
+    // We can also check for the old 'accuracy' value if we want to display that for old data.
+    const rateValue = item.successRate !== undefined ? item.successRate : (item.accuracy !== undefined ? item.accuracy : 0);
+    
+    // Defensive check for predicted value, which is usually not null on creation
+    const predictedValue = item.predicted || 0; 
+    
+    // Use the defensively checked values below
+    const predictedText = predictedValue ? predictedValue.toFixed(2) + 'x' : '--';
+    let actualText = '--';
+    let diffText = '--';
+    let successText = 'N/A'; // Use successText for the display
+    let accClass = '';
         
         if (item.roundStatus === 'COMPLETED') {
+            actualText = item.actual.toFixed(2) + 'x';
+            
+            // Recalculate difference for display formatting
             const diff = Math.abs(item.actual - item.predicted);
             diffText = `±${diff.toFixed(2)}`;
-            accuracyText = item.accuracy.toFixed(1) + '%';
             
-            // Set accuracy color class based on the calculated accuracy percentage
-            if (item.accuracy >= 95) {
+            successText = item.successRate.toFixed(0) + '%'; // Use the new successRate
+            
+            // Set success color class (Green for 100% Success, Red for 0%)
+            if (item.successRate === 100) {
                 accClass = 'green';
-            } else if (item.accuracy >= 90) {
-                accClass = 'blue';
             } else {
                 accClass = 'red';
             }
         } else if (item.roundStatus === 'PENDING') {
-            accuracyText = 'PENDING';
+            successText = 'PENDING';
+            rowDiv.classList.add('pending-row');
         }
         
+        // Format Timestamp
         const timestamp = new Date(item.timestamp).toLocaleTimeString('en-US', {
             year: 'numeric', month: 'numeric', day: 'numeric', 
             hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
         }).replace(',', '');
         
+        // Ensure all five column DIVs are correctly placed and filled
         rowDiv.innerHTML = `
             <div class="time"><span>${timestamp}</span></div>
             <div class="predicted"><span>${predictedText}</span></div>
             <div class="actual"><span>${actualText}</span></div>
             <div class="difference"><span>${diffText}</span></div>
-            <div class="accuracy"><span class="${accClass}">${accuracyText}</span></div>
+            <div class="accuracy"><span class="${accClass}">${successText}</span></div>
         `;
         
         return rowDiv;
     }
 }
+
