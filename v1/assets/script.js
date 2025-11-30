@@ -1,4 +1,6 @@
 
+
+
 // Import all the core modules from the assets/js folder
 import { DataStore } from './js/DataStore.js';
 import { LiveSync } from './js/LiveSyncing.js'; 
@@ -36,6 +38,7 @@ function getDOMElements() {
         
         // Avg. Accuracy
         overallAccuracy: document.getElementById('overall-accuracy'), // Existing log footer stat
+        totalPredictionsFooter: document.getElementById('total-predictions-footer'),
         avgAccuracyValue: document.getElementById('avg-accuracy-value'), // Targets the number span (renamed for consistency)
         avgAccuracyWeeklyChange: document.getElementById('avg-accuracy-weekly-change'), 
         winRateValue: document.getElementById('win-rate-value'), 
@@ -185,5 +188,35 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- REPLACED document.addEventListener with eventBus.on ---
     eventBus.on('roundVerified', (round) => {
         uiController.renderNewRound(round);
+    });
+});
+
+
+// will be removed later into a separte file module
+
+// Get the elements
+const menuToggle = document.getElementById('menu-toggle');
+const sidebar = document.querySelector('.sidebar');
+const backdrop = document.getElementById('sidebar-backdrop'); // <-- NEW
+
+// Function to toggle the menu state
+function toggleMenu() {
+    sidebar.classList.toggle('is-open');
+    backdrop.classList.toggle('is-active'); // Toggle the backdrop visibility
+}
+
+// Event Listeners
+menuToggle.addEventListener('click', toggleMenu);
+
+// Close menu when the backdrop is clicked
+backdrop.addEventListener('click', toggleMenu); 
+
+// Optional: Close menu when a navigation item is clicked
+const navTabs = document.querySelectorAll('.tab');
+navTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+        if (window.innerWidth <= 768) {
+            toggleMenu();
+        }
     });
 });

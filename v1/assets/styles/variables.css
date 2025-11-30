@@ -1,66 +1,135 @@
 
 /* -------------------------------------------------------------------------
-   CSS Variables for Design System
+   CSS Variables for Design System - Multi-Theme Setup
    ------------------------------------------------------------------------- */
+
+/* =========================================================================
+   1. GLOBAL/DEFAULT VARIABLES (Deep Space Theme)
+   ========================================================================= */
 :root {
   /*--------- Fonts ---------*/
-  --ff-primary: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  --ff-primary: 'Google sans Flex', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   --ff-secondary: 'Roboto Mono', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 
-  /*--------- Primary Colors (60%) ---------*/
-  --color-primary: hsla(225, 57%, 8%, 1);        /* Dark Navy */
-  --color-primary-glass: hsla(225, 57%, 8%, 0.85); /* For glass cards */
+  /*--------- Background & Primary Colors (Deep Space - Default Dark) ---------*/
+  /* Deep Charcoal: #161B22 (Base Background) */
+  --color-background-base: hsla(217, 24%, 11%, 1); 
+  /* Slate Gray: #21262D (Card/Surface Background) */
+  --color-surface-card: hsla(217, 16%, 15%, 1); 
+  --color-surface-glass: hsla(217, 16%, 15%, 0.9); 
 
-  /*--------- Secondary Colors (30%) ---------*/
-  --color-secondary: hsla(212, 100%, 64%, 1);    /* Soft Blue */
-  --color-secondary-hover: hsla(212, 100%, 64%, 0.85); /* Hover/active states */
-  --color-secondary-glow: hsla(212, 100%, 64%, 0.3);   /* Subtle glow */
-
-  /*--------- Accent Colors (10%) ---------*/
-  --color-accent: hsla(162, 100%, 61%, 1);       /* Neon Mint */
-  --color-accent-glow: hsla(162, 100%, 61%, 0.25); /* Neon glow effects */
+  /*--------- Accent Colors (Deep Space - Green Focus) ---------*/
+  /* Electric Green: #32CD32 (Success/Primary CTA) */
+  --color-accent-primary: hsla(120, 71%, 50%, 1); 
+  --color-accent-hover: hsla(120, 71%, 50%, 0.85); 
+  --color-accent-glow: hsla(120, 71%, 50%, 0.3); 
 
   /*--------- Text Colors ---------*/
-  --text-primary: hsla(0, 0%, 100%, 1);  /* White text */
-  --text-secondary: hsla(0, 0%, 80%, 0.8); /* Soft gray text */
+  /* Off-White/Cloud: #C9D1D9 */
+  --text-primary: hsla(210, 15%, 82%, 1); 
+  /* Softer Gray */
+  --text-secondary: hsla(210, 15%, 65%, 0.8);
 
-  --color-success: hsla(162, 87%, 59%, 1);  
+  /*--------- Status Colors ---------*/
+  /* Gold/Amber: #FFD700 (Warning/Moderate) */
+  --color-status-warning: hsla(51, 100%, 50%, 1);
+  /* Crimson: #DC143C (Danger/Low) */
+  --color-status-danger: hsla(348, 83%, 47%, 1);
+  --color-status-success: var(--color-accent-primary); 
 
-  /*--------- Borders & Cards ---------*/
-  --border-glass: hsla(212, 100%, 64%, 0.15);   /* subtle border for cards */
-  --card-radius: 16px;   /* rounded corners */
-  --card-shadow: 0 8px 32px rgba(0,0,0,0.4);    /* subtle card shadow */
-  --card-border: 1px solid hsla(212, 100%, 64%, 0.22);
+  /*--------- Multiplier Cell Colors ---------*/
+  --cell-high: var(--color-accent-primary); 
+  --cell-medium: var(--color-accent-primary); 
+  --cell-moderate: var(--color-status-warning); 
+  --cell-low: var(--color-status-danger);
 
-  
-  /*--------- Shadows / Glows ---------*/
+  /*--------- Layout & Style Constants (Shared) ---------*/
+  --card-radius: 12px;
+  --card-shadow: 0 4px 16px rgba(0,0,0,0.6);
+  --border-subtle: hsla(120, 71%, 50%, 0.6);
+  --card-border: 1px solid var(--border-subtle);
   --shadow-glow-accent: 0 0 10px var(--color-accent-glow), 0 0 20px var(--color-accent-glow);
-  --shadow-glow-secondary: 0 0 8px var(--color-secondary-glow), 0 0 16px var(--color-secondary-glow);
-
-  /*--------- Transitions ---------*/
+  --sidebar-active-bg: hsla(120, 71%, 50%, 0.1);
+  --sidebar-active-border: var(--color-accent-primary);
   --transition-fast: all 0.2s ease-in-out;
   --transition-slow: all 0.4s ease;
-
-  /*--------- Layout / Misc ---------*/
-  --spacing-base: 16px;      /* base spacing for padding/margin */
+  --spacing-base: 16px;
   --spacing-small: 8px;
   --spacing-large: 24px;
-
-  --z-overlay: 1000;   /* for modals/tooltips if needed */
-  --sidebar-active-bg: linear-gradient(
-  135deg,
-  hsla(212,100%,64%,0.25),
-  hsla(212,100%,64%,0.15)
-);
-  --sidebar-active-border: hsla(212,100%,64%,0.35);
-
-  /*--------- NEW: Multiplier Cell Colors ---------*/
-  --cell-high: hsla(240, 40%, 40%, 1);      /* Deep Purple-Blue for >= 5.0x */
-  --cell-medium: var(--color-success);      /* Neon Mint for >= 2.0x */
-  --cell-moderate: hsla(30, 90%, 55%, 1);   /* Orange for >= 1.5x */
-  --cell-low: hsla(0, 70%, 55%, 1);         /* Red for < 1.5x */
-
-
-  --confidence-level: ;
+  --z-overlay: 1000;
 }
+
+/* =========================================================================
+   2. COOL METRIC THEME (Light Theme)
+   ========================================================================= */
+/* Target the body element when it has the class 'cool-metric' */
+body.cool-metric {
+  /* This theme requires color properties to be overridden */
+  --color-background-base: hsla(217, 24%, 96%, 1); 
+  --color-surface-card: hsla(0, 0%, 100%, 1); 
+  --color-surface-glass: hsla(0, 0%, 100%, 0.9); 
+  
+  --color-accent-primary: hsla(211, 100%, 48%, 1); 
+  --color-accent-hover: hsla(211, 100%, 48%, 0.85); 
+  --color-accent-glow: hsla(211, 100%, 48%, 0.3); 
+
+  --text-primary: hsla(215, 27%, 22%, 1); 
+  --text-secondary: hsla(215, 27%, 45%, 0.8);
+
+  --color-status-success: hsla(164, 100%, 38%, 1);
+  --color-status-danger: hsla(2, 100%, 59%, 1);
+  --color-status-warning: hsla(39, 100%, 50%, 1); 
+  
+  /* Update card styles for light theme */
+  --card-radius: 8px;
+  --card-shadow: 0 2px 10px rgba(42, 58, 74, 0.1);
+  --border-subtle: hsla(215, 27%, 22%, 0.1); 
+  --card-border: 1px solid var(--border-subtle);
+
+  --sidebar-active-bg: hsla(211, 100%, 48%, 0.1); 
+  --sidebar-active-border: var(--color-accent-primary);
+  
+  --cell-high: hsla(260, 50%, 50%, 1);
+  --cell-medium: var(--color-status-success);
+  --cell-moderate: var(--color-status-warning);
+  --cell-low: var(--color-status-danger);
+}
+
+
+/* =========================================================================
+   3. VAPOR WAVE THEME
+   ========================================================================= */
+/* Target the body element when it has the class 'vapor-wave' */
+body.vapor-wave {
+  --color-background-base: hsla(267, 43%, 16%, 1); 
+  --color-surface-card: hsla(267, 34%, 25%, 1); 
+  --color-surface-glass: hsla(267, 34%, 25%, 0.85);
+
+  --color-accent-primary: hsla(325, 100%, 54%, 1); 
+  --color-accent-hover: hsla(325, 100%, 54%, 0.85); 
+  --color-accent-glow: hsla(325, 100%, 54%, 0.3); 
+
+  --text-primary: hsla(258, 48%, 87%, 1); 
+  --text-secondary: hsla(258, 48%, 70%, 0.8);
+
+  --color-status-success: hsla(180, 100%, 50%, 1);
+  --color-status-danger: hsla(24, 100%, 50%, 1);
+  --color-status-warning: hsla(45, 100%, 50%, 1); 
+  
+  /* Update card styles for Vapor Wave theme */
+  --card-radius: 16px;
+  --card-shadow: 0 6px 20px rgba(0,0,0,0.5);
+  --border-subtle: hsla(325, 100%, 54%, 0.2);
+  --card-border: 1px solid var(--border-subtle);
+
+  --sidebar-active-bg: hsla(325, 100%, 54%, 0.1); 
+  --sidebar-active-border: var(--color-accent-primary);
+
+  --cell-high: var(--color-accent-primary); 
+  --cell-medium: var(--color-status-success); 
+  --cell-moderate: var(--color-status-warning); 
+  --cell-low: var(--color-status-danger); 
+}
+
+
 

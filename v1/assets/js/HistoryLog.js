@@ -51,15 +51,17 @@ export class HistoryLog {
 
     /** Saves the current log array to localStorage, limiting entries. */
     saveLog() {
-        try {
-            const limitedLog = this.log.slice(0, HistoryLog.MAX_ENTRIES);
-            localStorage.setItem(HistoryLog.STORAGE_KEY, JSON.stringify(limitedLog));
-            this.renderLog(); // Update UI after saving
-            this.renderStats(); // Update stats after saving
-        } catch (e) {
-            console.error("Error saving history log:", e);
-        }
+    try {
+        const limitedLog = this.log.slice(0, HistoryLog.MAX_ENTRIES);
+        localStorage.setItem(HistoryLog.STORAGE_KEY, JSON.stringify(limitedLog));
+        
+        // Ensure rendering is the LAST step after saving data
+        this.renderLog(); 
+        this.renderStats(); 
+    } catch (e) {
+        console.error("Error saving history log:", e);
     }
+}
     
     /** Clears the entire log from localStorage. */
     clearAllHistory() {
@@ -78,63 +80,73 @@ export class HistoryLog {
      * Handles when a prediction is made. Adds a new placeholder entry to the log.
      * @param {object} predictionResult - The result object from CrashPredictor.
      */
-    handleNewPrediction(predictionResult) {
-        if (predictionResult.error) return; // Only log successful predictions
-        
-        const logId = predictionResult.gameId; 
+    // ... in HistoryLog.js
 
-        // Check if an entry for this specific gameId already exists (important for reloads)
-        const existingEntry = this.log.find(entry => entry.id === logId);
-        if (existingEntry) return;
+handleNewPrediction(predictionResult) {
+    if (predictionResult.error) return; // Only log successful predictions
+    
+    const logId = predictionResult.gameId; 
 
-        const newEntry = {
-            id: logId, 
-            predicted: predictionResult.predictedValue,
-            actual: null, // Actual is unknown until round completes
-            timestamp: new Date().toISOString(),
-            roundStatus: 'PENDING',
-            successRate: 0, 
-            diff: 0, // Initialize diff
-        };
-        
-        // Add new entry to the start (most recent first)
-        this.log.unshift(newEntry);
-        this.saveLog();
-    }
+    // Check if an entry for this specific gameId already exists (important for reloads)
+    const existingEntry = this.log.find(entry => entry.id === logId);
+    if (existingEntry) return;
+
+    const newEntry = {
+        id: logId, 
+        predicted: predictionResult.predictedValue,
+        actual: null, // Actual is unknown until round completes
+        timestamp: new Date().toISOString(),
+        roundStatus: 'PENDING',
+        successRate: 0, 
+        diff: 0, // Initialize diff
+    };
+    
+    // Add new entry to the start (most recent first)
+    this.log.unshift(newEntry);
+    
+    // Explicitly call renderStats() immediately after updating the log array
+    this.renderStats(); 
+
+    this.saveLog(); // saveLog() will also call renderStats(), but calling it here ensures instant UI update.
+}
     
     /**
-     * Handles a round completion. Finds the matching PENDING entry and updates it 
-     * with the actual crash value and calculates the SUCCESS RATE.
-     * @param {object} roundData - The round data (with finalMultiplier).
-     */
-    handleRoundCompleted(roundData) {
-        const logEntry = this.log.find(entry => entry.id === roundData.gameId);
+ * Handles a round completion. Finds the matching PENDING entry and updates it 
+ * with the actual crash value and calculates the SUCCESS RATE.
+ * @param {object} roundData - The round data (with finalMultiplier).
+ */
+handleRoundCompleted(roundData) {
+    const logEntry = this.log.find(entry => entry.id === roundData.gameId);
 
-        if (logEntry && logEntry.roundStatus === 'PENDING') {
-            logEntry.actual = roundData.finalMultiplier;
-            logEntry.roundStatus = 'COMPLETED';
-            
-            // Recalculate difference 
-            const diff = Math.abs(logEntry.actual - logEntry.predicted);
-            
-            // --- SUCCESS RATE CALCULATION (STRICTLY GREATER THAN) ---
-            let successRate = 0;
-            
-            // If actual crash value is STRICTLY GREATER than predicted, the bet succeeded.
-            if (logEntry.actual > logEntry.predicted) { 
-                successRate = 100;
-            } 
-            
-            logEntry.successRate = successRate; 
-            logEntry.diff = diff; // Store diff back on the entry
+    // Ensure we found a pending entry for this round
+    if (logEntry && logEntry.roundStatus === 'PENDING') {
+        logEntry.actual = roundData.finalMultiplier;
+        logEntry.roundStatus = 'COMPLETED';
+        
+        // --- 1. Calculate Difference ---
+        const diff = Math.abs(logEntry.actual - logEntry.predicted);
+        
+        // --- 2. Calculate Success Rate (STRICTLY GREATER THAN) ---
+        let successRate = 0;
+        
+        // If actual crash value is STRICTLY GREATER than predicted, the bet succeeded.
+        if (logEntry.actual > logEntry.predicted) { 
+            successRate = 100;
+        } 
+        
+        // --- 3. Store Results ---
+        logEntry.successRate = successRate; 
+        logEntry.diff = diff; // Store diff back on the entry
 
-            console.log(`HistoryLog: Updated prediction log for Round ${logEntry.id} with actual crash at ${logEntry.actual}x. Success Rate: ${successRate}%`);
-            
-            this.saveLog(); 
-        } else {
-            console.warn(`HistoryLog: No pending log entry found for round ${roundData.gameId}.`);
-        }
+        console.log(`HistoryLog: Updated prediction log for Round ${logEntry.id} with actual crash at ${logEntry.actual}x. Success Rate: ${successRate}%`);
+        
+        // --- 4. Save and Render UI (Called ONLY ONCE) ---
+        this.saveLog(); 
+        // saveLog() calls renderStats() and renderLog(), updating the dashboard and table.
+    } else {
+        console.warn(`HistoryLog: No pending log entry found for round ${roundData.gameId}.`);
     }
+}
     
     // --- LOGIC: TIME-BASED DATA RETRIEVAL ---
 
@@ -201,9 +213,14 @@ renderStats() {
 
     // --- UI UPDATES ---
     
-    // Update Total Predictions (All Time)
+    // Update Total Predictions (All Time) - Dashboard Card
     if (this.elements.totalPredictionsValue) {
         this.elements.totalPredictionsValue.textContent = totalPredictions.toLocaleString();
+    }
+
+    // 🔥 Update Total Predictions (All Time) - Log Footer
+    if (this.elements.totalPredictionsFooter) {
+        this.elements.totalPredictionsFooter.textContent = totalPredictions.toLocaleString();
     }
     
     // Update new Daily Change Span ("+X today") - ADDS COLOR CLASS

@@ -6,18 +6,23 @@
     <title>Crash Predictor tool v1</title>
     <!-- Icons -->
     <script src="https://kit.fontawesome.com/3b06dad15d.js" crossorigin="anonymous"></script>
-    <!-- Google fonts Roboto Mono and Inter (might use Space Grotesk later.....) -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300;400;500;700&family=Inter:wght@400;600;700&display=swap"
-    rel="stylesheet"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@6..144,1..1000&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@6..144,1..1000&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap" rel="stylesheet">
     <!-- Stylesheets -->
     <link rel="stylesheet" href="./assets/styles/variables.css">
     <link rel="stylesheet" href="./assets/styles/styles.css"> 
+    <link rel="stylesheet" href="./assets/styles/queries.css"> 
 
     <!-- Scripts -->
      <script type="module" src="./assets/script.js" defer></script>
 </head>
-<body>
+<body class="">
     <div class="dashboard">
+        <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
         <header>
             <div class="title">
                 <h1>Crash Oracle
@@ -28,7 +33,10 @@
                 <div class="icon glass ui-icon-secondary">
                     <i class="fa-solid fa-gear"></i>
                 </div>
-                <div class="icon ui-icon">
+                <div class="icon glass ui-icon-secondary" id="menu-toggle">
+                    <i class="fa-solid fa-list"></i>
+                </div>
+                <div class="icon ui-icon last-child">
                     <i class="fa-regular fa-user"></i>
                 </div>
             </div>
@@ -298,7 +306,7 @@
                                     <button id="clear-history-btn" >
                                         <i class="fa-solid fa-trash"></i>
                                     </button>
-                                    <p>Total Predictions: <span id="total-predictions">0</span></p>
+                                    <p>Total Predictions: <span id="total-predictions-footer">0</span></p>
                                 </div>
                             </div>
                         </div>

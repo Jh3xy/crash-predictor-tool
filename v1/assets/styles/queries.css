@@ -1,0 +1,132 @@
+
+/* =========================================================================
+   5. RESPONSIVENESS & MEDIA QUERIES
+   ========================================================================= */
+
+/* --- A. MOBILE (Up to 768px) --- */
+@media (max-width: 768px) {
+    
+    /* 1. DASHBOARD LAYOUT: Remove sidebar */
+    .dashboard {
+        /* Switch from 2-column grid to 1-column stack */
+        grid-template-columns: 1fr; 
+        grid-template-rows: auto 1fr;
+        height: auto;
+        overflow-y: auto; /* Allow scrolling on small screens */
+    }
+    #menu-toggle{
+        display: block;
+    }
+    /* 2. HIDE SIDEBAR: It gets replaced by a hidden/mobile menu */
+    .sidebar {
+        display: none; 
+    }
+    
+    /* 3. HEADER: Make it look independent, possibly add a menu icon later */
+    header {
+        grid-column: 1 / -1; /* Ensure header spans full width */
+        padding: var(--spacing-base);
+        position: static; /* Remove sticky header on mobile for simpler layout */
+    }
+    
+    /* 4. MAIN CONTENT */
+    .dashboard-overview {
+        padding: var(--spacing-small); /* Reduce padding on mobile */
+        height: auto; /* Allow height to grow with content */
+    }
+    
+    /* 5. CARD LAYOUT: Force all cards to stack vertically */
+    .cards {
+        /* Overriding the 500px minmax setup to 1fr stacking */
+        grid-template-columns: 1fr; 
+        gap: var(--spacing-base); /* Standardize gap */
+    }
+    
+    /* 6. NESTED GRIDS (Stats Grid, Multiplier Grid) */
+    .stats-grid {
+        width: 100%; /* Use full width */
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); /* Allow smaller columns */
+    }
+    .multiples-grid {
+        grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+    }
+    
+    /* 7. HISTORY TABLE: Simplify columns to prevent overflow */
+    .table-header,
+    .log-row {
+        /* Reduce columns to 3 or 4 main ones for legibility */
+        grid-template-columns: 2fr 1fr 1fr;
+        font-size: 0.75rem;
+    }
+    /* Hide less critical columns */
+    .table-header h4:nth-child(4), /* Difference */
+    .log-row div:nth-child(4),
+    .table-header h4:nth-child(5), /* Success */
+    .log-row div:nth-child(5) {
+        display: none;
+    }
+    
+    /* Ensure only the first column spans wider */
+    .table-header > h4:first-child,
+    .time {
+        grid-column: span 1; 
+    }
+    .table-content > * {
+        padding-right: var(--spacing-small);
+    }
+    
+    /* 8. BUTTONS: Full width */
+    .btn, .crash-btn {
+        max-width: 100%;
+        padding: 0.8rem 1rem;
+    }
+    
+    /* 9. OTHER ELEMENTS */
+    .wrap h2 { font-size: 1.5rem; }
+    .sidebar-footer { 
+        position: static; 
+        width: 100%; 
+        border-top: none;
+        padding-top: var(--spacing-base);
+    }
+}
+
+/* --- B. TABLET (769px to 1200px) --- */
+@media (min-width: 769px) and (max-width: 1200px) {
+    
+    /* 1. DASHBOARD LAYOUT: Reduce sidebar size */
+    .dashboard {
+        /* Shrink sidebar from 1fr to a fixed 200px */
+        grid-template-columns: 200px 1fr; 
+    }
+    
+    /* 2. CARD LAYOUT: Adjust main content grid for 2-column flow */
+    .cards {
+        /* Allow cards to flow naturally, maybe 2 or 3 in a row */
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1rem;
+    }
+    
+    /* 3. WIDE CARDS: Force full width if they need to be larger */
+    .full-width {
+        grid-column: 1 / -1;
+    }
+    
+    /* 4. HISTORY TABLE: Keep all columns but reduce padding */
+    .table-content > *,
+    .table-header > *{
+        padding-right: 1rem;
+    }
+}
+
+
+
+
+/* Ensure the backdrop only exists on mobile */
+@media (min-width: 769px) {
+    .sidebar-backdrop {
+        display: none !important;
+    }
+}
+
+
