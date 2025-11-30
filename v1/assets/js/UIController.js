@@ -42,7 +42,7 @@ export class UIController {
         }
     }
     
-    // --- NEW METHOD FOR SMARTER ENCAPSULATION ---
+    // --- FIX: BUTTON STATE MANAGEMENT METHOD ---
     /**
      * Controls the state and text of the main predict button.
      * @param {string} state - 'loading' (disabled), 'ready' (enabled), 'error' (enabled, reset text)
@@ -121,8 +121,8 @@ export class UIController {
         if (dot) {
             // Note: Background color is set here because it's dynamic based on status
             dot.style.backgroundColor = status === 'mock' ? 'var(--color-success)' : 
-                                            status === 'reconnecting' ? 'var(--color-secondary)' : 
-                                            'var(--cell-low)';
+                                         status === 'reconnecting' ? 'var(--color-secondary)' : 
+                                         'var(--cell-low)';
         }
         if (this.elements.statusMessage) {
             this.elements.statusMessage.textContent = message;
@@ -204,8 +204,8 @@ export class UIController {
         if (this.elements.riskZone) this.elements.riskZone.textContent = (result.riskLevel || 'N/A').toUpperCase();
         if (this.elements.analysisMessage) this.elements.analysisMessage.textContent = result.message || 'Analysis successful.';
         
-        // 4. Reset Button State
-        this.setPredictButtonState('ready'); // Use the new method
+        // 4. Reset Button State: This will be handled by renderNewRound completion now!
+        // this.setPredictButtonState('ready'); // <-- REMOVED FROM HERE
     }
 
     /**
@@ -239,7 +239,6 @@ export class UIController {
         const formattedMultiplier = round.finalMultiplier.toFixed(2);
         
         // 1. Check if the round cell already exists (for verification update)
-        // In the rare case of a verification update, we check all known cells
         let existingCell = this.cells.find(c => c.id === cellId);
         if (existingCell) {
             existingCell.title = `Crash: ${round.finalMultiplier}x | Status: ${round.verificationStatus}`;
@@ -247,11 +246,10 @@ export class UIController {
             return;
         }
 
-        // 2. If it's a NEW round, get the oldest cell (the one at the end of the list)
-        // Since we prepend, the cell at the end of the `this.cells` array is the oldest on the DOM.
+        // 2. If it's a NEW round, get the oldest cell
         const oldestCell = this.cells.pop(); // Remove the last cell from the array
         
-        // 3. Update the content of the oldest cell (this is the fast part!)
+        // 3. Update the content of the oldest cell
         oldestCell.id = cellId;
         oldestCell.textContent = formattedMultiplier;
         oldestCell.title = `Crash: ${formattedMultiplier}x | Status: ${round.verificationStatus}`;
@@ -261,14 +259,14 @@ export class UIController {
         oldestCell.classList.add('multiplier-cell', multiplierClass); 
         
         // 4. Prepend the updated cell to the grid (this is the "shift")
-        // The browser simply moves the existing DOM node, which is much faster than creation/deletion.
         this.elements.recentGrid.prepend(oldestCell);
 
         // 5. Add the cell to the front of our internal array to track its new position
         this.cells.unshift(oldestCell); 
         
-        // Note: The `this.historyCount` and `while (this.historyCount > 10)` logic 
-        // is no longer necessary, as the array and the DOM are fixed at 10 elements.
+        // 6. FIX: Re-enable the button when the round is complete and the UI has updated.
+        this.setPredictButtonState('ready'); // <-- NEW LINE TO RE-ENABLE BUTTON!
+
         console.log(`✨ [Round ${round.gameId}] History cell updated and shifted.`);
     }
 }
