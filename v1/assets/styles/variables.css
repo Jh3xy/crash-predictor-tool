@@ -1,7 +1,4 @@
 
-/* -------------------------------------------------------------------------
-   CSS Variables for Design System - Multi-Theme Setup
-   ------------------------------------------------------------------------- */
 
 /* =========================================================================
    1. GLOBAL/DEFAULT VARIABLES (Deep Space Theme)
@@ -9,17 +6,15 @@
 :root {
   /*--------- Fonts ---------*/
   --ff-primary: 'Google sans Flex', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  --ff-secondary: 'Roboto Mono', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  --ff-secondary: 'Google sans Flex', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  /* --ff-secondary: 'Roboto Mono', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; */
 
   /*--------- Background & Primary Colors (Deep Space - Default Dark) ---------*/
-  /* Deep Charcoal: #161B22 (Base Background) */
   --color-background-base: hsla(217, 24%, 11%, 1); 
-  /* Slate Gray: #21262D (Card/Surface Background) */
   --color-surface-card: hsla(217, 16%, 15%, 1); 
   --color-surface-glass: hsla(217, 16%, 15%, 0.9); 
 
   /*--------- Accent Colors (Deep Space - Green Focus) ---------*/
-  /* Electric Green: #32CD32 (Success/Primary CTA) */
   --color-accent-primary: hsla(120, 71%, 50%, 1); 
   --color-accent-hover: hsla(120, 71%, 50%, 0.85); 
   --color-accent-glow: hsla(120, 71%, 50%, 0.3); 
@@ -45,7 +40,7 @@
 
   /*--------- Layout & Style Constants (Shared) ---------*/
   --card-radius: 12px;
-  --card-shadow: 0 4px 16px rgba(0,0,0,0.6);
+  /* --card-shadow: 0 4px 16px rgba(0,0,0,0.6); */
   --border-subtle: hsla(120, 71%, 50%, 0.6);
   --card-border: 1px solid var(--border-subtle);
   --shadow-glow-accent: 0 0 10px var(--color-accent-glow), 0 0 20px var(--color-accent-glow);
@@ -82,7 +77,7 @@ body.cool-metric {
   
   /* Update card styles for light theme */
   --card-radius: 8px;
-  --card-shadow: 0 2px 10px rgba(42, 58, 74, 0.1);
+  /* --card-shadow: 0 2px 10px rgba(42, 58, 74, 0.1); */
   --border-subtle: hsla(215, 27%, 22%, 0.1); 
   --card-border: 1px solid var(--border-subtle);
 
@@ -118,7 +113,7 @@ body.vapor-wave {
   
   /* Update card styles for Vapor Wave theme */
   --card-radius: 16px;
-  --card-shadow: 0 6px 20px rgba(0,0,0,0.5);
+  /* --card-shadow: 0 6px 20px rgba(0,0,0,0.5); */
   --border-subtle: hsla(325, 100%, 54%, 0.2);
   --card-border: 1px solid var(--border-subtle);
 
@@ -156,7 +151,7 @@ body.theme-violet {
   --text-secondary: hsla(260, 15%, 70%, 0.8);
 
   /* LAYOUT */
-  --card-shadow: 0 4px 16px rgba(0,0,0,0.8);
+  /* --card-shadow: 0 4px 16px rgba(0,0,0,0.8); */
   --border-subtle: hsla(260, 15%, 35%, 0.6); 
   --card-border: 1px solid var(--border-subtle);
 
@@ -190,7 +185,7 @@ body.theme-mint {
   --text-secondary: hsla(180, 15%, 75%, 0.8);
 
   /* LAYOUT */
-  --card-shadow: 0 8px 18px rgba(0,0,0,0.7);
+  /* --card-shadow: 0 8px 18px rgba(0,0,0,0.7); */
   --border-subtle: hsla(178, 100%, 40%, 0.3); 
   --card-border: 1px solid var(--border-subtle);
 

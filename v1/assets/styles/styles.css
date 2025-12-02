@@ -76,54 +76,6 @@ tr:hover { background-color: var(--color-surface-glass, rgba(255, 255, 255, 0.05
     border-radius: 8px;
 }
 
-/* --------- UTILITY CLASSES (Based on variables) --------- */
-/* SPACING UTILITIES */
-.mt-1 { margin-top: 0.25rem; }
-.mt-2 { margin-top: 0.5rem; }
-.mt-4 { margin-top: 1rem; }
-.mt-l { margin-top: 1.5rem; } /* New */
-.mt-xl { margin-top: 2rem; } /* New, used for card container gap */
-
-.mb-1 { margin-bottom: 0.25rem; }
-.mb-2 { margin-bottom: 0.5rem; }
-.mb-4 { margin-bottom: 2.5rem; }
-.mb-l { margin-bottom: 1.5rem; } /* New */
-
-.mx-auto { margin-left: auto; margin-right: auto; }
-.full-width{ grid-column: 1 / -1; }
-
-.p-1 { padding: 0.25rem; }
-.p-2 { padding: 0.5rem; }
-.p-4 { padding: 1rem; }
-.p-6 { padding: 1.5rem; }
-.p-l { padding: 1.5rem; } /* New, alias for p-6 */
-.p-b { padding: var(--spacing-base); } /* New, 1rem */
-
-
-/* TEXT UTILITIES */
-.text-primary { color: var(--text-primary); }
-.text-secondary { color: var(--text-secondary); }
-.text-success { color: var(--color-status-success); }
-.text-danger { color: var(--color-status-danger); }
-.text-accent { color: var(--color-accent-primary); }
-.font-md { font-size: 0.9rem; } /* New */
-.font-sm { font-size: 0.78rem; } /* New */
-.font-bold { font-weight: 600; } /* New */
-.font-normal { font-weight: 400; } /* New */
-.text-center { text-align: center; } /* New */
-.opacity-60 { opacity: 0.6; } /* New */
-
-
-.rounded { border-radius: var(--card-radius); }
-.rounded-xl { border-radius: calc(var(--card-radius) + 4px); }
-
-.transition { transition: var(--transition-fast); }
-
-
-.no-scroll {
-    overflow: hidden !important;
-}
-
 /* =========================================================================
    2. DASHBOARD LAYOUT & STRUCTURE (MOBILE-FIRST DEFAULT)
    ========================================================================= */
@@ -695,7 +647,10 @@ form input{
     color: var(--color-status-success);
     font-size: .79rem;
 }
-
+p.desc{
+    font-size: .89rem;
+    line-height: 1.6;
+}
 .stats-table{
     margin-top: 2rem;
 }
@@ -841,14 +796,14 @@ form input{
     transform: translate(-50%, -50%);
     z-index: 1000; /* Ensure it's on top */
     width: 90%;
-    max-width: 500px;
+    max-width: 600px;
     
     /* Use your theme variables */
     background: var(--color-surface-card); 
     color: var(--text-primary);
     border: var(--card-border);
     border-radius: var(--card-radius);
-    padding: var(--spacing-large);
+    /* padding: var(--spacing-large); */
     /* box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); */
 }
 .app-modal h4{
@@ -879,13 +834,18 @@ form input{
     font-size: .9rem;
     /* margin-bottom: 1rem; */
 }
+/* .app-modal > div:not(.modal-body) {
+    max-width: 600px;
+    width: 90%;
+} */
 /* Header and Close Button */
 .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: var(--spacing-base);
+    /* margin-bottom: var(--spacing-base); */
     border-bottom: 1px solid var(--border-subtle);
+    padding: var(--spacing-large);
     padding-bottom: var(--spacing-small);
 }
 .modal-header h3 {
@@ -904,6 +864,12 @@ form input{
 
 .modal-header .close-modal:hover {
     color: var(--color-status-danger);
+}
+.modal-body{
+    padding: var(--spacing-large);
+    max-height: 75vh; 
+    overflow-y: auto;
+    padding-right: 15px;
 }
 .select-wrapper{
         /* Key: This establishes a positioning context for the arrow */
@@ -965,3 +931,20 @@ body.modal-open .app-modal {
     pointer-events: auto;
 }
 
+.confirm-modal{
+    /* margin-top: 2rem; */
+    padding: var(--spacing-large);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px
+}
+.confirm-modal button{
+    padding: .5rem 1.5rem;
+    border: 1px solid var(--color-accent-primary);
+    border-radius:  50vh;
+}
+.confirm-modal button.button-primary{
+    background-color: var(--color-accent-primary);
+    color: var(--color-background-base);
+}

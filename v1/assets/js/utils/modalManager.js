@@ -10,81 +10,19 @@ const BODY = document.body;
 let currentModal = null; // Variable to hold the modal element
 let elementThatOpenedModal = null; // Variable to restore focus later
 
-// 1. Data Dictionary for Modal Content
-const modalContents = {
-    // --- SETTINGS ---
-    'settings': {
-        title: 'Application Settings',
-        contentHTML: `
-            <h4>Themes</h4>
-            <p class="modal-desc">Customize your experience here. This could include theme switching, data limits, and more.</p>
-            <div class="setting-item">
-                <label for="theme-switch">Change Theme:</label>
-                <div class="select-wrapper">
-                    <select id="theme-switch">
-                        <option value="default">Deep Space (Default)</option>
-                        <option value="theme-violet">Tech Violet</option>
-                        <option value="theme-mint">Neon Mint</option>
-                        <option value="cool-metric">Cool Metric (Light)</option>
-                        <option value="vapor-wave">Vapor Wave</option>
-                    </select>
-                </div>
-            </div>
-            <p class="text-secondary info">More themes coming soon...</p>
-        `
-    },
-    // --- CONFIRMATION (REUSABLE TEMPLATE) ---
-    'confirmation-template': {
-        title: 'Confirm Action',
-        // NOTE: The Confirmation function builds the final HTML dynamically
-        contentHTML: `
-            <p class="confirmation-message">Are you sure?</p>
-            <div class="modal-footer">
-                <button class="button-secondary cancel-btn">Cancel</button>
-                <button class="button-primary confirm-btn">Confirm</button>
-            </div>
-        `
-    },
-    // --- DASHBOARD CARDS (Data Documentation) ---
-    'card-info-total-predictions': {
-        title: 'Total Predictions Explained',
-        contentHTML: `
-            <p>This is the cumulative count of every round where a prediction was generated, including both completed and pending rounds.</p>
-            <p class="text-secondary">It represents the lifetime usage of the prediction algorithm.</p>
-        `
-    },
-    'card-info-avg-accuracy': {
-        title: 'Average Prediction Accuracy',
-        contentHTML: `
-            <p>This metric shows the **Overall Success Rate** (All Time) of the predictions.</p>
-            <p>A prediction is counted as successful (100%) if the <strong>Actual Crash Value is strictly greater than the Predicted Value</strong>.</p>
-        `
-    },
-    'card-info-win-rate': {
-        title: 'Win Rate (Last 24 Hours)',
-        contentHTML: `
-            <p>This is the percentage of successful predictions within the last 24-hour window.</p>
-            <p>It is the most relevant metric for evaluating current prediction strategy performance.</p>
-        `
-    },
-    'card-info-active-sessions': {
-        title: 'Active Sessions',
-        contentHTML: `
-            <p>This shows the count of completed prediction rounds tracked over the last 24 hours.</p>
-            <p class="text-secondary">It indicates the volume of recent activity used to calculate the 24-hour Win Rate.</p>
-        `
-    }
-    // 🔥 NEW: Add the live-sync-detail entry here later!
-};
-
+import { modalContents } from './modalData.js';
 
 /**
  * Removes the current modal and cleans up the body class.
  */
 function closeModal() {
+    const userGuide = document.getElementById('user-guide')
+    const homeTab = document.querySelector('.tab')
     if (currentModal) {
         BODY.removeChild(currentModal);
         BODY.classList.remove('modal-open');
+        userGuide.classList.remove('active');
+        homeTab.classList.add('active');
         currentModal = null;
         
         // Restore focus to the element that opened the modal (good for A11Y)
@@ -172,7 +110,7 @@ function createConfirmationModal(title, message, callbackFunction) {
         <div class="modal-body">
             <p>${message}</p>
         </div>
-        <div class="modal-footer">
+        <div class="modal-footer confirm-modal">
             <button class="button-secondary cancel-btn">Cancel</button>
             <button class="button-primary confirm-btn">Confirm</button>
         </div>

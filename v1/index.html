@@ -8,19 +8,17 @@
     <script src="https://kit.fontawesome.com/3b06dad15d.js" crossorigin="anonymous"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@6..144,1..1000&display=swap" rel="stylesheet">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@6..144,1..1000&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@6..144,400;6..144,500;6..144,600;6..144,700&display=swap" rel="stylesheet">
     <!-- Stylesheets -->
     <link rel="stylesheet" href="./assets/styles/variables.css">
+    <link rel="stylesheet" href="./assets/styles/utils.css">
     <link rel="stylesheet" href="./assets/styles/styles.css"> 
     <link rel="stylesheet" href="./assets/styles/queries.css"> 
 
     <!-- Scripts -->
      <script type="module" src="./assets/script.js" defer></script>
 </head>
-<body class="theme-mint">
+<body class="theme-violet">
     <div class="dashboard">
         <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
         <header>
@@ -59,12 +57,16 @@
                         Predictor
                     </li>
                     <li class="tab">
+                        <i class="fa-solid fa-tower-broadcast"></i>
+                        Live Sync
+                    </li>
+                    <li class="tab">
                         <i class="fa-solid fa-shield"></i>
                         Crash Verifier
                     </li>
-                    <li class="tab">
-                        <i class="fa-solid fa-tower-broadcast"></i>
-                        Live Sync
+                    <li class="tab" id="user-guide" data-modal-id="user-guide">
+                        <i class="fa-solid fa-rocket"></i> 
+                        User Guide
                     </li>
                     <li class="tab">
                         <i class="fa-solid fa-clock-rotate-left"></i>
@@ -144,7 +146,7 @@
                                 <i class="fa-solid fa-arrow-trend-up"></i>
                             </span>
                             <h3>AI Predictor</h3>
-                            <i class="fa-solid fa-circle-info circle-info"></i>
+                            <!-- <i class="fa-solid fa-circle-info circle-info"></i> -->
                         </div>
                         <!-- 1. INITIAL STATE: Click to Analyze (Default View) -->
             <!-- The prediction-section class manages the min-height -->
@@ -239,16 +241,16 @@
                     </div>
                    <div class="stats-cards">
                         <div class="card glass p-l">
-                            <i class="fa-solid fa-circle-info circle-info"></i>
+                            <i class="fa-solid fa-circle-info circle-info predictions-info" data-modal-id="card-info-total-predictions"></i>
                             <div class="tag"><h3>Total Predictions</h3></div>
                             <p class="stat">
                                 <span id="total-predictions-value">0</span> 
                                 <span class="stat-summary" id="total-predictions-daily-change">+0 today</span>
                             </p>
                         </div>
-
+                        
                         <div class="card glass p-l">
-                            <i class="fa-solid fa-circle-info circle-info"></i>
+                            <i class="fa-solid fa-circle-info circle-info" data-modal-id="card-info-avg-accuracy"></i>
                             <div class="tag"><h3>Avg. Accuracy</h3></div>
                             <p class="stat">
                                 <span id="avg-accuracy-value">0.0%</span> <span class="stat-summary" id="avg-accuracy-weekly-change">+0.0% this week</span>
@@ -256,7 +258,7 @@
                         </div>
 
                         <div class="card glass p-l">
-                            <i class="fa-solid fa-circle-info circle-info"></i>
+                            <i class="fa-solid fa-circle-info circle-info" data-modal-id="card-info-win-rate"></i>
                             <div class="tag"><h3>Win Rate</h3></div>
                             <p class="stat">
                                 <span id="win-rate-value">0.0%</span> <span class="stat-summary">Last 24h</span>
@@ -264,7 +266,7 @@
                         </div>
 
                         <div class="card glass p-l">
-                            <i class="fa-solid fa-circle-info circle-info"></i>
+                            <i class="fa-solid fa-circle-info circle-info" data-modal-id="card-info-active-sessions"></i>
                             <div class="tag"><h3>Active Sessions</h3></div>
                             <p class="stat">
                                 <span id="active-sessions-value">0</span> <span class="stat-summary">Live now</span>

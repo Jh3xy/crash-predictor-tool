@@ -18,6 +18,49 @@ import { populateAndShowModal, closeModal, createConfirmationModal } from './js/
 const tabs = document.querySelectorAll('.tab');
 listenForTabs(tabs);
 
+// Select Elements for Pop UP Initialization
+const userGuide = document.getElementById('user-guide')
+const settingBtn = document.querySelector('[data-modal-id="settings"]');
+const statsInfoIcons = document.querySelectorAll(
+  '[data-modal-id="card-info-total-predictions"],' +
+  '[data-modal-id="card-info-avg-accuracy"],' +
+  '[data-modal-id="card-info-win-rate"],' + 
+  '[data-modal-id="card-info-active-sessions"]' 
+);
+
+
+// 1. Initialize Settings Pop UP
+if (settingBtn) {
+    settingBtn.addEventListener('click', () => {
+        const modalKey = settingBtn.getAttribute('data-modal-id');
+        populateAndShowModal(modalKey);
+    });
+} else {
+    console.log("Element Not Found")
+}
+
+// 2. Initialize Stats-info Pop UP (Node List)
+statsInfoIcons.forEach(statsInfoIcon => {
+  statsInfoIcon.addEventListener('click', () => {
+    const modalKey = statsInfoIcon.getAttribute('data-modal-id');
+    populateAndShowModal(modalKey);
+    
+    console.log(`Clicked icon with key: ${modalKey}`);
+  });
+});
+
+// 3. Initialize User  Guide Pop UP
+if (userGuide) {
+    userGuide.addEventListener('click', () => {
+        const modalKey = userGuide.getAttribute('data-modal-id');
+        populateAndShowModal(modalKey);
+    });
+} else {
+    console.log("Element Not Found")
+}
+
+
+
 // --- Sidebar Logic ---
 function setupSidebar() {
     const menuToggle = document.getElementById('menu-toggle');
@@ -87,7 +130,8 @@ function getDOMElements() {
         predictionOutputDetails: document.getElementById('prediction-output-details'),
         initialStateContent: document.getElementById('initial-state-content'), 
         predictorCard: document.getElementById('confidence-bar'), 
-        confidencePercentage: document.getElementById('confidence-percentage'), 
+        confidencePercentage: document.getElementById('confidence-percentage'),
+
     };
 }
 
@@ -144,18 +188,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // 1. Initialize Sidebar
     setupSidebar();
-
-    // 2. Initialize Modals (Settings Button)
-    // 🔥 FIXED: This logic is now INSIDE DOMContentLoaded so it won't crash
-    const settingBtn = document.querySelector('[data-modal-id="settings-btn"]'); 
-    // Ensure you use "settings-btn" in your HTML data-modal-id too!
-    
-    if (settingBtn) {
-        settingBtn.addEventListener('click', () => {
-            const modalKey = settingBtn.getAttribute('data-modal-id');
-            populateAndShowModal(modalKey);
-        });
-    }
 
     // 3. Initialize Core Systems
     const eventBus = new EventEmitter();
