@@ -1,11 +1,12 @@
-
-
 /**
  * Manages the persistent log (via localStorage) of all predictions and their actual results.
  * It calculates prediction accuracy and manages the history log table and dashboard stats in the UI.
  *
  * NOTE: This version includes new methods to calculate time-based metrics (daily/24hr).
  */
+
+
+import { createConfirmationModal } from './utils/modalManager.js';
 export class HistoryLog {
     
     // We use a constant key for localStorage to avoid magic strings
@@ -28,11 +29,22 @@ export class HistoryLog {
         // 2. Listen for a prediction run for the PREDICTED multiplier
         this.eventBus.on('newPredictionMade', this.handleNewPrediction.bind(this));
         
-        // 3. Attach clear history button listener
+        // 3. Attach clear history button listener (USING THE MODAL)
         if (this.elements.clearHistoryBtn) {
-            this.elements.clearHistoryBtn.addEventListener('click', this.clearAllHistory.bind(this));
+            this.elements.clearHistoryBtn.addEventListener('click', () => {
+                // We pass the *function* this.clearLog into the modal, 
+                // but we wrap it in another function () => { ... } to ensure 
+                // the 'this' context of the HistoryLog class is preserved.
+                createConfirmationModal(
+                    'Clear Prediction History', 
+                    'Are you sure you want to delete all prediction logs? This action cannot be undone.', 
+                        ()  => { 
+                        // This is the function that runs on CONFIRM click:
+                        this.clearLog(); // 🔥 Calls the new clearLog method below
+                        }
+                    );
+                });
         }
-
         console.log(`HistoryLog: Initialized with ${this.log.length} entries.`);
     }
 
@@ -63,15 +75,25 @@ export class HistoryLog {
     }
 }
     
-    /** Clears the entire log from localStorage. */
-    clearAllHistory() {
-        if (window.confirm("Are you sure you want to clear the entire Prediction History Log?")) {
-            localStorage.removeItem(HistoryLog.STORAGE_KEY);
-            this.log = []; // Reset internal array
-            this.renderLog();
-            this.renderStats();
-            console.log("History log cleared.");
-        }
+    /** * 🔥 NEW: Public method to clear the log, called by the confirmation modal. 
+     */
+    clearLog() {
+        localStorage.removeItem(HistoryLog.STORAGE_KEY);
+        this.log = []; // Reset internal array
+        this.renderLog();
+        this.renderStats();
+        console.log("History log cleared via modal confirmation.");
+    }
+
+    /** * DEPRECATED: Old method for clearing history with window.confirm. 
+     * Renamed to prevent collision with clearLog().
+     */
+    clearAllHistoryOld() {
+        localStorage.removeItem(HistoryLog.STORAGE_KEY);
+        this.log = []; // Reset internal array
+        this.renderLog();
+        this.renderStats();
+        console.log("History log cleared.");
     }
     
     // --- LOGIC: EVENT HANDLERS (Integration with core app flow) ---
@@ -80,35 +102,33 @@ export class HistoryLog {
      * Handles when a prediction is made. Adds a new placeholder entry to the log.
      * @param {object} predictionResult - The result object from CrashPredictor.
      */
-    // ... in HistoryLog.js
+    handleNewPrediction(predictionResult) {
+        if (predictionResult.error) return; // Only log successful predictions
+        
+        const logId = predictionResult.gameId; 
 
-handleNewPrediction(predictionResult) {
-    if (predictionResult.error) return; // Only log successful predictions
-    
-    const logId = predictionResult.gameId; 
+        // Check if an entry for this specific gameId already exists (important for reloads)
+        const existingEntry = this.log.find(entry => entry.id === logId);
+        if (existingEntry) return;
 
-    // Check if an entry for this specific gameId already exists (important for reloads)
-    const existingEntry = this.log.find(entry => entry.id === logId);
-    if (existingEntry) return;
+        const newEntry = {
+            id: logId, 
+            predicted: predictionResult.predictedValue,
+            actual: null, // Actual is unknown until round completes
+            timestamp: new Date().toISOString(),
+            roundStatus: 'PENDING',
+            successRate: 0, 
+            diff: 0, // Initialize diff
+        };
+        
+        // Add new entry to the start (most recent first)
+        this.log.unshift(newEntry);
+        
+        // Explicitly call renderStats() immediately after updating the log array
+        this.renderStats(); 
 
-    const newEntry = {
-        id: logId, 
-        predicted: predictionResult.predictedValue,
-        actual: null, // Actual is unknown until round completes
-        timestamp: new Date().toISOString(),
-        roundStatus: 'PENDING',
-        successRate: 0, 
-        diff: 0, // Initialize diff
-    };
-    
-    // Add new entry to the start (most recent first)
-    this.log.unshift(newEntry);
-    
-    // Explicitly call renderStats() immediately after updating the log array
-    this.renderStats(); 
-
-    this.saveLog(); // saveLog() will also call renderStats(), but calling it here ensures instant UI update.
-}
+        this.saveLog(); // saveLog() will also call renderStats(), but calling it here ensures instant UI update.
+    }
     
     /**
  * Handles a round completion. Finds the matching PENDING entry and updates it 
@@ -179,6 +199,16 @@ handleRoundCompleted(roundData) {
         ).length;
     }
     
+    /**
+     * 🔥 NEW: Public method to retrieve the specified number of the most recent history logs.
+     * @param {number} count - The number of recent logs to retrieve (defaults to 30).
+     * @returns {Array} List of recent log entries.
+     */
+    getRecentHistory(count = 30) {
+        // Since this.log is sorted newest first (due to unshift), slice is correct
+        return this.log.slice(0, count);
+    }
+
     // --- UI RENDERING ---
     
     /** Renders the statistical summary (Total Predictions and Overall Success Rate). */
@@ -377,4 +407,5 @@ renderStats() {
         return { labels, predictedValues, actualValues };
     }
 }
+
 

@@ -1,7 +1,8 @@
 
 
+// script.js
 
-// Import all the core modules from the assets/js folder
+// Import core modules
 import { DataStore } from './js/DataStore.js';
 import { LiveSync } from './js/LiveSyncing.js'; 
 import { Verifier } from './js/Verifier.js'; 
@@ -10,50 +11,68 @@ import { UIController } from './js/UIController.js';
 import { EventEmitter } from './js/EventEmitter.js'; 
 import { HistoryLog } from './js/HistoryLog.js'; 
 import { listenForTabs } from './js/utils/tabs.js';
-import { populateAndShowModal, closeModal  } from './js/utils/modalManager.js';
+// Ensure file name matches exactly
+import { populateAndShowModal, closeModal, createConfirmationModal } from './js/utils/modalManager.js'; 
 
+// Initiate tab listeners
+const tabs = document.querySelectorAll('.tab');
+listenForTabs(tabs);
 
-// Initiate the tab event listener
-const tabs = document.querySelectorAll('.tab')
-listenForTabs(tabs)
+// --- Sidebar Logic ---
+function setupSidebar() {
+    const menuToggle = document.getElementById('menu-toggle');
+    const sidebar = document.querySelector('.sidebar');
+    const backdrop = document.getElementById('sidebar-backdrop');
+    const body = document.body;
+    const navTabs = sidebar ? sidebar.querySelectorAll('.tab') : [];
 
-// Initiate Modal systems
-const settingBtn = document.querySelector('[data-modal-id="settings"]')
-const settingBtnAttr = settingBtn.getAttribute('data-modal-id');
+    function toggleSidebar() {
+        if (!sidebar || !backdrop) return;
+        sidebar.classList.toggle('is-open');
+        backdrop.classList.toggle('is-active');
+        
+        const isMenuOpen = sidebar.classList.contains('is-open');
+        if (isMenuOpen) {
+            body.classList.add('no-scroll');
+            menuToggle.disabled = true;
+            setTimeout(() => {
+                if (sidebar.classList.contains('is-open')) menuToggle.disabled = false;
+            }, 400); 
+        } else {
+            body.classList.remove('no-scroll');
+            menuToggle.disabled = false;
+        }
+    }
 
-
-settingBtn.addEventListener('click', () => {
-    populateAndShowModal(settingBtnAttr);
-});
-
+    if (menuToggle && sidebar && backdrop) {
+        menuToggle.addEventListener('click', toggleSidebar);
+        backdrop.addEventListener('click', toggleSidebar); 
+        navTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                if (sidebar.classList.contains('is-open')) toggleSidebar();
+            });
+        });
+    }
+}
 
 /**
- * Helper to gather all DOM elements the UIController needs.
+ * Helper to gather DOM elements
  */
 function getDOMElements() {
-    // ... (This function remains unchanged)
     return {
-        // Live Feed Elements (from index.html)
         currentMultiplier: document.getElementById('current-multiplier'),
-        // ... (All other elements)
-        // --- HISTORY LOG ELEMENTS ---
         historyLogBody: document.getElementById('history-log-body'),
         overallAccuracy: document.getElementById('overall-accuracy'),
-        totalPredictions: document.getElementById('total-predictions'),
-        clearHistoryBtn: document.getElementById('clear-history-btn'), 
-        // --- EXISTING ELEMENTS ---
-        // Total Predictions
-        totalPredictionsValue: document.getElementById('total-predictions-value'), // Targets the number span
-        dailyChangeSpan: document.getElementById('total-predictions-daily-change'), // Targets the change span
-        
-        // Avg. Accuracy
-        overallAccuracy: document.getElementById('overall-accuracy'), // Existing log footer stat
+        // Dashboard Stats
+        totalPredictionsValue: document.getElementById('total-predictions-value'), 
+        dailyChangeSpan: document.getElementById('total-predictions-daily-change'), 
         totalPredictionsFooter: document.getElementById('total-predictions-footer'),
-        avgAccuracyValue: document.getElementById('avg-accuracy-value'), // Targets the number span (renamed for consistency)
+        avgAccuracyValue: document.getElementById('avg-accuracy-value'), 
         avgAccuracyWeeklyChange: document.getElementById('avg-accuracy-weekly-change'), 
         winRateValue: document.getElementById('win-rate-value'), 
         activeSessionsValue: document.getElementById('active-sessions-value'),
 
+        clearHistoryBtn: document.getElementById('clear-history-btn'), 
         recentGrid: document.getElementById('recent-grid'),
         statusDot: document.getElementById('status-dot'),
         statusMessage: document.getElementById('status-message'),
@@ -73,103 +92,91 @@ function getDOMElements() {
 }
 
 /**
- * Helper to run the asynchronous prediction process and update the UI.
+ * Run prediction and update UI
  */
 async function runPredictionAndRender(dataStore, predictor, uiController, liveSync, eventBus) { 
-    
-    // 1. Get the current history and predict the next value
     const historyMultipliers = dataStore.getMultipliers();
     const result = predictor.predictNext(historyMultipliers);
     
-    // 2. Add the current game ID to the result object for display
     result.gameId = liveSync.currentGameId + 1;
-
-    // --- Emit event BEFORE rendering so HistoryLog can save the result ---
     eventBus.emit('newPredictionMade', result);
-    
-    // 3. Render the final prediction result
     uiController.renderPrediction(result);
     
-    // Log the result to the console for easy debugging
     if (result.error) {
         console.error(`❌ Prediction Failed: ${result.message}`);
-        // If prediction fails *after* analysis, re-enable button immediately
-        uiController.setPredictButtonState('error'); // <-- SAFETY LINE
+        uiController.setPredictButtonState('error'); 
     } else {
         console.log(`✅ Prediction Complete: ${result.predictedValue.toFixed(2)}x, Confidence: ${result.confidence}%`);
-        // Note: The button remains disabled here until the round finishes (in UIController.renderNewRound)
     }
 }
 
-
 /**
- * Core function to run the prediction logic and update the UI when the button is clicked.
+ * Handle Predict Button Click
  */
 function handlePredictClick(dataStore, predictor, uiController, liveSync, eventBus) { 
-    
-    // Check if there is enough data (Minimum 20 rounds are required for the predictor to run)
     const historyMultipliers = dataStore.getMultipliers();
-    
-    // ⬅️ FIX: Disable the button immediately on click to prevent spamming
-    uiController.setPredictButtonState('loading'); // <-- NEW LINE! This prevents duplicate predictions
+    uiController.setPredictButtonState('loading'); 
 
     if (historyMultipliers.length < 20) {
-        // The predictor itself handles the 'length < 20' error, but we need a brief loading delay
-        // to show the user we attempted the analysis.
         const result = {
             error: true, 
             message: `Not enough history (${historyMultipliers.length}). Need 20+ rounds.`,
             confidence: 0,
         };
-        // Render error state immediately, which will re-enable the button via UIController.renderPrediction -> setPredictButtonState('error')
         uiController.renderPrediction(result);
-        return 0; // Return 0 delay
+        return 0; 
     }
 
-    // 1. Show the loading state (this is now redundant but kept for good measure, though setPredictButtonState already handles the button disable)
     uiController.showLoadingState();
-
-    // 2. Set the analysis delay (1500ms)
     const ANALYSIS_DELAY_MS = 1500; 
 
-    // 3. Run the prediction after the delay
     setTimeout(() => {
         runPredictionAndRender(dataStore, predictor, uiController, liveSync, eventBus); 
     }, ANALYSIS_DELAY_MS);
     
     return ANALYSIS_DELAY_MS;
 }
-/**
- * Application Entry Point
- */
+
+// =========================================================
+// APP ENTRY POINT
+// =========================================================
 document.addEventListener('DOMContentLoaded', () => {
     
-    // --- NEW: Instantiate the central Event Bus ---
-    const eventBus = new EventEmitter();
+    // 1. Initialize Sidebar
+    setupSidebar();
+
+    // 2. Initialize Modals (Settings Button)
+    // 🔥 FIXED: This logic is now INSIDE DOMContentLoaded so it won't crash
+    const settingBtn = document.querySelector('[data-modal-id="settings-btn"]'); 
+    // Ensure you use "settings-btn" in your HTML data-modal-id too!
     
+    if (settingBtn) {
+        settingBtn.addEventListener('click', () => {
+            const modalKey = settingBtn.getAttribute('data-modal-id');
+            populateAndShowModal(modalKey);
+        });
+    }
+
+    // 3. Initialize Core Systems
+    const eventBus = new EventEmitter();
     const domElements = getDOMElements();
     const dataStore = new DataStore();
     
-    // --- PASS THE EVENT BUS TO DEPENDENT MODULES ---
-    const verifier = new Verifier(dataStore, eventBus); // Verifier needs the bus
+    const verifier = new Verifier(dataStore, eventBus); 
     const predictor = new CrashPredictor(); 
     const uiController = new UIController(domElements); 
     
-    // ⬅️ CHANGE 3: INSTANTIATE THE NEW HISTORYLOG MODULE
+    // Pass eventBus to HistoryLog
     const historyLog = new HistoryLog(domElements, eventBus); 
 
     uiController.showInitialState();
-
-    // --- PASS THE EVENT BUS TO DEPENDENT MODULES ---
-    const liveSync = new LiveSync(dataStore, verifier, eventBus); // LiveSync needs the bus
+    const liveSync = new LiveSync(dataStore, verifier, eventBus); 
     
     console.log('🚀 App Initialized. Starting LiveSync connection...');
     
     if (domElements.predictBtn) {
         console.log('👍 DOM Ready: Found predict-btn element. Attaching listener...');
-
         domElements.predictBtn.addEventListener('click', () => {
-            // ⬅️ CHANGE 2: ADD eventBus argument to handler
             handlePredictClick(dataStore, predictor, uiController, liveSync, eventBus); 
         });
     } else {
@@ -178,9 +185,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     liveSync.connect(); 
     
-    // --- REPLACED document.addEventListener with eventBus.on ---
+    // 4. Attach Event Bus Listeners
     eventBus.on('liveUpdate', (e) => {
-        uiController.updateLiveMultiplier(e); // 'e' is the multiplier value directly
+        uiController.updateLiveMultiplier(e); 
         if (liveSync.isRoundRunning) {
              uiController.updateStatus('mock', `Round ${liveSync.currentGameId} running...`);
         } else {
@@ -188,89 +195,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    // --- REPLACED document.addEventListener with eventBus.on ---
     eventBus.on('newRoundCompleted', (round) => {
-        console.log('\n\n\n')
+        console.log('\n\n\n');
         console.log(`✨ APP: New round processed! Crash at ${round.finalMultiplier}x.`);
         uiController.renderNewRound(round);
     });
 
-    // --- REPLACED document.addEventListener with eventBus.on ---
     eventBus.on('roundVerified', (round) => {
         uiController.renderNewRound(round);
     });
 });
 
-
-// will be removed later into a separte file module
-
-/// --- Enhanced Sidebar Toggle Logic ---
-
-// --- Required Element Selections ---
-const menuToggle = document.getElementById('menu-toggle');
-const sidebar = document.querySelector('.sidebar');
-const backdrop = document.getElementById('sidebar-backdrop');
-const body = document.body;
-
-// Get all the navigation tabs (assuming they use the class '.tab' from your CSS)
-const navTabs = sidebar ? sidebar.querySelectorAll('.tab') : [];
-
-// --- Core Sidebar Toggle Function ---
-function toggleSidebar() {
-    // 1. Toggle the visual classes
-    sidebar.classList.toggle('is-open');
-    backdrop.classList.toggle('is-active');
-
-    // Check the current state of the menu (if it's open after the toggle)
-    const isMenuOpen = sidebar.classList.contains('is-open');
-
-    // 2. Control Background Scrolling and Button State
-    if (isMenuOpen) {
-        // Disable scrolling on the main content
-        body.classList.add('no-scroll');
-        
-        // Temporarily disable the menu button to prevent repeat clicks during transition
-        menuToggle.disabled = true;
-
-        // Re-enable the button after the transition finishes (400ms based on --transition-slow)
-        setTimeout(() => {
-            if (sidebar.classList.contains('is-open')) {
-                menuToggle.disabled = false;
-            }
-        }, 400); 
-
-    } else {
-        // Re-enable scrolling when the menu is closed
-        body.classList.remove('no-scroll');
-        
-        // Ensure the button is enabled when the menu is closed
-        menuToggle.disabled = false;
-    }
-}
-
-// --- Attach Event Listeners ---
-if (menuToggle && sidebar && backdrop) {
-    // 1. Menu Button Click: Opens/Closes menu
-    menuToggle.addEventListener('click', toggleSidebar);
-    
-    // 2. Backdrop Click: Closes menu
-    backdrop.addEventListener('click', toggleSidebar); 
-
-    // 3. Tab/Link Click: Closes menu and scrolls to target
-    navTabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            // Only call toggleSidebar to close the menu if it's currently open
-            if (sidebar.classList.contains('is-open')) {
-                // This triggers the closing logic and allows the link's default behavior 
-                // (e.g., navigating to #section-id) to complete, thus closing the menu before scrolling.
-                toggleSidebar();
-            }
-        });
-    });
-
-} else {
-    // Helpful console warning if elements are missing
-    console.error("Sidebar setup error: Missing HTML elements (#menu-toggle, .sidebar, or #sidebar-backdrop).");
-}
-
-// ----------------------------------------------------
