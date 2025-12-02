@@ -48,10 +48,9 @@ export class LiveSync {
         this.currentGameId++;
         this.currentMultiplier = 1.00; // Reset for the new round
         
-        // Mock the crash point (random number between 1.01 and 10.00)
-        const crashPoint = 1.01 + Math.random() * 8.99; 
-        
-        const finalCrash = parseFloat(crashPoint.toFixed(2));
+        // Mock the crash point (random number between 1.01 and 100.00)
+        const crashPoint = 1.00 + Math.random() * 99.00;
+const finalCrash = Math.round(crashPoint); // or .toFixed(2) for 2 decimals
         const updateInterval = 50; // Milliseconds per update
         
         const intervalId = setInterval(() => {
