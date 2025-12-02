@@ -3,7 +3,7 @@
    ========================================================================= */
 
 /* --- A. TABLET / Desktop (min-width: 769px) --- */
-@media (min-width: 769px) {
+@media (min-width: 961px) {
     
     /* 1. DASHBOARD LAYOUT: Switch to Desktop 2-column Grid */
     .dashboard {
@@ -77,7 +77,7 @@
     .stats-grid {
         display: grid;
         /* grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); */
-        grid-template-columns: 1fr 1fr 1fr;
+        /* grid-template-columns: 2fr 1fr 1fr 1fr 1fr; */
         gap: var(--spacing-small);
     }
     .stat-item.full-column-width {
@@ -85,28 +85,26 @@
     }
 
     /* 7. HISTORY TABLE: Re-introduce all 5 columns */
-    .table-header,
-    .log-row {
-        grid-template-columns: 2fr repeat(4, 1fr); /* Timestamp, Predicted, Actual, Difference, Success */
-        font-size: 0.82rem;
-    }
-    /* Show desktop-only columns */
-    .table-header h4:nth-child(4), 
-    .log-row div:nth-child(4),
-    .table-header h4:nth-child(5),
-    .log-row div:nth-child(5) {
-        display: block;
-    }
-    .table-header > h4:first-child,
-    .time {
-        grid-column: span 1;
-    }
     .table-content > *,
     .table-header > *{
         padding-right: 1.5rem;
     }
 }
 
+@media (max-width: 960px){
+    .table-header,
+    .log-row {
+        grid-template-columns: 2fr 1fr 1fr 1fr; 
+        font-size: 0.82rem;
+        
+    }
+
+    .table-header h4:nth-child(4),
+    .log-row div:nth-child(4){
+        display: none;
+        justify-self: center;
+    }
+}
 
 /* --- B. LARGE DESKTOP (min-width: 1201px) --- */
 @media (min-width: 1201px) {
@@ -139,9 +137,9 @@
     #history { grid-area: history; }
 
     /* The 'full-width' class is now superseded by grid-area for these main cards */
-    /* .full-width {
+    .full-width {
         grid-column: unset; 
-    } */
+    }
     
     /* Adjustments for the history/table area */
     #history {

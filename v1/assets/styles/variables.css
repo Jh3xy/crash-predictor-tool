@@ -131,5 +131,72 @@ body.vapor-wave {
   --cell-low: var(--color-status-danger); 
 }
 
+/* =========================================================================
+   4. TECH VIOLET THEME 
+   ========================================================================= */
+/* Target the body element when it has the class 'theme-violet' */
+body.theme-violet {
+  /* BACKGROUNDS (Similar Dark Tones, but with a subtle violet hue) */
+  --color-background-base: hsla(240, 20%, 12%, 1); /* Darker Purple/Black */
+  --color-surface-card: hsla(240, 15%, 20%, 1); 
+  --color-surface-glass: hsla(240, 15%, 20%, 0.9);
+
+  /* ACCENT COLORS (Deep Indigo) */
+  --color-accent-primary: hsla(260, 60%, 55%, 1); /* Violet */
+  --color-accent-hover: hsla(260, 60%, 55%, 0.85); 
+  --color-accent-glow: hsla(260, 60%, 55%, 0.3); 
+
+  /* STATUS COLORS */
+  --color-status-success: hsla(164, 70%, 50%, 1); /* Teal/Cyan Success */
+  --color-status-danger: hsla(350, 80%, 55%, 1); /* Bright Red Danger */
+  --color-status-warning: hsla(40, 100%, 50%, 1); /* Amber Warning */
+  
+  /* TEXT */
+  --text-primary: hsla(260, 15%, 90%, 1); 
+  --text-secondary: hsla(260, 15%, 70%, 0.8);
+
+  /* LAYOUT */
+  --card-shadow: 0 4px 16px rgba(0,0,0,0.8);
+  --border-subtle: hsla(260, 15%, 35%, 0.6); 
+  --card-border: 1px solid var(--border-subtle);
+
+  --sidebar-active-bg: hsla(260, 60%, 55%, 0.1); 
+  --sidebar-active-border: var(--color-accent-primary);
+}
+
+
+/* =========================================================================
+   5. NEON MINT THEME 
+   ========================================================================= */
+/* Target the body element when it has the class 'theme-mint' */
+body.theme-mint {
+  /* BACKGROUNDS (Classic Dark Charcoal) */
+  --color-background-base: hsla(220, 20%, 10%, 1); 
+  --color-surface-card: hsla(220, 15%, 15%, 1); 
+  --color-surface-glass: hsla(220, 15%, 15%, 0.9); 
+
+  /* ACCENT COLORS (Electric Mint) */
+  --color-accent-primary: hsla(178, 100%, 40%, 1); /* Bright Cyan/Mint */
+  --color-accent-hover: hsla(178, 100%, 40%, 0.85); 
+  --color-accent-glow: hsla(178, 100%, 40%, 0.3); 
+
+  /* STATUS COLORS */
+  --color-status-success: hsla(130, 70%, 55%, 1); /* Standard Green */
+  --color-status-danger: hsla(3, 100%, 55%, 1); /* Bright Red */
+  --color-status-warning: hsla(45, 100%, 50%, 1); /* Yellow/Orange Warning */
+  
+  /* TEXT */
+  --text-primary: hsla(180, 15%, 95%, 1); 
+  --text-secondary: hsla(180, 15%, 75%, 0.8);
+
+  /* LAYOUT */
+  --card-shadow: 0 8px 18px rgba(0,0,0,0.7);
+  --border-subtle: hsla(178, 100%, 40%, 0.3); 
+  --card-border: 1px solid var(--border-subtle);
+
+  --sidebar-active-bg: hsla(178, 100%, 40%, 0.1); 
+  --sidebar-active-border: var(--color-accent-primary);
+}
+
 
 

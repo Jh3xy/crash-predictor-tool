@@ -194,29 +194,73 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // will be removed later into a separte file module
 
-// Get the elements
+/// --- Enhanced Sidebar Toggle Logic ---
+
+// --- Required Element Selections ---
 const menuToggle = document.getElementById('menu-toggle');
 const sidebar = document.querySelector('.sidebar');
-const backdrop = document.getElementById('sidebar-backdrop'); // <-- NEW
+const backdrop = document.getElementById('sidebar-backdrop');
+const body = document.body;
 
-// Function to toggle the menu state
-function toggleMenu() {
+// Get all the navigation tabs (assuming they use the class '.tab' from your CSS)
+const navTabs = sidebar ? sidebar.querySelectorAll('.tab') : [];
+
+// --- Core Sidebar Toggle Function ---
+function toggleSidebar() {
+    // 1. Toggle the visual classes
     sidebar.classList.toggle('is-open');
-    backdrop.classList.toggle('is-active'); // Toggle the backdrop visibility
+    backdrop.classList.toggle('is-active');
+
+    // Check the current state of the menu (if it's open after the toggle)
+    const isMenuOpen = sidebar.classList.contains('is-open');
+
+    // 2. Control Background Scrolling and Button State
+    if (isMenuOpen) {
+        // Disable scrolling on the main content
+        body.classList.add('no-scroll');
+        
+        // Temporarily disable the menu button to prevent repeat clicks during transition
+        menuToggle.disabled = true;
+
+        // Re-enable the button after the transition finishes (400ms based on --transition-slow)
+        setTimeout(() => {
+            if (sidebar.classList.contains('is-open')) {
+                menuToggle.disabled = false;
+            }
+        }, 400); 
+
+    } else {
+        // Re-enable scrolling when the menu is closed
+        body.classList.remove('no-scroll');
+        
+        // Ensure the button is enabled when the menu is closed
+        menuToggle.disabled = false;
+    }
 }
 
-// Event Listeners
-menuToggle.addEventListener('click', toggleMenu);
+// --- Attach Event Listeners ---
+if (menuToggle && sidebar && backdrop) {
+    // 1. Menu Button Click: Opens/Closes menu
+    menuToggle.addEventListener('click', toggleSidebar);
+    
+    // 2. Backdrop Click: Closes menu
+    backdrop.addEventListener('click', toggleSidebar); 
 
-// Close menu when the backdrop is clicked
-backdrop.addEventListener('click', toggleMenu); 
-
-// Optional: Close menu when a navigation item is clicked
-const navTabs = document.querySelectorAll('.tab');
-navTabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-        if (window.innerWidth <= 768) {
-            toggleMenu();
-        }
+    // 3. Tab/Link Click: Closes menu and scrolls to target
+    navTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            // Only call toggleSidebar to close the menu if it's currently open
+            if (sidebar.classList.contains('is-open')) {
+                // This triggers the closing logic and allows the link's default behavior 
+                // (e.g., navigating to #section-id) to complete, thus closing the menu before scrolling.
+                toggleSidebar();
+            }
+        });
     });
-});
+
+} else {
+    // Helpful console warning if elements are missing
+    console.error("Sidebar setup error: Missing HTML elements (#menu-toggle, .sidebar, or #sidebar-backdrop).");
+}
+
+// ----------------------------------------------------

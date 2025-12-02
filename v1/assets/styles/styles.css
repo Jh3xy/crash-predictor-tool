@@ -96,6 +96,11 @@ tr:hover { background-color: var(--color-surface-glass, rgba(255, 255, 255, 0.05
 
 .transition { transition: var(--transition-fast); }
 
+
+.no-scroll {
+    overflow: hidden !important;
+}
+
 /* =========================================================================
    2. DASHBOARD LAYOUT & STRUCTURE (MOBILE-FIRST DEFAULT)
    ========================================================================= */
@@ -194,8 +199,8 @@ header {
     justify-content: center;
     color: var(--color-background-base);
     font-size: .98rem;
-    box-shadow: var(--shadow-glow-accent);
-    transition: var(--transition-fast);
+    /* box-shadow: var(--shadow-glow-accent); */
+    transition: var(--transition-slow);
 }
 .ui-icon-secondary{
     padding: .5rem .7rem;
@@ -283,6 +288,7 @@ nav{
 .icons .icon.last-child:hover{
     background: var(--color-background-base);
     color: var(--color-accent-primary);
+    border:  1px solid var(--color-accent-primary);
 }
 
 /* =========================================================================
@@ -671,7 +677,7 @@ form input{
 .table-header,
 .log-row{
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
     font-size: 0.75rem;
 }
 .log-row{
@@ -682,13 +688,7 @@ form input{
     background: rgba(255, 255, 255, 0.06);
 }
 
-/* Hide desktop-only columns on mobile */
-.table-header h4:nth-child(4), /* Difference */
-.log-row div:nth-child(4),
-.table-header h4:nth-child(5), /* Success */
-.log-row div:nth-child(5) {
-    display: none;
-}
+
 
 .table-header > h4:first-child,
 .time{
