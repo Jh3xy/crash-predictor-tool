@@ -281,9 +281,6 @@ nav{
     text-align: center;
     position: static;
 }
-.sidebar-footer p{
-    /* REMOVED: color & opacity are handled by classes in HTML */
-}
 
 /* --- Sidebar Backdrop (for Mobile Menu) --- */
 .sidebar-backdrop {
@@ -323,9 +320,6 @@ nav{
 .wrap h2{
     font-weight: 600;
     font-size: 2rem;
-}
-.wrap > p{
-    /* REMOVED: font-weight, font-size, color - Handled by HTML classes */
 }
 .cards{
     /* REMOVED: margin-top: 2rem; - Handled by .mt-xl class in HTML */
@@ -584,6 +578,14 @@ nav{
 
 .predictor .tag{
     align-self: flex-start;
+    position: relative;
+}
+.predictor .tag i.circle-info{
+    position: absolute;
+    /* top: -5px; */
+    right: -5px;
+    font-size: .7rem;
+    color: var(--text-primary);
 }
 .card .info{
     margin-top: 1.4rem;
@@ -663,9 +665,21 @@ form input{
 .stats-cards{
     display: grid;
     /* MOBILE-FIRST: Allow 2 small cards side-by-side */
-    grid-template-columns: repeat(2, 1fr); 
+    /* grid-template-columns: repeat(2, 1fr);  */
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 10px;
     padding: 0;
+}
+.stats-cards .card{
+    position: relative;
+}
+.stats-cards .card .circle-info{
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    font-size: .9rem;
+    color: var(--text-secondary);
+    cursor: pointer;
 }
 .stats-cards .card h3{
     color: var(--text-secondary);
@@ -818,3 +832,136 @@ form input{
     box-shadow: 0 0 8px hsla(348, 83%, 47%, 0.28);
 }
 #live-sync .status.disconnected { color: var(--color-status-danger); }
+
+/* --- MODAL STYLES --- */
+.app-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000; /* Ensure it's on top */
+    width: 90%;
+    max-width: 500px;
+    
+    /* Use your theme variables */
+    background: var(--color-surface-card); 
+    color: var(--text-primary);
+    border: var(--card-border);
+    border-radius: var(--card-radius);
+    padding: var(--spacing-large);
+    /* box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); */
+}
+.app-modal h4{
+    font-size: 1.5rem;
+    position: relative;
+}
+.app-modal h4::after{
+    content: '';
+    position: absolute;
+    bottom: 0px;
+    left: 0;
+    width: 30px;
+    height: 3px;
+    background: var(--color-accent-primary);
+    border-radius: 2px;
+}
+.app-modal p.modal-desc{
+    font-size: .8rem;
+    margin-top: .5rem;
+    margin-bottom: 1rem;
+}
+.app-modal p.info{
+    font-size: .78rem;
+    margin-top: 1rem;
+}
+.app-modal .setting-item label{
+    display:  block;
+    font-size: .9rem;
+    /* margin-bottom: 1rem; */
+}
+/* Header and Close Button */
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-base);
+    border-bottom: 1px solid var(--border-subtle);
+    padding-bottom: var(--spacing-small);
+}
+.modal-header h3 {
+    margin: 0;
+    color: var(--color-accent-primary);
+    font-size: .87rem;
+}
+.modal-header .close-modal {
+    background: none;
+    border: none;
+    font-size: .8rem;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: var(--transition-fast);
+}
+
+.modal-header .close-modal:hover {
+    color: var(--color-status-danger);
+}
+.select-wrapper{
+        /* Key: This establishes a positioning context for the arrow */
+    position: relative; 
+    display: inline-block;
+    border: 1px solid var(--text-secondary);
+}
+.select-wrapper {
+  position: relative; 
+  display: inline-block; 
+  margin-top: .3rem; /* Keep your margin here */
+}
+
+#theme-switch {
+    /* 1. Hides the native arrow (Necessary for custom arrow control) */
+    -webkit-appearance: none; 
+    -moz-appearance: none;
+    appearance: none;
+    background-color: transparent; 
+    color: #36454F; 
+    font-family: inherit;
+    font-size: 14px; 
+    border: none; /* Remove all other borders */
+    border-bottom: 1px solid #1abc9c; 
+    padding: 8px 30px 12px 10px; 
+    outline: none;
+}
+
+.select-wrapper::after {
+    /* The arrow icon character */
+    content: "▼"; 
+    color: #1abc9c; /* Make the arrow the accent color */
+    font-size: 10px; /* Make the arrow a bit smaller */
+    position: absolute;
+    top: 20px;
+    right: 10px; 
+    transform: translateY(-50%); 
+    pointer-events: none; /* Allows the click to pass through to the select element */
+}
+/* Optional: Improve the look on focus */
+#theme-switch:focus {
+    /* On focus, make the accent border/arrow brighter */
+    border-color: #2ecc71; 
+}
+
+body.modal-open {
+    overflow: hidden; /* Prevent background scrolling */
+}
+/* --- BLUR EFFECT --- */
+/* The blur class applied to the body element */
+body.modal-open > *:not(.app-modal) { 
+    filter: blur(8px);
+    pointer-events: none; /* Disables clicks on background */
+    transition: filter 0.3s ease;
+}
+
+/* Ensure the modal is clickable */
+body.modal-open .app-modal {
+    pointer-events: auto;
+}
+

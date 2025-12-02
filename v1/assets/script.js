@@ -10,11 +10,21 @@ import { UIController } from './js/UIController.js';
 import { EventEmitter } from './js/EventEmitter.js'; 
 import { HistoryLog } from './js/HistoryLog.js'; 
 import { listenForTabs } from './js/utils/tabs.js';
+import { populateAndShowModal, closeModal  } from './js/utils/modalManager.js';
 
 
 // Initiate the tab event listener
 const tabs = document.querySelectorAll('.tab')
 listenForTabs(tabs)
+
+// Initiate Modal systems
+const settingBtn = document.querySelector('[data-modal-id="settings"]')
+const settingBtnAttr = settingBtn.getAttribute('data-modal-id');
+
+
+settingBtn.addEventListener('click', () => {
+    populateAndShowModal(settingBtnAttr);
+});
 
 
 /**
