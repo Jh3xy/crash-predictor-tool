@@ -1,6 +1,6 @@
 /* -------------------------------------------------------------------------
-   REFACTORED CSS - Fully Variable-Driven and Multi-Theme Ready
-   ------------------------------------------------------------------------- */
+    REFACTORED CSS - Fully Variable-Driven and Multi-Theme Ready
+    ------------------------------------------------------------------------- */
 /* =========================================================================
    1. GLOBAL RESETS & BASE STYLES
    ========================================================================= */
@@ -77,12 +77,18 @@ tr:hover { background-color: var(--color-surface-glass, rgba(255, 255, 255, 0.05
 }
 
 /* --------- UTILITY CLASSES (Based on variables) --------- */
+/* SPACING UTILITIES */
 .mt-1 { margin-top: 0.25rem; }
 .mt-2 { margin-top: 0.5rem; }
 .mt-4 { margin-top: 1rem; }
+.mt-l { margin-top: 1.5rem; } /* New */
+.mt-xl { margin-top: 2rem; } /* New, used for card container gap */
+
 .mb-1 { margin-bottom: 0.25rem; }
 .mb-2 { margin-bottom: 0.5rem; }
 .mb-4 { margin-bottom: 2.5rem; }
+.mb-l { margin-bottom: 1.5rem; } /* New */
+
 .mx-auto { margin-left: auto; margin-right: auto; }
 .full-width{ grid-column: 1 / -1; }
 
@@ -90,6 +96,23 @@ tr:hover { background-color: var(--color-surface-glass, rgba(255, 255, 255, 0.05
 .p-2 { padding: 0.5rem; }
 .p-4 { padding: 1rem; }
 .p-6 { padding: 1.5rem; }
+.p-l { padding: 1.5rem; } /* New, alias for p-6 */
+.p-b { padding: var(--spacing-base); } /* New, 1rem */
+
+
+/* TEXT UTILITIES */
+.text-primary { color: var(--text-primary); }
+.text-secondary { color: var(--text-secondary); }
+.text-success { color: var(--color-status-success); }
+.text-danger { color: var(--color-status-danger); }
+.text-accent { color: var(--color-accent-primary); }
+.font-md { font-size: 0.9rem; } /* New */
+.font-sm { font-size: 0.78rem; } /* New */
+.font-bold { font-weight: 600; } /* New */
+.font-normal { font-weight: 400; } /* New */
+.text-center { text-align: center; } /* New */
+.opacity-60 { opacity: 0.6; } /* New */
+
 
 .rounded { border-radius: var(--card-radius); }
 .rounded-xl { border-radius: calc(var(--card-radius) + 4px); }
@@ -111,7 +134,7 @@ tr:hover { background-color: var(--color-surface-glass, rgba(255, 255, 255, 0.05
     grid-template-columns: 1fr; 
     grid-template-rows: auto 1fr;
     min-height: 100vh;
-    height: auto; 
+    height: auto; /* Corrected: Allows content to define height */
     overflow-x: hidden;
     position: relative;
 }
@@ -171,8 +194,8 @@ header {
     grid-column: 1 / -1;
     padding: var(--spacing-base);
     padding-bottom: 4rem;
-    overflow-y: auto;
-    height: auto;
+    overflow-y: auto; /* Corrected: Allows scroll only when needed */
+    height: auto; /* Corrected: Allows content to define height */
 }
 
 /* --- MOBILE MENU TOGGLE --- */
@@ -250,7 +273,7 @@ nav{
 
 /* --- Sidebar Footer (Mobile-First Placement) --- */
 .sidebar-footer{
-    font-size: .78rem;
+    font-size: var(--font-sm); /* Using utility variable */
     border-top: 1px solid hsla(120, 71%, 50%, 0.1); 
     padding: 1rem 0;
     width: 100%;
@@ -259,8 +282,7 @@ nav{
     position: static;
 }
 .sidebar-footer p{
-    color: var(--text-secondary);
-    opacity: 0.6;
+    /* REMOVED: color & opacity are handled by classes in HTML */
 }
 
 /* --- Sidebar Backdrop (for Mobile Menu) --- */
@@ -303,12 +325,10 @@ nav{
     font-size: 2rem;
 }
 .wrap > p{
-    font-weight: 400;
-    font-size: .86rem;
-    color: var(--text-secondary);
+    /* REMOVED: font-weight, font-size, color - Handled by HTML classes */
 }
 .cards{
-    margin-top: 2rem;
+    /* REMOVED: margin-top: 2rem; - Handled by .mt-xl class in HTML */
     padding-bottom: 20px;
     display: flex;
     flex-direction:  column;
@@ -316,7 +336,7 @@ nav{
 }
 .card{
     border-radius: var(--card-radius);
-    padding: 1.5rem;
+    /* REMOVED: padding: 1.5rem; - Handled by .p-l class in HTML */
 }
 .card-title{
     display: flex;
@@ -360,14 +380,12 @@ nav{
     background: var(--color-surface-card); 
     padding: .5rem;
     border-radius: 8px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--text-secondary);
+    /* REMOVED: Font styles are now handled by utility classes on the HTML element */
 }
 
 /* -------------------------------------------------------------------------
-   Status Bar & Prediction Section
-   ------------------------------------------------------------------------- */
+    Status Bar & Prediction Section
+    ------------------------------------------------------------------------- */
 #status-bar {
     display: flex;
     align-items: center;
@@ -440,8 +458,8 @@ nav{
 }
 
 /* -------------------------------------------------------------------------
-   Stats Grid
-   ------------------------------------------------------------------------- */
+    Stats Grid
+    ------------------------------------------------------------------------- */
 .stats-grid {
     width: 100%;
     max-width: 800px;
@@ -476,8 +494,8 @@ nav{
 }
 
 /* -------------------------------------------------------------------------
-   Confidence Bar (Progress Bar)
-   ------------------------------------------------------------------------- */
+    Confidence Bar (Progress Bar)
+    ------------------------------------------------------------------------- */
 .confidence-bar-container {
     width: 90%;
     margin: 0 auto;
@@ -521,8 +539,8 @@ nav{
 }
 
 /* -------------------------------------------------------------------------
-   Multipliers and Data Display
-   ------------------------------------------------------------------------- */
+    Multipliers and Data Display
+    ------------------------------------------------------------------------- */
 .multipliers span{
     font-size: .9rem;
 }
@@ -532,9 +550,12 @@ nav{
     margin-bottom: 1.2rem;
     text-shadow: var(--shadow-glow-accent); 
 }
+.recents span{
+    color: var(--text-secondary); /* Ensure secondary text for label */
+}
 .multiples-grid{
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(50px, 1fr)); /* Tighter min for mobile */
+    grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
     gap: var(--spacing-small);
     max-width: 900px;
     margin-top: 10px;
@@ -584,8 +605,8 @@ nav{
 }
 
 /* -------------------------------------------------------------------------
-   Buttons and Forms
-   ------------------------------------------------------------------------- */
+    Buttons and Forms
+    ------------------------------------------------------------------------- */
 .btn, .crash-btn {
     background: linear-gradient(135deg, var(--color-accent-primary) 0%, var(--color-status-success) 100%);
     color: var(--color-background-base);
@@ -634,8 +655,8 @@ form input{
 }
 
 /* -------------------------------------------------------------------------
-   Stats Cards and History Table
-   ------------------------------------------------------------------------- */
+    Stats Cards and History Table
+    ------------------------------------------------------------------------- */
 .history{
     margin-bottom: 2rem;
 }
@@ -797,5 +818,3 @@ form input{
     box-shadow: 0 0 8px hsla(348, 83%, 47%, 0.28);
 }
 #live-sync .status.disconnected { color: var(--color-status-danger); }
-
-

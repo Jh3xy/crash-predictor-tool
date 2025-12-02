@@ -46,7 +46,7 @@
                 <span class="ui-icon">
                     <i class="fa-solid fa-arrow-trend-up"></i>
                 </span>
-                <span class="logo-name"> Oracle</span>
+                <span class="logo-name">Oracle</span>
             </div>
             <nav>
                 <ul class="tabs">
@@ -77,14 +77,14 @@
                 </ul>
             </nav>
             <div class="sidebar-footer center">
-                <p>v1.0.0 • Premium</p>
+                <p class="text-secondary opacity-60 font-sm">v1.0.0 • Premium</p>
             </div>
         </aside>
         <main class="dashboard-overview">
             <div class="wrap">
                 <h2>Overview</h2>
-                <p>Real-time crash analytics and AI-powered predictions</p>
-                <div class="cards">
+                <p class="text-secondary font-md">Real-time crash analytics and AI-powered predictions</p>
+                <div class="cards mt-xl">
                     <!-- <div class="card glass" id="live-sync">
                         <div class="card-title">
                             <div class="tag">
@@ -113,7 +113,7 @@
                             </div>
                         </div>
                     </div> -->
-                    <div class="card glass full-width" id="live-sync">
+                    <div class="card glass full-width p-l" id="live-sync">
                         <div class="card-title">
                             <div class="tag">
                                 <span>
@@ -138,7 +138,7 @@
                             </div>
                         </div>
                     </div>
-                   <div class="card glass predictor full-width" id="ai-predictor">
+                   <div class="card glass predictor full-width p-l" id="ai-predictor">
                         <div class="tag">
                             <span>
                                 <i class="fa-solid fa-arrow-trend-up"></i>
@@ -167,7 +167,7 @@
                 
                             <!-- Large Predicted Value (Targeted by JS) -->
                             <h3 id="predicted-value">7.94x</h3>
-                            <div class="predicted-round-id" id="predicted-round-id">Round: --</div>
+                            <div class="predicted-round-id text-secondary font-md font-bold" id="predicted-round-id">Round: --</div>
                             <!-- STATS GRID for Avg. Target, Risk, Volatility -->
                             <div class="stats-grid">
                                 <div class="stat-item">
@@ -204,7 +204,7 @@
                         <!-- Global Predict Button (Always visible) -->
                         <button id="predict-btn" class ="btn">Predict Next Crash</button>
                     </div>
-                    <div class="card glass verifier" id="crash-verfier">
+                    <div class="card glass verifier p-l" id="crash-verfier">
                         <div class="tag">
                             <span>
                                <i class="fa-solid fa-shield"></i>
@@ -237,7 +237,7 @@
                         </form>
                     </div>
                    <div class="stats-cards">
-                        <div class="card glass">
+                        <div class="card glass p-l">
                             <div class="tag"><h3>Total Predictions</h3></div>
                             <p class="stat">
                                 <span id="total-predictions-value">0</span> 
@@ -245,21 +245,21 @@
                             </p>
                         </div>
 
-                        <div class="card glass">
+                        <div class="card glass p-l">
                             <div class="tag"><h3>Avg. Accuracy</h3></div>
                             <p class="stat">
                                 <span id="avg-accuracy-value">0.0%</span> <span class="stat-summary" id="avg-accuracy-weekly-change">+0.0% this week</span>
                             </p>
                         </div>
 
-                        <div class="card glass">
+                        <div class="card glass p-l">
                             <div class="tag"><h3>Win Rate</h3></div>
                             <p class="stat">
                                 <span id="win-rate-value">0.0%</span> <span class="stat-summary">Last 24h</span>
                             </p>
                         </div>
 
-                        <div class="card glass">
+                        <div class="card glass p-l">
                             <div class="tag"><h3>Active Sessions</h3></div>
                             <p class="stat">
                                 <span id="active-sessions-value">0</span> <span class="stat-summary">Live now</span>
@@ -267,7 +267,7 @@
                         </div>
                     </div>
                     </div>
-                    <div class="card glass full-width history" id="history">
+                    <div class="card glass full-width history p-l" id="history">
                         <div class="tag">
                             <span>
                                <i class="fa-solid fa-clock-rotate-left"></i>
