@@ -1071,7 +1071,11 @@ p.action-note{
     font-size: .78rem;
     font-weight: 400;
 }
-
+.current-multiplier-value.highlight{
+    font-size: 2rem;
+    margin-top: .5rem;
+    margin-left: .5rem;
+}
 
 
 

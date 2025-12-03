@@ -172,13 +172,31 @@ const modalContents = {
 
             <hr class="guide-separator">
 
+            <section class="live-data-view">
+                <h4 class="summary-title">Live Multiplier</h4>
+                <div id="live-sync-current-multiplier-wrapper" class="multiplier-display">
+                    <span id="live-sync-current-multiplier" class="current-multiplier-value highlight">1.00x</span>
+                </div>
+            </section>
+
+            <hr class="guide-separator">
+
+            <section class="history-context">
+                <h4 class="info-title">Recent Crash History (Last 20)</h4>
+                <div id="live-sync-history-container" class="history-grid-20">
+                    <p class="text-secondary">Loading history...</p>
+                </div>
+            </section>
+
+            <hr class="guide-separator">
+
             <section class="diagnostic-info">
                 <h4 class="info-title">Real-Time Diagnostics</h4>
                 <div class="info-grid">
                     
                     <div class="info-item">
                         <label>Current Game ID:</label>
-                        <span id="sync-game-id" class="data-value highlight">N/A</span>
+                        <span id="sync-game-id" class="data-value highlight-text">N/A</span>
                     </div>
 
                     <div class="info-item">
@@ -210,6 +228,67 @@ const modalContents = {
                 </div>
                 <p class="action-note text-secondary">
                     Use this button if data seems stale or the status is stuck on "Reconnecting."
+                </p>
+            </section>
+        </div>
+    `
+},
+'verifier-status': {
+    title: 'Round Verification Cryptography',
+    contentHTML: `
+        <div class="verifier-status-panel modal-scroll-content">
+            
+            <section class="status-summary">
+                <h4 class="summary-title">Integrity Check Status</h4>
+                <div class="connection-state">
+                    <span id="verifier-status-dot" class="status-indicator"></span>
+                    <p id="verifier-status-message" class="status-text text-secondary">
+                        Awaiting round completion for verification...
+                    </p>
+                </div>
+                
+                <p class="explanation-text">
+                    The Verifier confirms the integrity of the final crash multiplier using cryptographic hash data provided by the game server.
+                </p>
+            </section>
+
+            <hr class="guide-separator">
+
+            <section class="hash-details">
+                <h4 class="info-title">Current Round Cryptographic Data</h4>
+                <div class="info-grid hash-grid">
+                    
+                    <div class="info-item full-width">
+                        <label>Game ID:</label>
+                        <span id="verifier-game-id" class="data-value highlight-text">N/A</span>
+                    </div>
+                    
+                    <div class="info-item full-width">
+                        <label>Server Seed Hash (Pre-round):</label>
+                        <span id="verifier-server-hash" class="data-value hash-value text-small">...waiting for hash...</span>
+                    </div>
+
+                    <div class="info-item full-width">
+                        <label>Client Seed (User-Defined):</label>
+                        <span id="verifier-client-seed" class="data-value hash-value text-small">...default seed...</span>
+                    </div>
+                    
+                    <div class="info-item full-width">
+                        <label>Verified Crash Multiplier:</label>
+                        <span id="verifier-crash-result" class="data-value verified-text highlight-text">--</span>
+                    </div>
+                </div>
+            </section>
+            
+            <hr class="guide-separator">
+            
+            <section class="action-controls">
+                <h4 class="info-title">Verification Tools</h4>
+                <button id="external-verifier-link" class="button-secondary wide-button">
+                    <i class="fa-solid fa-link"></i> Use External Verifier Tool
+                </button>
+                <p class="action-note text-secondary">
+                    Copy the cryptographic fields above into an external tool to manually confirm the integrity of the round.
                 </p>
             </section>
         </div>

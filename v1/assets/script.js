@@ -204,6 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
 const userGuide = document.getElementById('user-guide')
 const settingBtn = document.querySelector('[data-modal-id="settings"]');
 const liveSync = document.querySelector('[data-modal-id="live-sync-detail"]');
+const verifStatus = document.querySelector('[data-modal-id="verifier-status"]');
 const statsInfoIcons = document.querySelectorAll(
   '[data-modal-id="card-info-total-predictions"],' +
   '[data-modal-id="card-info-avg-accuracy"],' +
@@ -224,6 +225,14 @@ if (settingBtn) {
 if (liveSync) {
     liveSync.addEventListener('click', () => {
         const modalKey = liveSync.getAttribute('data-modal-id');
+        populateAndShowModal(modalKey);
+    });
+} else {
+    console.log("Element Not Found")
+}
+if (verifStatus) {
+    verifStatus.addEventListener('click', () => {
+        const modalKey = verifStatus.getAttribute('data-modal-id');
         populateAndShowModal(modalKey);
     });
 } else {
