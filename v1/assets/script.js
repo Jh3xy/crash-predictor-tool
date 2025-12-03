@@ -1,5 +1,3 @@
-
-
 // script.js
 
 // Import core modules
@@ -179,6 +177,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // 4. Attach Event Bus Listeners
     eventBus.on('liveUpdate', (e) => {
         uiController.updateLiveMultiplier(e); 
+        // 🔥 NEW: Check if LiveSync modal is open and update the live multiplier
+        liveSync.updateModalLiveValue(); 
+
         if (liveSync.isRoundRunning) {
              uiController.updateStatus('mock', `Round ${liveSync.currentGameId} running...`);
         } else {
@@ -190,73 +191,86 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('\n\n\n');
         console.log(`✨ APP: New round processed! Crash at ${round.finalMultiplier}x.`);
         uiController.renderNewRound(round);
+        // 🔥 NEW: Check if LiveSync modal is open and update the history grid
+        liveSync.updateModalHistory(); 
     });
 
     eventBus.on('roundVerified', (round) => {
         uiController.renderNewRound(round);
     });
 
+    // =========================================================================================
+    // MODAL EVENT LISTENERS - ONLY ADDING LIVE SYNC LOGIC HERE, NOT REFACTORING THE USER'S CODE
+    // =========================================================================================
+
+    // Select Elements for Pop UP Initialization
+    const userGuide = document.getElementById('user-guide')
+    const settingBtn = document.querySelector('[data-modal-id="settings"]');
+    // NOTE: liveSync here refers to the HTML element, NOT the class instance
+    const liveSyncBtn = document.querySelector('[data-modal-id="live-sync-detail"]');
+    const verifStatus = document.querySelector('[data-modal-id="verifier-status"]');
+    const statsInfoIcons = document.querySelectorAll(
+        '[data-modal-id="card-info-total-predictions"],' +
+        '[data-modal-id="card-info-avg-accuracy"],' +
+        '[data-modal-id="card-info-win-rate"],' + 
+        '[data-modal-id="card-info-active-sessions"]' 
+    );
+
+
+    // 1. Initialize Settings Pop UP
+    if (settingBtn) {
+        settingBtn.addEventListener('click', () => {
+            const modalKey = settingBtn.getAttribute('data-modal-id');
+            populateAndShowModal(modalKey);
+        });
+    } else {
+        console.log("Element Not Found")
+    }
+
+    // 🔥 FIX: Initialize Live Sync Pop UP - ADDING THE UPDATE CALLS ON CLICK
+    if (liveSyncBtn) {
+        liveSyncBtn.addEventListener('click', () => {
+            const modalKey = liveSyncBtn.getAttribute('data-modal-id');
+            populateAndShowModal(modalKey);
+
+            // 🔥 FIX: Inject the update calls immediately after opening the modal
+            // This pulls the current data from the DataStore and LiveSync class
+            setTimeout(() => {
+                liveSync.updateModalLiveValue(); 
+                liveSync.updateModalHistory(); 
+            }, 50); // Small delay to ensure the DOM is ready
+        });
+    } else {
+        console.log("Element Not Found")
+    }
+
+    if (verifStatus) {
+        verifStatus.addEventListener('click', () => {
+            const modalKey = verifStatus.getAttribute('data-modal-id');
+            populateAndShowModal(modalKey);
+        });
+    } else {
+        console.log("Element Not Found")
+    }
+
+    // 2. Initialize Stats-info Pop UP (Node List)
+    statsInfoIcons.forEach(statsInfoIcon => {
+        statsInfoIcon.addEventListener('click', () => {
+            const modalKey = statsInfoIcon.getAttribute('data-modal-id');
+            populateAndShowModal(modalKey);
+            
+            console.log(`Clicked icon with key: ${modalKey}`);
+        });
+    });
+
+    // 3. Initialize User  Guide Pop UP
+    if (userGuide) {
+        userGuide.addEventListener('click', () => {
+            const modalKey = userGuide.getAttribute('data-modal-id');
+            populateAndShowModal(modalKey);
+        });
+    } else {
+        console.log("Element Not Found")
+    }
+
 });
-
-
-
- // Select Elements for Pop UP Initialization
-const userGuide = document.getElementById('user-guide')
-const settingBtn = document.querySelector('[data-modal-id="settings"]');
-const liveSync = document.querySelector('[data-modal-id="live-sync-detail"]');
-const verifStatus = document.querySelector('[data-modal-id="verifier-status"]');
-const statsInfoIcons = document.querySelectorAll(
-  '[data-modal-id="card-info-total-predictions"],' +
-  '[data-modal-id="card-info-avg-accuracy"],' +
-  '[data-modal-id="card-info-win-rate"],' + 
-  '[data-modal-id="card-info-active-sessions"]' 
-);
-
-
-// 1. Initialize Settings Pop UP
-if (settingBtn) {
-    settingBtn.addEventListener('click', () => {
-        const modalKey = settingBtn.getAttribute('data-modal-id');
-        populateAndShowModal(modalKey);
-    });
-} else {
-    console.log("Element Not Found")
-}
-if (liveSync) {
-    liveSync.addEventListener('click', () => {
-        const modalKey = liveSync.getAttribute('data-modal-id');
-        populateAndShowModal(modalKey);
-    });
-} else {
-    console.log("Element Not Found")
-}
-if (verifStatus) {
-    verifStatus.addEventListener('click', () => {
-        const modalKey = verifStatus.getAttribute('data-modal-id');
-        populateAndShowModal(modalKey);
-    });
-} else {
-    console.log("Element Not Found")
-}
-
-// 2. Initialize Stats-info Pop UP (Node List)
-statsInfoIcons.forEach(statsInfoIcon => {
-  statsInfoIcon.addEventListener('click', () => {
-    const modalKey = statsInfoIcon.getAttribute('data-modal-id');
-    populateAndShowModal(modalKey);
-    
-    console.log(`Clicked icon with key: ${modalKey}`);
-  });
-});
-
-// 3. Initialize User  Guide Pop UP
-if (userGuide) {
-    userGuide.addEventListener('click', () => {
-        const modalKey = userGuide.getAttribute('data-modal-id');
-        populateAndShowModal(modalKey);
-    });
-} else {
-    console.log("Element Not Found")
-}
-
-

@@ -28,16 +28,30 @@ export class DataStore {
         this.currentRound = { multiplier: 0.00 }; // Added to track live multiplier for mock sync
         this.MAX_ROUNDS = 500; // Limit to 500 rounds to manage browser memory
         
-        this.loadMockHistory(); // Load mock data on initialization
+        // 🔥 REMOVED: this.loadMockHistory(); 
+        // We load mock data only when needed for prediction, not on every page load.
         
-        console.log(`📦 DataStore: Initialized. Loaded ${this.rounds.length} mock rounds.`);
+        // If we want to use the mock data for initial history, we can check localStorage first
+        // or just call it here, but let's assume we want a *clean slate* unless we explicitly load.
+        
+        // If you need the mock data for the initial dashboard prediction minimum:
+        if (this.rounds.length < 20) {
+             this.loadMockHistory(); 
+        }
+        
+        console.log(`📦 DataStore: Initialized. Loaded ${this.rounds.length} rounds.`);
     }
     
     /**
-     * Loads the predefined mock multiplier data into the rounds array
-     * for testing the predictor before real data is available.
+     * Loads the predefined mock multiplier data into the rounds array.
+     * Called ONLY IF the history count is low (for initial prediction minimum).
      */
     loadMockHistory() {
+        // 🔥 CHECK: Avoid adding mock data if it's already there (e.g., if called again later)
+        if (this.rounds.length > 0 && this.rounds[0].gameId.startsWith('MOCK')) {
+            return;
+        }
+
         // Convert mock multiplier numbers into basic round objects
         MOCK_HISTORY_MULTIPLIERS.forEach((m, index) => {
             this.rounds.push({

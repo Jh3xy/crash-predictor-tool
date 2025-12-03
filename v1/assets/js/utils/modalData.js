@@ -181,15 +181,6 @@ const modalContents = {
 
             <hr class="guide-separator">
 
-            <section class="history-context">
-                <h4 class="info-title">Recent Crash History (Last 20)</h4>
-                <div id="live-sync-history-container" class="history-grid-20">
-                    <p class="text-secondary">Loading history...</p>
-                </div>
-            </section>
-
-            <hr class="guide-separator">
-
             <section class="diagnostic-info">
                 <h4 class="info-title">Real-Time Diagnostics</h4>
                 <div class="info-grid">
