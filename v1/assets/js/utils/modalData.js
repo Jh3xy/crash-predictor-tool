@@ -13,11 +13,11 @@ const modalContents = {
                 <label for="theme-switch">Change Theme:</label>
                 <div class="select-wrapper">
                     <select id="theme-switch">
-                        <option value="default">Deep Space (Default)</option>
-                        <option value="theme-violet">Tech Violet</option>
-                        <option value="theme-mint">Neon Mint</option>
-                        <option value="cool-metric">Cool Metric (Light)</option>
-                        <option value="vapor-wave">Vapor Wave</option>
+                        <option value="default" class="dropdown-option">Deep Space (Default)</option>
+                        <option value="theme-violet" class="dropdown-option">Tech Violet</option>
+                        <option value="theme-mint" class="dropdown-option">Neon Mint</option>
+                        <option value="cool-metric" class="dropdown-option">Cool Metric (Light)</option>
+                        <option value="vapor-wave" class="dropdown-option">Vapor Wave</option>
                     </select>
                 </div>
             </div>
@@ -75,7 +75,7 @@ const modalContents = {
             <section class="guide-section">
                 <h3 class="section-title">App Overview & The Core Loop</h3>
                 <p class="section-desc">
-                    This application, the <span class="highlight"> Prediction Log Analyzer</span> helps you make informed decisions in crash games by analyzing past historical data.
+                    This application, the <span class="highlight"> Oracle </span> helps you make informed decisions in crash games by analyzing past historical data.
                 </p>
 
                 <div class="feature-list">
@@ -145,6 +145,72 @@ const modalContents = {
                         When you click "Clear History," a Confirmation Pop-up will appear. This is a safety step. You must click <span class="highlight"> Confirm </span> in the modal to permanently delete all stored data. <span class="highlight"> This action is irreversible. </span>
                     </p>
                 </div>
+            </section>
+        </div>
+    `
+},
+'live-sync-detail': {
+    title: 'Live Data Synchronization Status',
+    contentHTML: `
+        <div class="sync-status-panel modal-scroll-content">
+            
+            <section class="status-summary">
+                <div class="flex-wrap">
+                <h4 class="summary-title">Connection Status</h4>
+                <div class="connection-state">
+                    <span id="sync-status-dot" class="status-indicator"></span>
+                    <p id="sync-status-message" class="status-text text-secondary">
+                        Awaiting initial connection...
+                    </p>
+                </div>
+                </div>
+                
+                <p class="explanation-text">
+                    Live Sync maintains a real-time connection to the game server to ensure the prediction algorithm always uses the freshest data.
+                </p>
+            </section>
+
+            <hr class="guide-separator">
+
+            <section class="diagnostic-info">
+                <h4 class="info-title">Real-Time Diagnostics</h4>
+                <div class="info-grid">
+                    
+                    <div class="info-item">
+                        <label>Current Game ID:</label>
+                        <span id="sync-game-id" class="data-value highlight">N/A</span>
+                    </div>
+
+                    <div class="info-item">
+                        <label>Last Sync Time:</label>
+                        <span id="sync-last-time" class="data-value">--:--:--</span>
+                    </div>
+                    
+                    <div class="info-item">
+                        <label>Reported Latency:</label>
+                        <span id="sync-latency" class="data-value">0ms</span>
+                    </div>
+
+                    <div class="info-item">
+                        <label>Verification Check:</label>
+                        <span id="sync-verification" class="data-value verified-text">Active</span>
+                    </div>
+
+                </div>
+            </section>
+            
+            <hr class="guide-separator">
+            
+            <section class="control-actions">
+                <div class="flex-wrap">
+                    <h4 class="info-title">Connection Control</h4>
+                    <button id="force-refresh-btn" class="button-secondary wide-button">
+                        <i class="fa-solid fa-arrows-rotate"></i> Force Refresh Connection
+                    </button>
+                </div>
+                <p class="action-note text-secondary">
+                    Use this button if data seems stale or the status is stuck on "Reconnecting."
+                </p>
             </section>
         </div>
     `

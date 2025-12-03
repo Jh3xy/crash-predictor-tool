@@ -69,7 +69,7 @@ function populateAndShowModal(dataId) {
 
     // 3. Attach Close Listener
     modal.querySelector('.close-modal').addEventListener('click', closeModal);
-
+    
     // 4. Show Modal and Apply Classes
     BODY.classList.add('modal-open'); 
     BODY.appendChild(modal);
