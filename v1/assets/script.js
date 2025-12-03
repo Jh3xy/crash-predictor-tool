@@ -206,9 +206,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Select Elements for Pop UP Initialization
     const userGuide = document.getElementById('user-guide')
     const settingBtn = document.querySelector('[data-modal-id="settings"]');
+    const integrityBtn = document.querySelector('[data-modal-id="integrity"]');
     // NOTE: liveSync here refers to the HTML element, NOT the class instance
     const liveSyncBtn = document.querySelector('[data-modal-id="live-sync-detail"]');
     const verifStatus = document.querySelector('[data-modal-id="verifier-status"]');
+    const predictDetials = document.querySelector('[data-modal-id="prediction-details"]');
     const statsInfoIcons = document.querySelectorAll(
         '[data-modal-id="card-info-total-predictions"],' +
         '[data-modal-id="card-info-avg-accuracy"],' +
@@ -226,8 +228,29 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         console.log("Element Not Found")
     }
+    // // 1. Initialize Integrity Pop UP
+    // if (integrityBtn) {
+    //     integrityBtn.addEventListener('click', () => {
+    //         console.log("Heuyyyy!!!!")
+    //         const modalKey = integrityBtn.getAttribute('data-modal-id');
+    //         populateAndShowModal(modalKey);
+    //     });
+    // } else {
+    //     console.log("Element Not Found")
+    // }
 
-    // 🔥 FIX: Initialize Live Sync Pop UP - ADDING THE UPDATE CALLS ON CLICK
+
+    // Initialize Predict Detials Pop UP
+    if (predictDetials) {
+        predictDetials.addEventListener('click', () => {
+            const modalKey = predictDetials.getAttribute('data-modal-id');
+            populateAndShowModal(modalKey);
+        });
+    } else {
+        console.log("Element Not Found")
+    }
+
+    // Initialize Live Sync Pop UP - ADDING THE UPDATE CALLS ON CLICK
     if (liveSyncBtn) {
         liveSyncBtn.addEventListener('click', () => {
             const modalKey = liveSyncBtn.getAttribute('data-modal-id');

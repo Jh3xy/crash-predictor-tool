@@ -23,7 +23,8 @@ body {
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    transition: var(--transition-slow);
+    /* transition: var(--transition-slow); */
+    transition: all 0.8s ease-in-out;
 }
 
 /* --------- HEADINGS & TEXT --------- */
@@ -330,7 +331,6 @@ nav{
     border-radius: 8px;
     /* REMOVED: Font styles are now handled by utility classes on the HTML element */
 }
-
 /* -------------------------------------------------------------------------
     Status Bar & Prediction Section
     ------------------------------------------------------------------------- */
@@ -984,7 +984,15 @@ p.section-desc{
 }
 .element-description{
     margin-bottom: 1rem;
+    font-size: .87rem;
     /* padding-left: 1.02rem; */
+}
+.element-description .action-note{
+    margin-left: .5rem;
+    padding-bottom: .3rem;
+}
+.element-description:has(div.risk-grid){
+    margin:  .8rem 0 3rem;
 }
 .feature-list{
     margin: 2rem 0;
@@ -1101,7 +1109,7 @@ p.action-note{
 
 .history-badge.m-medium { 
     background-color: var(--color-status-success); 
-    color: #000; /* Black text on bright green is readable */
+    color: #000; 
 } 
 
 .history-badge.m-low { 
@@ -1109,10 +1117,84 @@ p.action-note{
     border: 1px solid var(--border-subtle); 
     color: var(--text-secondary); 
 }
+.card.predictor .modal-icon{
+    top: 2.58rem;
+    right:  7.5rem;
+}
+
+/* --- RISK LEVEL GRID --- */
+.risk-grid {
+    display: grid;
+    /* Define 3 columns for Risk, Meaning, Strategy */
+    grid-template-columns: 1fr 2fr 2fr; 
+    margin-top: 15px;
+    border: 1px solid var(--color-border); /* Use a custom variable for borders */
+    border-radius: 5px;
+    font-size: 0.9em;
+}
+
+.risk-grid .grid-header {
+    font-weight: bold;
+    color: var(--color-highlight); /* Use a highlight color for headers */
+    padding-bottom: 5px;
+    grid-column: span 1; /* Each header spans 1 column */
+}
+
+/* Style for the risk status indicators (LOW, MEDIUM, HIGH) */
+.risk-grid .status-indicator {
+    font-weight: bold;
+    text-align: center;
+    padding: 5px 0;
+}
 
 
+/* --- PATTERN RECOGNITION GRID --- */
+.pattern-grid {
+    display: grid;
+    /* Define 3 columns for Pattern, Condition, Action */
+    grid-template-columns: 1.5fr 3fr 3fr; 
+    margin-top: 15px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 5px;
+    font-size: 0.9em;
+}
 
+.pattern-grid .grid-header {
+    font-weight: bold;
+    color: var(--color-highlight);
+    padding-bottom: 5px;
+}
+span.pattern-name,
+span.pattern-condition,
+.pattern-grid .grid-header{
+    border-right: 2px solid var(--border-subtle);
+    border-bottom: 2px solid var(--border-subtle);
+}
+.pattern-grid .grid-header:nth-child(3),
+span.pattern-name:nth-of-type(3){
+    border-right: none;
+}
+.model-action{
+    border-bottom:  1px solid var(--border-subtle);
+}
+.pattern-grid .pattern-name {
+    font-weight: bold;
+}
+.pattern-grid span{
+    padding: 10px;
+    font-size:  .8rem;
+}
 
+/* Ensure the formula looks good */
+.formula-block {
+    margin: 15px 0;
+    padding: 10px;
+    background-color: var(--color-background-dark);
+    border-radius: 4px;
+}
+.integrity h3{
+    margin-bottom: 1rem;
+}
 
 
 

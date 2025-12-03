@@ -43,66 +43,72 @@ export class LiveSync {
     }
 
     // Core loop: runs one round, then calls itself to run the next
-    runRoundLoop() {
-        this.isRoundRunning = true;
-        this.currentGameId++;
-        this.currentMultiplier = 1.00; // Reset for the new round
-        
-        // Mock the crash point (random number between 1.01 and 100.00)
-        // Updated to use the 1-100 logic we discussed, or roughly that range
-        const crashPoint = 1.00 + Math.random() * 20.00;
-        const finalCrash = parseFloat(crashPoint.toFixed(2)); 
-        const updateInterval = 50; // Milliseconds per update
-        
-        const intervalId = setInterval(() => {
-            
-            // Increment the multiplier
-            this.currentMultiplier += 0.01 + Math.random() * 0.05; // Slightly faster growth for higher numbers
-            
-            // --- CRITICAL CHANGE: Use eventBus.emit instead of document.dispatchEvent ---
-            this.eventBus.emit('liveUpdate', this.currentMultiplier);
+    // runRoundLoop() inside LiveSyncing.js
 
-            // 🔥 NEW: Update the Modal Live Display if it is open
-            this.updateModalLiveValue();
+runRoundLoop() {
+    this.isRoundRunning = true;
+    this.currentGameId++;
+    this.currentMultiplier = 1.00; // Reset for the new round
+    
+    // Mock the crash point (random number between 1.01 and 100.00)
+    const crashPoint = 1.00 + Math.random() * 20.00;
+    const finalCrash = parseFloat(crashPoint.toFixed(2)); 
+    const updateInterval = 50; // Milliseconds per update
+    
+    const intervalId = setInterval(() => {
+        
+        // Increment the multiplier
+        this.currentMultiplier += 0.01 + Math.random() * 0.05; // Slightly faster growth for higher numbers
+        
+        // --- CRITICAL CHANGE: Use eventBus.emit instead of document.dispatchEvent ---
+        this.eventBus.emit('liveUpdate', this.currentMultiplier);
 
-            // Check for crash condition
-            if (this.currentMultiplier >= finalCrash) {
-                
-                // Add a small buffer to ensure the final value is displayed
-                if (this.currentMultiplier > finalCrash) {
-                    this.currentMultiplier = finalCrash;
-                }
-                
-                // --- Round Crash & Completion ---
-                clearInterval(intervalId);
-                this.isRoundRunning = false;
-                
-                const roundData = {
-                    gameId: this.currentGameId,
-                    finalMultiplier: finalCrash,
-                    clientSeed: `mock_client_${this.currentGameId}`,
-                    nonce: this.currentGameId,
-                    verificationStatus: 'Pending'
-                };
-                
-                // 1. Store the round data
-                this.dataStore.addRound(roundData);
-                
-                // 🔥 NEW: Update the Modal History Grid if it is open
-                this.updateModalHistory();
-                
-                // 2. Start verification (asynchronous process)
-                this.verifier.verify(roundData);
-                
-                // 3. Notify the application that the round is complete
-                // --- CRITICAL CHANGE: Use eventBus.emit instead of document.dispatchEvent ---
-                this.eventBus.emit('newRoundCompleted', roundData);
-                
-                // Start the next round after a short delay
-                setTimeout(() => this.runRoundLoop(), 3000);
+        // 🔥 NEW: Update the Modal Live Display if it is open
+        this.updateModalLiveValue();
+        
+        // 🔥 FIX: CALL THE NEW DIAGNOSTICS FUNCTION HERE (During the round)
+        this.updateModalDiagnostics(); // <--- ADDED!
+
+        // Check for crash condition
+        if (this.currentMultiplier >= finalCrash) {
+            
+            // Add a small buffer to ensure the final value is displayed
+            if (this.currentMultiplier > finalCrash) {
+                this.currentMultiplier = finalCrash;
             }
-        }, updateInterval);
-    }
+            
+            // --- Round Crash & Completion ---
+            clearInterval(intervalId);
+            this.isRoundRunning = false;
+            
+            const roundData = {
+                gameId: this.currentGameId,
+                finalMultiplier: finalCrash,
+                clientSeed: `mock_client_${this.currentGameId}`,
+                nonce: this.currentGameId,
+                verificationStatus: 'Pending'
+            };
+            
+            // 1. Store the round data
+            this.dataStore.addRound(roundData);
+            
+            // 🔥 NEW: Update the Modal History Grid if it is open
+            this.updateModalHistory();
+
+            // 🔥 FIX: CALL THE NEW DIAGNOSTICS FUNCTION HERE (After crash/completion)
+            this.updateModalDiagnostics(); // <--- ADDED!
+            
+            // 2. Start verification (asynchronous process)
+            this.verifier.verify(roundData);
+            
+            // 3. Notify the application that the round is complete
+            this.eventBus.emit('newRoundCompleted', roundData);
+            
+            // Start the next round after a short delay
+            setTimeout(() => this.runRoundLoop(), 3000);
+        }
+    }, updateInterval);
+}
 
     // --- NEW MODAL HELPER FUNCTIONS ---
 
@@ -163,5 +169,39 @@ export class LiveSync {
         if (value >= 10.0) return 'm-high'; // Gold/Purple
         if (value >= 2.0) return 'm-medium'; // Green
         return 'm-low'; // Blue/Gray
+    }
+    // --- NEW: DIAGNOSTICS UPDATE ---
+
+    /**
+     * Updates the Real-Time Diagnostics table in the Live Sync Modal.
+     * Only runs if the modal is currently open.
+     */
+    updateModalDiagnostics() {
+        // IDs from the modal HTML: sync-game-id, sync-last-time, sync-latency, sync-verification
+        const gameIdEl = document.getElementById('sync-game-id');
+        const lastSyncTimeEl = document.getElementById('sync-last-time');
+        const latencyEl = document.getElementById('sync-latency');
+        const verificationEl = document.getElementById('sync-verification'); // Assuming this ID
+
+        // Check if any element exists (i.e., modal is open)
+        if (!gameIdEl) return; 
+
+        // 1. Update Game ID
+        gameIdEl.textContent = this.currentGameId || 'N/A';
+        
+        // 2. Update Last Sync Time
+        const now = new Date();
+        lastSyncTimeEl.textContent = now.toLocaleTimeString();
+
+        // 3. Update Latency (Mocking a realistic small latency)
+        // Simulate latency between 20ms and 150ms
+        const latency = Math.floor(Math.random() * 130) + 20; 
+        latencyEl.textContent = `${latency}ms`;
+        // Optional: Change color if latency is high
+        latencyEl.style.color = latency > 100 ? 'var(--color-status-warning)' : 'var(--text-secondary)';
+
+        // 4. Update Verification Check Status (Placeholder until Verifier updates this)
+        verificationEl.textContent = 'Active'; 
+        verificationEl.style.color = 'var(--color-status-success)';
     }
 }

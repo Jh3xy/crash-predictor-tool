@@ -18,13 +18,13 @@
     <!-- Scripts -->
      <script type="module" src="./assets/script.js" defer></script>
 </head>
-<body class="theme-violet">
+<body class="">
     <div class="dashboard">
         <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
         <header>
             <div class="title">
                 <h1> Oracle
-                    <span class="desc">AI-Powered Crash Analytics</span>
+                    <span class="desc">AI-Powered Analytics</span>
                 </h1>
             </div>
             <div class="icons">
@@ -35,8 +35,11 @@
                     <i class="fa-solid fa-list"></i>
                 </div>
                 <div class="icon ui-icon last-child">
-                    <i class="fa-regular fa-user"></i>
+                   <i class="fa-regular fa-circle-check"></i>
                 </div>
+                <!-- <div class="icon ui-icon integrity last-child" data-modal-id="integrity">
+                    <i class="fa-regular fa-user"></i>
+                </div> -->
             </div>
         </header>
         <aside class="sidebar">
@@ -54,7 +57,7 @@
                     </li>
                     <li class="tab">
                         <i class="fa-solid fa-arrow-trend-up"></i>
-                        Predictor
+                        Analyzer
                     </li>
                     <li class="tab">
                         <i class="fa-solid fa-tower-broadcast"></i>
@@ -64,6 +67,10 @@
                         <i class="fa-solid fa-shield"></i>
                         Crash Verifier
                     </li>
+                    <!-- <li class="tab">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                        Integrity
+                    </li> -->
                     <li class="tab" id="user-guide" data-modal-id="user-guide">
                         <i class="fa-solid fa-rocket"></i> 
                         User Guide
@@ -83,6 +90,7 @@
             </div>
         </aside> 
         <main class="dashboard-overview">
+            
             <div class="wrap">
                 <h2>Overview</h2>
                 <p class="text-secondary font-md">Real-time crash analytics and AI-powered predictions</p>
@@ -146,9 +154,9 @@
                             <span>
                                 <i class="fa-solid fa-arrow-trend-up"></i>
                             </span>
-                            <h3>AI Predictor</h3>
+                            <h3>Analyzer</h3>
                             <!-- <i class="fa-solid fa-circle-info circle-info"></i> -->
-                        </div>
+                        </div> 
                         <!-- 1. INITIAL STATE: Click to Analyze (Default View) -->
             <!-- The prediction-section class manages the min-height -->
             <div id="initial-state-content" class="prediction-section">
@@ -167,8 +175,10 @@
                          <!-- 3. PREDICTION RESULT STATE (Hidden by default) -->
                         <div id="prediction-output-details">
                             <!-- Label -->
-                            <p class="label">Predicted Multiplier</p>
-                
+                            <p class="label">Predicted Multiplier 
+                                <span><i class="fa-solid fa-circle-info modal-icon" data-modal-id="prediction-details"></i></span>
+                            </p>
+                            
                             <!-- Large Predicted Value (Targeted by JS) -->
                             <h3 id="predicted-value">7.94x</h3>
                             <div class="predicted-round-id text-secondary font-md font-bold" id="predicted-round-id">Round: --</div>
@@ -206,7 +216,7 @@
                         </div>
             
                         <!-- Global Predict Button (Always visible) -->
-                        <button id="predict-btn" class ="btn">Predict Next Crash</button>
+                        <button id="predict-btn" class ="btn">Analyze</button>
                     </div>
                     <div class="card glass verifier p-l" id="crash-verfier">
                         <i class="fa-solid fa-circle-info modal-icon" data-modal-id="verifier-status"></i>

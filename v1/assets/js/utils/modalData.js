@@ -13,15 +13,24 @@ const modalContents = {
                 <label for="theme-switch">Change Theme:</label>
                 <div class="select-wrapper">
                     <select id="theme-switch">
-                        <option value="default" class="dropdown-option">Deep Space (Default)</option>
-                        <option value="theme-violet" class="dropdown-option">Tech Violet</option>
-                        <option value="theme-mint" class="dropdown-option">Neon Mint</option>
-                        <option value="cool-metric" class="dropdown-option">Cool Metric (Light)</option>
-                        <option value="vapor-wave" class="dropdown-option">Vapor Wave</option>
+                        <option value="default" class="dropdown-option is-active" data-theme-id="default">Deep Space (Default)</option>
+                        <option value="theme-violet" class="dropdown-option" data-theme-id="theme-violet">Tech Violet</option>
+                        <option value="theme-mint" class="dropdown-option" data-theme-id="theme-mint">Neon Mint</option>
+                        <option value="cool-metric" class="dropdown-option" data-theme-id="cool-metric">Cool Metric (Light)</option>
+                        <option value="vapor-wave" class="dropdown-option" data-theme-id="vapor-wave">Vapor Wave</option>
                     </select>
                 </div>
             </div>
             <p class="text-secondary info">More themes coming soon...</p>
+        `
+    },
+    'integrity': {
+        title: 'Prediction Tool Inergrity',
+        contentHTML: `
+            <h4>Integrity of the Prediction Model</h4>
+            <p class="desc" style="margin-left: 1rem;">
+                It is vital to understand that our Prediction Engine operates exclusively on historical data and statistical analysis, meaning <span class="highlight">it does not have access to the multiplier for the current, running round</span>, nor does it possess any proprietary information about the game's Random Number Generation (RNG) seed. </br> </br>The core CrashPredictor logic, which relies on calculating metrics like <span class="highlight">Volatility</span>, <span class="highlight">Long-Term Probabilities</span>, and <span class="highlight">Short-Term Trends</span> from the previous 200 completed rounds, is a form of technical analysis, similar to what is used in financial markets. </br>Therefore, every prediction generated is an educated guess based on observed patterns, not a guarantee or a breach of the game's mechanism. </br> </br>The model's success is measured by its accuracy in matching its prediction to the actual crash outcome after the round has finished, which is logged as the <span class="highlight">Win Rate</span> in your history.
+            </p>
         `
     },
     'confirmation-template': {
@@ -92,6 +101,9 @@ const modalContents = {
                         
                         <dt class="element-name">Confidence Bar</dt>
                         <dd class="element-description">A visual representation of the algorithm's certainty. <span class="highlight">Higher confidence is better.</span></dd>
+
+                        <dt class="element-name">Info Icon (<i class="fa-solid fa-circle-info modal-icon"></i>)</dt>
+                        <dd class="element-description">This icon provides futher info on the detials and functionailty of each card when clicked</dd>
                     </dl>
                 </div>
             </section>
@@ -284,7 +296,145 @@ const modalContents = {
             </section>
         </div>
     `
-}
+},
+    'prediction-details': {
+        title: 'Understanding Our Prediction Engine',
+        contentHTML: `
+            <p class="section-desc">
+                This guide breaks down exactly how our <span class="highlight">hybrid prediction system</span> works and what each output means for your next move.
+            </p>
+
+            <hr class="guide-separator">
+
+            <div class="prediction-guide-content modal-scroll-content">
+                <div class="integrity">
+                    <h3>Integrity of Prediction Model</h3>
+                    <p class="desc" style="margin-left: 1rem;">
+                        It is vital to understand that our Prediction Engine operates exclusively on historical data and statistical analysis, meaning <span class="highlight">it does not have access to the multiplier for the current, running round</span>, nor does it possess any proprietary information about the game's Random Number Generation (RNG) seed. </br> </br>The core CrashPredictor logic, which relies on calculating metrics like <span class="highlight">Volatility</span>, <span class="highlight">Long-Term Probabilities</span>, and <span class="highlight">Short-Term Trends</span> from the previous 200 completed rounds, is a form of technical analysis, similar to what is used in financial markets. </br>Therefore, every prediction generated is an educated guess based on observed patterns, not a guarantee or a breach of the game's mechanism. </br> </br>The model's success is measured by its accuracy in matching its prediction to the actual crash outcome after the round has finished, which is logged as the <span class="highlight">Win Rate</span> in your history.
+                    </p>
+                </div>
+
+                <hr class="guide-separator">
+
+                <section class="guide-section">
+                    <h3 class="section-title">Your Four Key Metrics</h3>
+                    <p class="section-desc">
+                        Our model provides these four crucial values to help you decide when and how much to bet:
+                    </p>
+
+                    <dl class="element-definitions">
+                        <dt class="element-name">1. Predicted Value - <span class="highlight">The Prediction Target</span></dt>
+                        <dd class="element-description">
+                            This is the final, calculated multiplier that the model recommends you aim for. It's the system's best guess for a safe cash-out point in the next round.
+                        </dd>
+                        
+                        <dt class="element-name">2. Confidence</dt>
+                        <dd class="element-description">
+                            <p>This number shows how <span class="highlight">certain</span> the model is about its Predicted Value.</p>
+                            <p class="action-note">
+                                <span class="highlight">How it Works: </span> The confidence value start at 50% confidence. We then gain points if we have a lot of historical data <span class="highlight"> i.e.  up to 200 rounds </span> and lose points if the data is highly volatile or if our internal Risk Score is high.
+                            </p>
+                            <p class="action-note text-secondary">
+                                <span class="highlight">Action</span> Higher confidence suggests the market is following recognizable patterns. Lower confidence suggests chaos, making any prediction a riskier choice.
+                            </p>
+                        </dd>
+
+                        <dt class="element-name">3. Risk Level - <span class="highlight">The Market Environment</span></dt>
+                        <dd class="element-description">
+                            <p>This is the simplest, most actionable metric. It tells you the general market mood based on recent data patterns.</p>
+                            
+                            <div class="risk-grid pattern-grid">
+                                <span class="grid-header">Risk Level</span>
+                                <span class="grid-header">Meaning</span>
+                                <span class="grid-header">Suggested Strategy</span>
+                                
+                                <span class="status-indicator success-status pattern-name">Low</span>
+                                <span class="pattern-condition">The market is stable, with predictable distribution patterns.</span>
+                                <span class="model-action">The Predicted Value is likely<span class="highlight"> Reliable </span>.</span>
+                                
+                                <span class="status-indicator pending-status pattern-name">Medium</span>
+                                <span class="pattern-condition">Moderate volatility or some concerning streaks are emerging.</span>
+                                <span class="model-action"><span class="highlight">Proceed with caution</span>; consider aiming slightly lower than the prediction.</span>
+                                
+                                <span class="status-indicator failure-status pattern-name">High</span>
+                                <span class="pattern-condition">Extreme volatility, prolonged low streaks, or recent large spikes.</span>
+                                <span class="model-action">Model accuracy is reduced. <span class="highlight"> Consider skipping the round </span>.</span>
+                            </div>
+                        </dd>
+
+                        <dt class="element-name">4. Volatility - <span class="highlight">How Wild is the Market?</span></dt>
+                        <dd class="element-description">
+                            <p>Volatility measures how unpredictable the crash multipliers have been recently. A high number here means the results are spread far apart—you might see a 1.01x followed by a 15.00x.</p>
+                            <p>
+                                <span class="highlight">Calculation: </span> We use the Standard Deviation ($\sigma$) of the last 200 rounds.
+                            </p>
+                            <div class="formula-block">
+                                <label>Formula:</label>
+                                $$ \sigma = \sqrt{\frac{\sum_{i=1}^{N} (x_i - \mu)^2}{N}} $$
+                                <p class="text-secondary">
+                                    This math just finds the average distance of every crash value ($x_i$) from the overall average ($\mu$).
+                                </p>
+                            </div>
+                            <p class="action-note text-secondary">
+                                <span class="highlight">Action: </span> If Volatility is high (above 2.0), the model generally lowers its prediction, as high volatility makes big spikes less likely to repeat immediately.
+                            </p>
+                        </dd>
+                    </dl>
+                </section>
+
+                <hr class="guide-separator">
+
+                <section class="guide-section">
+                    <h3 class="section-title">Behind the Prediction: The Two-Step Analysis</h3>
+                    <p class="section-desc">
+                        The model calculates the Predicted Value by balancing long-term statistics and short-term trends.
+                    </p>
+
+                    <h4>Step 1: Long-Term Probability <span class="highlight">The Statistical Baseline </span></h4>
+                    <p class="section-desc">
+                        The model looks at up to <span class="highlight">200 previous rounds </span> to determine the average crash amount for different zones:
+                    </p>
+
+                    <dl class="zone-definitions">
+                        <dt class="element-name">Low Zone</dt>
+                        <dd class="element-description">Multiplier Range: Below 2.00x / Purpose in Model: Determines the baseline if the market is trending low.</dd>
+                        <dt class="element-name">Medium Zone</dt>
+                        <dd class="element-description">Multiplier Range: 2.00x to 10.00x / Purpose in Model: Determines the baseline if the market is trending higher.</dd>
+                    </dl>
+                    <p class="action-note text-secondary">
+                        <span class="highlight">Logic</span> The model figures out which zone has the highest probability. If the Medium Zone is more probable than the Low Zone, the base prediction starts higher.
+                    </p>
+
+                    <h4>Step 2: Short-Term Pattern Recognition (The Rules)</h4>
+                    <p class="section-desc">
+                        The model specifically examines the <span class="highlight">last 7 rounds </span> for critical patterns that indicate an immediate shift. These patterns <span class="highlight">override</span> the statistical baseline if detected:
+                    </p>
+
+                    <div class="pattern-grid">
+                        <span class="grid-header">Pattern Detected</span>
+                        <span class="grid-header">Condition (What happened in the last 7 rounds)</span>
+                        <span class="grid-header">Model's Immediate Action</span>
+                        
+                        <span class="pattern-name">Low Streak</span>
+                        <span class="pattern-condition"><span class="highlight">5 or more rounds </span>crashed below 2.00x.</span>
+                        <span class="model-action">The model predicts a break in the streak, **boosting** the predicted value to above 1.90x.</span>
+                        
+                        <span class="pattern-name">Spike Cooldown</span>
+                        <span class="pattern-condition">The very last round crashed at or above <span class="highlight">5.00x </span>.</span>
+                        <span class="model-action">The model forces a <span class="highlight">low</span> prediction ($\le 1.40x$), expecting a low payout after a massive spike.</span>
+                        
+                        <span class="pattern-name">Spike Recovery</span>
+                        <span class="pattern-condition">A high multiplier ($\ge 10.00x$) was recently hit.</span>
+                        <span class="model-action">The model <span class="highlight">moderately boosts</span> the prediction, anticipating a steady recovery phase.</span>
+                    </div>
+
+                    <p class="action-note">
+                        This hybrid approach ensures the prediction is both statistically grounded and reactive to immediate, high-impact market changes.
+                    </p>
+                </section>
+            </div>
+        `
+    }
 };
 
 

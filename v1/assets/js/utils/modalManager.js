@@ -5,6 +5,10 @@
 // ModalManager.js: Reusable, Data-Driven Modal System
 // =========================================================================
 
+
+
+
+
 // Global elements
 const BODY = document.body;
 let currentModal = null; // Variable to hold the modal element
@@ -77,6 +81,7 @@ function populateAndShowModal(dataId) {
     
     // Set initial focus to the close button
     modal.querySelector('.close-modal').focus();
+    
 }
 
 
