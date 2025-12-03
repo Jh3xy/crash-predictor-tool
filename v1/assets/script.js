@@ -18,7 +18,7 @@ import { populateAndShowModal, closeModal, createConfirmationModal } from './js/
 const tabs = document.querySelectorAll('.tab');
 listenForTabs(tabs);
 
-// Select Elements for Pop UP Initialization
+// // Select Elements for Pop UP Initialization
 const userGuide = document.getElementById('user-guide')
 const settingBtn = document.querySelector('[data-modal-id="settings"]');
 const statsInfoIcons = document.querySelectorAll(

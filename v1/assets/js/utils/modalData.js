@@ -73,9 +73,9 @@ const modalContents = {
         <div class="user-guide-content modal-scroll-content">
             
             <section class="guide-section">
-                <h3 class="section-title">1. App Overview & The Core Loop</h3>
+                <h3 class="section-title">App Overview & The Core Loop</h3>
                 <p class="section-desc">
-                    This application, the **Prediction Log Analyzer**, helps you make informed decisions in crash games by analyzing past historical data.
+                    This application, the <span class="highlight"> Prediction Log Analyzer</span> helps you make informed decisions in crash games by analyzing past historical data.
                 </p>
 
                 <div class="feature-list">
@@ -99,7 +99,7 @@ const modalContents = {
             <hr class="guide-separator">
 
             <section class="guide-section">
-                <h3 class="section-title">2. Understanding Dashboard Statistics</h3>
+                <h3 class="section-title">Understanding Dashboard Statistics</h3>
                 <p class="section-desc">
                     The dashboard provides key indicators (KPIs) to evaluate your prediction strategy's long-term performance.
                 </p>
@@ -108,7 +108,7 @@ const modalContents = {
                     <h4 class="feature-title">Key Metrics Explained</h4>
                     <dl class="element-definitions">
                         <dt class="element-name">Total Predictions</dt>
-                        <dd class="element-description">Your cumulative usage of the predictor. Includes the <span class="info-text">+X today</span> counter showing activity since midnight.</dd>
+                        <dd class="element-description">Your cumulative usage of the predictor. Includes the <span class="highlight"> +X today </span>counter showing activity since midnight.</dd>
                         
                         <dt class="element-name">Avg. Prediction Accuracy</dt>
                         <dd class="element-description">The all-time success rate. A prediction is a <strong>Success <span class="highlight"> 100&#37 </span> </strong> if the <span class="highlight">Actual Crash Value > Predicted Value</span>.</dd>
@@ -125,7 +125,7 @@ const modalContents = {
             <hr class="guide-separator">
 
             <section class="guide-section">
-                <h3 class="section-title">3. History Log & Data Management</h3>
+                <h3 class="section-title">History Log & Data Management</h3>
                 <p class="section-desc">
                     The History Log records every prediction for transparent strategy review.
                 </p>
@@ -140,9 +140,9 @@ const modalContents = {
                 </div>
 
                 <div class="data-action">
-                    <h4 class="feature-title">Clearing History (Important!)</h4>
+                    <h4 class="feature-title">Clearing History  <span class="highlight"> (Important!)</span></h4>
                     <p class="action-note">
-                        When you click "Clear History," a **Confirmation Pop-up** will appear. This is a safety step. You must click **Confirm** in the modal to permanently delete all stored data. This action is irreversible.
+                        When you click "Clear History," a Confirmation Pop-up will appear. This is a safety step. You must click <span class="highlight"> Confirm </span> in the modal to permanently delete all stored data. <span class="highlight"> This action is irreversible. </span>
                     </p>
                 </div>
             </section>

@@ -59,7 +59,7 @@ function populateAndShowModal(dataId) {
     modal.setAttribute('aria-modal', 'true');
     modal.innerHTML = `
         <div class="modal-header">
-            <h3>${content.title}</h3>
+            <h4>${content.title}</h4>
             <button class="close-modal" aria-label="Close Modal"><i class="fa-solid fa-x"></i></button>
         </div>
         <div class="modal-body">
