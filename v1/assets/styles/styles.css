@@ -1076,7 +1076,39 @@ p.action-note{
     margin-top: .5rem;
     margin-left: .5rem;
 }
+.history-grid-20{
+    display: grid;
+    gap: .5rem;
+    grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+    margin-top: .5rem;
+}
+.history-grid-20 *{
+    background: transparent !important;
+    border:  1px solid var(--border-subtle);
+    padding: 8px 10px;
+    /* text-align: center; */
+}
+.history-badge:hover {
+    transform: scale(1.05);
+}
 
+/* 3. Color Coding (Matches your theme variables) */
+.history-badge.m-high { 
+    background-color: var(--color-accent-primary); 
+    color: #fff;
+    box-shadow: 0 0 10px var(--color-accent-glow);
+} 
+
+.history-badge.m-medium { 
+    background-color: var(--color-status-success); 
+    color: #000; /* Black text on bright green is readable */
+} 
+
+.history-badge.m-low { 
+    background-color: rgba(255, 255, 255, 0.05); /* Very subtle background */
+    border: 1px solid var(--border-subtle); 
+    color: var(--text-secondary); 
+}
 
 
 
