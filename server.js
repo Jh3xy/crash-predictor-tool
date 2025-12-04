@@ -1,5 +1,3 @@
-
-
 // server.js - Crash Game WebSocket Proxy
 let pingInterval = null;
 
@@ -23,7 +21,8 @@ const server = http.createServer(app);
 // Initialize socket.io for client communication (your predictor tool)
 const io = new Server(server, {
     cors: {
-        origin: "http://localhost:8080", // Or whatever port you use for your predictor tool
+        // 🔥 CRITICAL FIX: Allowing multiple origins for your Live Server setup
+        origin: ["http://localhost:8080", "http://127.0.0.1:5500"], 
         methods: ["GET", "POST"]
     }
 });
@@ -105,9 +104,15 @@ function connectToStake() {
                 stakeWS.send(pongMessage);
                 
             } else if (message.type === 'data' || message.type === 'next') {
-                // This is the actual game data! You have won.
-                // NOTE: The data will be nested under 'event' now.
-                console.log('⬇️ Received Game Data:', message.payload.data.crash.event);
+                // This is the actual game data!
+                const crashData = message.payload.data.crash.event;
+
+                // 1. Log the incoming data (keep for debugging)
+                console.log('⬇️ Received Game Data:', crashData); 
+                
+                // 2. 🔥 CRITICAL CHANGE: Emit the data to all connected predictor clients!
+                io.emit('liveMultiplierUpdate', crashData);
+
             } else if (message.type === 'error') {
                 // Log GraphQL errors cleanly
                 console.error('❌ GraphQL Error:', message.payload);
