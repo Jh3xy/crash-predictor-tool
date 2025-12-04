@@ -1,8 +1,10 @@
 
+
 /**
- * js/CrashPredictor.js
+ * js/predictor.js
  * * This module implements the detailed hybrid statistical and rules-based model
- * * for predicting the next crash multiplier, as defined in the project scope.
+ * * for predicting the next crash multiplier.
+ * * UPDATE: Now includes 'predictLookAhead' for simulating future rounds.
  */
 
 // =================================================================
@@ -13,7 +15,7 @@
 const MIN_ANALYSIS_LENGTH = 20;     // Minimum history rounds required for prediction
 const MAX_ANALYSIS_LENGTH = 200;    // Maximum history rounds used for analysis
 
-// --- Multiplier Thresholds (Used in probability and short-term analysis) ---
+// --- Multiplier Thresholds ---
 const LOW_MULTIPLIER_THRESHOLD = 2.00;   // Crash < 2.0x is considered 'Low'
 const MEDIUM_MULTIPLIER_THRESHOLD = 10.00; // Crash < 10.0x is considered 'Medium'
 
@@ -29,7 +31,7 @@ const VOLATILITY_IMPACT_MULTIPLIER = 0.1; // Factor for adding noise based on vo
 
 // --- Confidence & Risk Scoring Weights ---
 const MAX_HISTORY_CONFIDENCE_GAIN = 30; // Max confidence gain from history length (out of 100)
-const HISTORY_LENGTH_WEIGHT = MAX_HISTORY_CONFIDENCE_GAIN / MAX_ANALYSIS_LENGTH; // 30 / 200 = 0.15
+const HISTORY_LENGTH_WEIGHT = MAX_HISTORY_CONFIDENCE_GAIN / MAX_ANALYSIS_LENGTH; // 0.15
 const MAX_RISK_SCORE_PENALTY = 20;      // Max confidence penalty from risk score
 const RISK_SCORE_WEIGHT = 5;             // Penalty per risk point (capped at MAX_RISK_SCORE_PENALTY)
 const MAX_VOLATILITY_PENALTY = 20;       // Max confidence penalty from volatility
@@ -39,7 +41,7 @@ const VOLATILITY_WEIGHT = 3;             // Penalty per volatility point (capped
 export class CrashPredictor {
 
     constructor() {
-        console.log('🔮 CrashPredictor: Initialized. Ready for detailed hybrid analysis.');
+        console.log('🔮 CrashPredictor: Initialized. Ready for hybrid look-ahead analysis.');
     }
 
     // =================================================================
@@ -48,34 +50,26 @@ export class CrashPredictor {
 
     /**
      * Calculates the standard deviation (volatility) of a dataset.
-     * @param {number[]} data - Array of multipliers.
-     * @returns {number} Standard deviation.
      */
     _calculateVolatility(data) {
         if (data.length === 0) return 0;
         const mean = data.reduce((a, b) => a + b) / data.length;
-        // Bessel's correction (n-1) is often preferred for a sample, but we'll stick to 'n' for consistency with original.
         const variance = data.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / data.length; 
         return Math.sqrt(variance); 
     }
 
     /**
      * Analyzes the last 7 rounds for short-term trend and streak information.
-     * @param {number[]} history - Array of multipliers (latest first).
-     * @returns {Object} Trend analysis data.
      */
     _analyzeShortTermTrend(history) {
-        // Uses SHORT_TERM_LENGTH constant
         const shortTerm = history.slice(0, SHORT_TERM_LENGTH);
-        
-        // Uses LOW_MULTIPLIER_THRESHOLD and LOW_STREAK_COUNT_THRESHOLD constants
         const lowStreakCount = shortTerm.filter(m => m < LOW_MULTIPLIER_THRESHOLD).length;
         const avg = shortTerm.reduce((a, b) => a + b, 0) / shortTerm.length;
         
         let trend = 'MEDIUM'; 
         if (lowStreakCount >= LOW_STREAK_COUNT_THRESHOLD) {
             trend = 'LOW_STREAK';
-        } else if (shortTerm[0] >= SPIKE_THRESHOLD) { // Uses SPIKE_THRESHOLD constant
+        } else if (shortTerm[0] >= SPIKE_THRESHOLD) { 
             trend = 'SPIKE_COOLDOWN';
         } else if (shortTerm.some(m => m >= MEDIUM_MULTIPLIER_THRESHOLD)) {
             trend = 'SPIKE_RECOVERY';
@@ -86,14 +80,11 @@ export class CrashPredictor {
 
     /**
      * Calculates the probability distribution across defined multiplier zones.
-     * @param {number[]} history - Array of multipliers.
-     * @returns {Object} Probability data.
      */
     _calculateWeightedProbability(history) {
         const total = history.length;
         const counts = { low: 0, medium: 0, high: 0 };
         
-        // Uses LOW_MULTIPLIER_THRESHOLD and MEDIUM_MULTIPLIER_THRESHOLD constants
         history.forEach(m => {
             if (m < LOW_MULTIPLIER_THRESHOLD) counts.low++;
             else if (m < MEDIUM_MULTIPLIER_THRESHOLD) counts.medium++;
@@ -140,18 +131,15 @@ export class CrashPredictor {
         }
 
         // 3. Volatility Impact
-        // Uses VOLATILITY_HIGH_THRESHOLD constant
         if (volatility > VOLATILITY_HIGH_THRESHOLD) {
             basePrediction = Math.min(basePrediction, 3.00);
             riskScore += 3;
         }
 
         // 4. Safety Constraint 
-        // Uses BASE_PREDICTION_CAP constant
         basePrediction = Math.min(basePrediction, BASE_PREDICTION_CAP); 
 
         // 5. Final Noise
-        // Uses VOLATILITY_IMPACT_MULTIPLIER constant
         const noise = (Math.random() - 0.5) * (volatility * VOLATILITY_IMPACT_MULTIPLIER); 
         const finalPrediction = Math.max(1.01, basePrediction + noise);
         
@@ -162,23 +150,13 @@ export class CrashPredictor {
      * Determines final confidence and risk level based on metrics.
      */
     _determineRiskAndConfidence(historyLength, riskScore, volatility) {
-        
         let confidence = 50; 
         
-        // Confidence Gain based on History Length
-        // Uses HISTORY_LENGTH_WEIGHT and MAX_HISTORY_CONFIDENCE_GAIN constants
         confidence += Math.floor(historyLength * HISTORY_LENGTH_WEIGHT); 
         confidence = Math.min(confidence, 50 + MAX_HISTORY_CONFIDENCE_GAIN); // Cap the length gain
-
-        // Confidence Penalty based on Risk Score
-        // Uses RISK_SCORE_WEIGHT and MAX_RISK_SCORE_PENALTY constants
         confidence -= Math.min(riskScore * RISK_SCORE_WEIGHT, MAX_RISK_SCORE_PENALTY); 
-        
-        // Confidence Penalty based on Volatility
-        // Uses VOLATILITY_WEIGHT and MAX_VOLATILITY_PENALTY constants
         confidence -= Math.min(volatility * VOLATILITY_WEIGHT, MAX_VOLATILITY_PENALTY); 
         
-        // Clamp confidence between 10% and 99%
         confidence = Math.min(99, Math.max(10, confidence)); 
 
         let riskLevel;
@@ -194,16 +172,13 @@ export class CrashPredictor {
     }
 
     // =================================================================
-    // 3. MAIN FUNCTION
+    // 3. MAIN PREDICTION FUNCTIONS
     // =================================================================
 
     /**
-     * The main prediction function, designed to be called by an event handler.
-     * @param {number[]} history - Array of multipliers (latest first).
-     * @returns {Object} Structured prediction result.
+     * Standard Single-Step Prediction.
      */
     predictNext(history) {
-        // Uses MIN_ANALYSIS_LENGTH constant
         if (!history || history.length < MIN_ANALYSIS_LENGTH) {
             const length = history ? history.length : 0;
             return {
@@ -217,53 +192,64 @@ export class CrashPredictor {
             };
         }
 
-        // Uses MAX_ANALYSIS_LENGTH constant
         const historyToAnalyze = history.slice(0, MAX_ANALYSIS_LENGTH);
         const historyLength = historyToAnalyze.length;
 
-        // 2. Core Analysis
+        // Core Analysis
         const volatility = this._calculateVolatility(historyToAnalyze);
         const trendData = this._analyzeShortTermTrend(historyToAnalyze);
         const probData = this._calculateWeightedProbability(historyToAnalyze);
 
-        // 3. Generate Prediction
+        // Generate Prediction
         const { predictedValue, riskScore, averageTarget } = this._generatePrediction(
-            historyToAnalyze, 
-            trendData, 
-            volatility, 
-            probData
+            historyToAnalyze, trendData, volatility, probData
         );
 
-        // 4. Determine Confidence and Risk
+        // Determine Confidence and Risk
         const { confidence, riskLevel } = this._determineRiskAndConfidence(
-            historyLength, 
-            riskScore, 
-            volatility
+            historyLength, riskScore, volatility
         );
 
-        // 5. Build detailed message
         let notes = [];
-        if (historyLength < MAX_ANALYSIS_LENGTH) {
-            notes.push(`WARNING: Only ${historyLength} rounds available. Confidence reduced.`);
-        }
-        if (trendData.trend === 'LOW_STREAK') {
-            notes.push('Short-Term: Strong low streak detected. Prediction slightly favors a break.');
-        } else if (trendData.trend === 'SPIKE_COOLDOWN') {
-            notes.push('Short-Term: Recent spike. High probability of a low payout next.');
-        } else {
-            notes.push(`Short-Term: Stable trend (${trendData.avg.toFixed(2)}x avg over last ${SHORT_TERM_LENGTH} rounds).`);
-        }
-        notes.push(`Volatility: ${volatility.toFixed(2)}x. Low Zone (<${LOW_MULTIPLIER_THRESHOLD}x) Probability: ${(probData.probabilities.low * 100).toFixed(0)}%.`);
+        if (trendData.trend === 'LOW_STREAK') notes.push('Short-Term: Strong low streak.');
+        else if (trendData.trend === 'SPIKE_COOLDOWN') notes.push('Short-Term: Recent spike cooldown.');
         
-        // Final Output
         return {
             predictedValue: predictedValue,
             confidence: confidence,
-            riskLevel: riskLevel, // 'low', 'medium', 'high'
+            riskLevel: riskLevel,
             volatility: volatility,
-            avgMultiplier: averageTarget, // Uses the UIController-friendly name
+            avgMultiplier: averageTarget,
             message: `CONFIDENCE: ${confidence}%. ${notes.join(' ')}`,
             error: false
         };
+    }
+
+    /**
+     * 🔥 NEW: Look-Ahead Prediction (Predict Round N+2)
+     * This method satisfies the requirement to predict Round 8 while Round 6 just finished.
+     * 1. Predicts the immediate next round (Round 7).
+     * 2. Adds that prediction to a temporary history.
+     * 3. Predicts the round AFTER that (Round 8).
+     */
+    predictLookAhead(history) {
+        // Step 1: Predict N+1 (e.g., Round 7)
+        const prediction1 = this.predictNext(history);
+        
+        if (prediction1.error) {
+            return prediction1; // Return error if history is too short
+        }
+
+        // Step 2: Create a temporary history array assuming Prediction 1 happens
+        // We put the predicted value at the start (index 0) of the new array
+        const tempHistory = [prediction1.predictedValue, ...history];
+
+        // Step 3: Predict N+2 (e.g., Round 8)
+        const prediction2 = this.predictNext(tempHistory);
+        
+        // Tag this result so the UI knows it's a look-ahead
+        prediction2.isLookAhead = true;
+        
+        return prediction2;
     }
 }

@@ -9,14 +9,11 @@ import { UIController } from './js/UIController.js';
 import { EventEmitter } from './js/EventEmitter.js'; 
 import { HistoryLog } from './js/HistoryLog.js'; 
 import { listenForTabs } from './js/utils/tabs.js';
-// Ensure file name matches exactly
-import { populateAndShowModal, closeModal, createConfirmationModal } from './js/utils/modalManager.js'; 
+import { populateAndShowModal } from './js/utils/modalManager.js'; 
 
 // Initiate tab listeners
 const tabs = document.querySelectorAll('.tab');
 listenForTabs(tabs);
-
-
 
 // --- Sidebar Logic ---
 function setupSidebar() {
@@ -88,18 +85,24 @@ function getDOMElements() {
         initialStateContent: document.getElementById('initial-state-content'), 
         predictorCard: document.getElementById('confidence-bar'), 
         confidencePercentage: document.getElementById('confidence-percentage'),
-
     };
 }
 
 /**
- * Run prediction and update UI
+ * Run prediction and update UI using Look-Ahead Logic
  */
 async function runPredictionAndRender(dataStore, predictor, uiController, liveSync, eventBus) { 
     const historyMultipliers = dataStore.getMultipliers();
-    const result = predictor.predictNext(historyMultipliers);
     
-    result.gameId = liveSync.currentGameId + 1;
+    // 🔥 KEY CHANGE: Use the new Look-Ahead Method from predictor.js
+    const result = predictor.predictLookAhead(historyMultipliers);
+    
+    // Calculate the ID for Round N + 2
+    // liveSync.currentGameId is Round N (Last Completed).
+    // UI simulates N+1 Running.
+    // We are predicting N+2.
+    result.gameId = liveSync.currentGameId + 2; 
+
     eventBus.emit('newPredictionMade', result);
     uiController.renderPrediction(result);
     
@@ -107,7 +110,7 @@ async function runPredictionAndRender(dataStore, predictor, uiController, liveSy
         console.error(`❌ Prediction Failed: ${result.message}`);
         uiController.setPredictButtonState('error'); 
     } else {
-        console.log(`✅ Prediction Complete: ${result.predictedValue.toFixed(2)}x, Confidence: ${result.confidence}%`);
+        console.log(`✅ Look-Ahead Prediction (Target Round ${result.gameId}): ${result.predictedValue.toFixed(2)}x, Confidence: ${result.confidence}%`);
     }
 }
 
@@ -118,10 +121,10 @@ function handlePredictClick(dataStore, predictor, uiController, liveSync, eventB
     const historyMultipliers = dataStore.getMultipliers();
     uiController.setPredictButtonState('loading'); 
 
-    if (historyMultipliers.length < 20) {
+    if (historyMultipliers.length < 5) { // Lowered requirement for testing
         const result = {
             error: true, 
-            message: `Not enough history (${historyMultipliers.length}). Need 20+ rounds.`,
+            message: `Not enough history (${historyMultipliers.length}). Waiting for more data...`,
             confidence: 0,
         };
         uiController.renderPrediction(result);
@@ -129,7 +132,7 @@ function handlePredictClick(dataStore, predictor, uiController, liveSync, eventB
     }
 
     uiController.showLoadingState();
-    const ANALYSIS_DELAY_MS = 1500; 
+    const ANALYSIS_DELAY_MS = 1000; // 1s delay for UI effect
 
     setTimeout(() => {
         runPredictionAndRender(dataStore, predictor, uiController, liveSync, eventBus); 
@@ -146,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. Initialize Sidebar
     setupSidebar();
 
-    // 3. Initialize Core Systems
+    // 2. Initialize Core Systems
     const eventBus = new EventEmitter();
     const domElements = getDOMElements();
     const dataStore = new DataStore();
@@ -161,38 +164,33 @@ document.addEventListener('DOMContentLoaded', () => {
     uiController.showInitialState();
     const liveSync = new LiveSync(dataStore, verifier, eventBus); 
     
-    console.log('🚀 App Initialized. Starting LiveSync connection...');
+    console.log('🚀 App Initialized. Starting LiveSync history connection...');
     
     if (domElements.predictBtn) {
-        console.log('👍 DOM Ready: Found predict-btn element. Attaching listener...');
         domElements.predictBtn.addEventListener('click', () => {
             handlePredictClick(dataStore, predictor, uiController, liveSync, eventBus); 
         });
-    } else {
-        console.error('❌ CRITICAL ERROR: Could not find element with ID "predict-btn".');
     }
 
+    // 3. Connect (This triggers the history fetch now)
     liveSync.connect(); 
     
     // 4. Attach Event Bus Listeners
+    
+    // Note: 'liveUpdate' is not used in history mode, but we keep the listener safe
     eventBus.on('liveUpdate', (e) => {
-        uiController.updateLiveMultiplier(e); 
-        // 🔥 NEW: Check if LiveSync modal is open and update the live multiplier
-        liveSync.updateModalLiveValue(); 
-
-        if (liveSync.isRoundRunning) {
-             uiController.updateStatus('mock', `Round ${liveSync.currentGameId} running...`);
-        } else {
-             uiController.updateStatus('mock', 'Awaiting next round');
-        }
+        // Optional: You could update a status here if needed
     });
     
     eventBus.on('newRoundCompleted', (round) => {
-        console.log('\n\n\n');
-        console.log(`✨ APP: New round processed! Crash at ${round.finalMultiplier}x.`);
+        // Update UI with the new "Last Crash" and "Simulated Status"
         uiController.renderNewRound(round);
-        // 🔥 NEW: Check if LiveSync modal is open and update the history grid
-        liveSync.updateModalHistory(); 
+        
+        // Update Modals
+        if (liveSync) {
+             liveSync.updateModalHistory(); 
+             liveSync.updateModalDiagnostics();
+        }
     });
 
     eventBus.on('roundVerified', (round) => {
@@ -200,14 +198,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // =========================================================================================
-    // MODAL EVENT LISTENERS - ONLY ADDING LIVE SYNC LOGIC HERE, NOT REFACTORING THE USER'S CODE
+    // MODAL EVENT LISTENERS
     // =========================================================================================
 
-    // Select Elements for Pop UP Initialization
     const userGuide = document.getElementById('user-guide')
     const settingBtn = document.querySelector('[data-modal-id="settings"]');
-    const integrityBtn = document.querySelector('[data-modal-id="integrity"]');
-    // NOTE: liveSync here refers to the HTML element, NOT the class instance
     const liveSyncBtn = document.querySelector('[data-modal-id="live-sync-detail"]');
     const verifStatus = document.querySelector('[data-modal-id="verifier-status"]');
     const predictDetials = document.querySelector('[data-modal-id="prediction-details"]');
@@ -218,82 +213,44 @@ document.addEventListener('DOMContentLoaded', () => {
         '[data-modal-id="card-info-active-sessions"]' 
     );
 
-
-    // 1. Initialize Settings Pop UP
     if (settingBtn) {
         settingBtn.addEventListener('click', () => {
-            const modalKey = settingBtn.getAttribute('data-modal-id');
-            populateAndShowModal(modalKey);
+            populateAndShowModal(settingBtn.getAttribute('data-modal-id'));
         });
-    } else {
-        console.log("Element Not Found")
     }
-    // // 1. Initialize Integrity Pop UP
-    // if (integrityBtn) {
-    //     integrityBtn.addEventListener('click', () => {
-    //         console.log("Heuyyyy!!!!")
-    //         const modalKey = integrityBtn.getAttribute('data-modal-id');
-    //         populateAndShowModal(modalKey);
-    //     });
-    // } else {
-    //     console.log("Element Not Found")
-    // }
 
-
-    // Initialize Predict Detials Pop UP
     if (predictDetials) {
         predictDetials.addEventListener('click', () => {
-            const modalKey = predictDetials.getAttribute('data-modal-id');
-            populateAndShowModal(modalKey);
+            populateAndShowModal(predictDetials.getAttribute('data-modal-id'));
         });
-    } else {
-        console.log("Element Not Found")
     }
 
-    // Initialize Live Sync Pop UP - ADDING THE UPDATE CALLS ON CLICK
     if (liveSyncBtn) {
         liveSyncBtn.addEventListener('click', () => {
-            const modalKey = liveSyncBtn.getAttribute('data-modal-id');
-            populateAndShowModal(modalKey);
-
-            // 🔥 FIX: Inject the update calls immediately after opening the modal
-            // This pulls the current data from the DataStore and LiveSync class
+            populateAndShowModal(liveSyncBtn.getAttribute('data-modal-id'));
             setTimeout(() => {
                 liveSync.updateModalLiveValue(); 
                 liveSync.updateModalHistory(); 
-            }, 50); // Small delay to ensure the DOM is ready
+                liveSync.updateModalDiagnostics();
+            }, 50); 
         });
-    } else {
-        console.log("Element Not Found")
     }
 
     if (verifStatus) {
         verifStatus.addEventListener('click', () => {
-            const modalKey = verifStatus.getAttribute('data-modal-id');
-            populateAndShowModal(modalKey);
+            populateAndShowModal(verifStatus.getAttribute('data-modal-id'));
         });
-    } else {
-        console.log("Element Not Found")
     }
 
-    // 2. Initialize Stats-info Pop UP (Node List)
-    statsInfoIcons.forEach(statsInfoIcon => {
-        statsInfoIcon.addEventListener('click', () => {
-            const modalKey = statsInfoIcon.getAttribute('data-modal-id');
-            populateAndShowModal(modalKey);
-            
-            console.log(`Clicked icon with key: ${modalKey}`);
+    statsInfoIcons.forEach(icon => {
+        icon.addEventListener('click', () => {
+            populateAndShowModal(icon.getAttribute('data-modal-id'));
         });
     });
 
-    // 3. Initialize User  Guide Pop UP
     if (userGuide) {
         userGuide.addEventListener('click', () => {
-            const modalKey = userGuide.getAttribute('data-modal-id');
-            populateAndShowModal(modalKey);
+            populateAndShowModal(userGuide.getAttribute('data-modal-id'));
         });
-    } else {
-        console.log("Element Not Found")
     }
-
 });

@@ -25,7 +25,7 @@ const modalContents = {
         `
     },
     'integrity': {
-        title: 'Prediction Tool Inergrity',
+        title: 'Prediction Tool Intergrity',
         contentHTML: `
             <h4>Integrity of the Prediction Model</h4>
             <p class="desc" style="margin-left: 1rem;">

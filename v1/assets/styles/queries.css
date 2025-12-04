@@ -89,6 +89,10 @@
     .table-header > *{
         padding-right: 1.5rem;
     }
+
+    .tag span{
+        display: block;
+    }
 }
 
 @media (max-width: 960px){

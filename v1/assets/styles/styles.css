@@ -312,6 +312,7 @@ nav{
     color: var(--color-accent-primary);
     padding: .5rem .6rem;
     border-radius: 12px;
+    display:  none;
 }
 .status{
     position: relative;
