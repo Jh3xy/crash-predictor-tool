@@ -18,9 +18,6 @@ export class DataStore {
         this.currentRound = { multiplier: 0.00 }; 
         this.MAX_ROUNDS = 500; 
         
-        // We do NOT auto-load mock data here anymore, 
-        // because LiveSync will fetch real data immediately.
-        
         console.log(`📦 DataStore: Initialized.`);
     }
     
@@ -37,6 +34,21 @@ export class DataStore {
                 verificationStatus: 'Mock'
             });
         });
+    }
+
+    /**
+     * 🔥 NEW: Bulk loads history from the server.
+     * Expects an array of standardized round objects.
+     */
+    setHistory(rounds) {
+        if (!Array.isArray(rounds)) {
+            console.error('❌ DataStore: setHistory received invalid data');
+            return;
+        }
+        
+        // Take the newest 500 rounds
+        this.rounds = rounds.slice(0, this.MAX_ROUNDS);
+        console.log(`📦 DataStore: Loaded ${this.rounds.length} rounds from history.`);
     }
 
     addRound(roundData) {

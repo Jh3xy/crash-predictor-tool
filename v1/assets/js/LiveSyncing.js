@@ -1,7 +1,6 @@
 /**
  * js/LiveSyncing.js
- * CRITICAL UPDATE: Switches from historical fetch/emulation to a live Socket.IO connection
- * to the local proxy server (server.js).
+ * CRITICAL UPDATE: Handles incoming history from server and live updates.
  */
 
 // NOTE: You must include the Socket.IO client library in your HTML file:
@@ -13,9 +12,9 @@ export class LiveSync {
         this.verifier = verifier;
         this.eventBus = eventBus;
         this.currentGameId = 0; 
-        this.currentMultiplier = 1.00; // New property to store the live value
+        this.currentMultiplier = 1.00; 
         this.isRoundRunning = false;
-        this.ws = null; // Socket.IO client instance
+        this.ws = null; 
         
         console.log("LiveSync: Initialized in Live WebSocket Mode.");
     }
@@ -26,7 +25,6 @@ export class LiveSync {
     connect() {
         const PROXY_URL = 'http://localhost:3000';
         
-        // This 'io' function is provided by the Socket.IO client script (loaded in HTML)
         if (typeof io === 'undefined') {
             console.error("❌ Socket.IO client is not loaded. Ensure the CDN link is in your HTML.");
             return;
@@ -34,7 +32,6 @@ export class LiveSync {
 
         console.log(`🔗 LiveSync: Attempting to connect to proxy at ${PROXY_URL}...`);
         
-        // Establish connection
         this.ws = io(PROXY_URL);
 
         this.ws.on('connect', () => {
@@ -47,44 +44,41 @@ export class LiveSync {
             this.updateModalDiagnostics();
         });
 
+        // 🔥 NEW: Receive full history upon connection
+        this.ws.on('history', (rawHistory) => {
+            console.log(`📜 Received ${rawHistory.length} rounds of history from server.`);
+            
+            // Convert raw server data to our standardized DataStore format
+            const standardizedHistory = rawHistory.map(item => this.standardizeRound(item));
+            
+            // Load into DataStore
+            this.dataStore.setHistory(standardizedHistory);
+            
+            // Refresh UI
+            this.updateModalHistory();
+            this.eventBus.emit('historyLoaded'); // Optional: Tell app we are ready
+        });
+
         // 🔥 CRITICAL LISTENER: Handles the live data streamed from server.js
         this.ws.on('liveMultiplierUpdate', (crashData) => {
-            // crashData = { id, multiplier, status, hash: { hash } or null }
             
             this.currentGameId = crashData.id;
 
             if (crashData.status === 'in_progress') {
-                // 1. Update the live multiplier property
                 this.currentMultiplier = crashData.multiplier;
                 this.isRoundRunning = true;
-
-                // 2. Broadcast the live multiplier value for UI updates
                 this.eventBus.emit('multiplierUpdate', crashData.multiplier);
 
             } else if (crashData.status === 'crash') {
-                // Round is over. 
                 this.isRoundRunning = false;
                 
-                // We use the last reported multiplier as the final one
-                const finalMultiplier = crashData.multiplier; 
-
-                // 🔥 FIX: Use a null check (crashData.hash ?) before accessing crashData.hash.hash
-                const roundHash = crashData.hash 
-                    ? `stake-hash-${crashData.hash.hash}` 
-                    : `game-id-${crashData.id}-PENDING_HASH`;
-
-                const standardizedRound = {
-                    gameId: crashData.id,
-                    finalMultiplier: finalMultiplier,
-                    clientSeed: roundHash, 
-                    nonce: 0, 
-                    verificationStatus: 'Live Official Data' 
-                };
+                // Use the helper to standardize
+                const standardizedRound = this.standardizeRound(crashData);
                 
                 // 1. Add to DataStore
                 this.dataStore.addRound(standardizedRound);
                 
-                // 2. Emit Event (Triggers prediction/UI updates)
+                // 2. Emit Event
                 this.eventBus.emit('newRoundCompleted', standardizedRound);
 
                 // 3. Reset live multiplier and update history modal
@@ -92,27 +86,49 @@ export class LiveSync {
                 this.updateModalHistory();
 
             } else if (crashData.status === 'starting') {
-                 // Game is between rounds
                 this.isRoundRunning = false;
                 this.currentMultiplier = 1.00;
             }
 
-            // Always update live diagnostics
             this.updateModalLiveValue();
             this.updateModalDiagnostics();
         });
     }
 
-    // NOTE: Removed all fetchHistory, startHistoryEmulation, and startLocalMockEmulation methods.
+    /**
+     * Helper to format raw Stake data into our App's format
+     */
+    standardizeRound(crashData) {
+        const finalMultiplier = crashData.multiplier || crashData.val || 1.00;
+        
+        // Handle nested hash object structure
+        let roundHash = `PENDING`;
+        if (crashData.hash) {
+            if (typeof crashData.hash === 'object' && crashData.hash.hash) {
+                roundHash = `stake-hash-${crashData.hash.hash}`;
+            } else if (typeof crashData.hash === 'string') {
+                roundHash = `stake-hash-${crashData.hash}`;
+            }
+        } else {
+             roundHash = `game-id-${crashData.id}-PENDING_HASH`;
+        }
+
+        return {
+            gameId: crashData.id,
+            finalMultiplier: finalMultiplier,
+            clientSeed: roundHash, 
+            nonce: 0, 
+            verificationStatus: 'Live Official Data' 
+        };
+    }
 
     // --- MODAL HELPERS ---
     
     updateModalLiveValue() {
-        // Now displays the live multiplier value
         const el = document.getElementById('live-sync-current-multiplier');
         if (el) {
             el.textContent = this.isRoundRunning 
-                ? `${this.currentMultiplier.toFixed(4)}x` 
+                ? `${this.currentMultiplier.toFixed(2)}x` 
                 : "STARTING";
         }
     }
@@ -121,10 +137,8 @@ export class LiveSync {
         const container = document.getElementById('live-sync-history-container');
         if (!container) return;
         
-        // DataStore must be updated to store objects or you might need a new method
-        // Assuming your dataStore.getMultipliers() still returns just the number array
         const allMultipliers = this.dataStore.getMultipliers();
-        const history = allMultipliers.slice(0, 20); // Get newest 20
+        const history = allMultipliers.slice(0, 20); 
 
         container.innerHTML = ''; 
         history.forEach(value => {

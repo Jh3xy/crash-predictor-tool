@@ -1,0 +1,188 @@
+[
+  {
+    "id": "94149b8f-4a55-46b7-b06d-b91032456d71",
+    "multiplier": 1.0424793,
+    "status": "crash",
+    "hash": null
+  },
+  {
+    "id": "6fe2e046-4251-490e-bbc3-0394ee179461",
+    "multiplier": 1.1883378,
+    "status": "crash",
+    "hash": null
+  },
+  {
+    "id": "13dc41f9-1bbe-46c3-9af5-106bb1d478bd",
+    "multiplier": 4.443067,
+    "status": "crash",
+    "hash": null
+  },
+  {
+    "id": "1ea8941d-840b-49ad-a167-4e4db3df6892",
+    "multiplier": 14.889036,
+    "status": "crash",
+    "hash": null
+  },
+  {
+    "id": "4b67dc87-0e8f-4608-95f0-8bbad689b754",
+    "multiplier": 2.5661268,
+    "status": "crash",
+    "hash": null
+  },
+  {
+    "id": "e6d18648-2713-4cf3-8fe1-957debb5b577",
+    "multiplier": 1.6660975,
+    "status": "crash",
+    "hash": null
+  },
+  {
+    "id": "seed-01",
+    "multiplier": 1.02,
+    "status": "crash",
+    "hash": "seed"
+  },
+  {
+    "id": "seed-02",
+    "multiplier": 1.45,
+    "status": "crash",
+    "hash": "seed"
+  },
+  {
+    "id": "seed-03",
+    "multiplier": 2.1,
+    "status": "crash",
+    "hash": "seed"
+  },
+  {
+    "id": "seed-04",
+    "multiplier": 3.55,
+    "status": "crash",
+    "hash": "seed"
+  },
+  {
+    "id": "seed-05",
+    "multiplier": 1,
+    "status": "crash",
+    "hash": "seed"
+  },
+  {
+    "id": "seed-06",
+    "multiplier": 1.12,
+    "status": "crash",
+    "hash": "seed"
+  },
+  {
+    "id": "seed-07",
+    "multiplier": 14.5,
+    "status": "crash",
+    "hash": "seed"
+  },
+  {
+    "id": "seed-08",
+    "multiplier": 1.05,
+    "status": "crash",
+    "hash": "seed"
+  },
+  {
+    "id": "seed-09",
+    "multiplier": 1.01,
+    "status": "crash",
+    "hash": "seed"
+  },
+  {
+    "id": "seed-10",
+    "multiplier": 4.2,
+    "status": "crash",
+    "hash": "seed"
+  },
+  {
+    "id": "seed-11",
+    "multiplier": 2.05,
+    "status": "crash",
+    "hash": "seed"
+  },
+  {
+    "id": "seed-12",
+    "multiplier": 1.33,
+    "status": "crash",
+    "hash": "seed"
+  },
+  {
+    "id": "seed-13",
+    "multiplier": 1,
+    "status": "crash",
+    "hash": "seed"
+  },
+  {
+    "id": "seed-14",
+    "multiplier": 6.75,
+    "status": "crash",
+    "hash": "seed"
+  },
+  {
+    "id": "seed-15",
+    "multiplier": 1.9,
+    "status": "crash",
+    "hash": "seed"
+  },
+  {
+    "id": "seed-16",
+    "multiplier": 1.2,
+    "status": "crash",
+    "hash": "seed"
+  },
+  {
+    "id": "seed-17",
+    "multiplier": 1.04,
+    "status": "crash",
+    "hash": "seed"
+  },
+  {
+    "id": "seed-18",
+    "multiplier": 2.55,
+    "status": "crash",
+    "hash": "seed"
+  },
+  {
+    "id": "seed-19",
+    "multiplier": 11,
+    "status": "crash",
+    "hash": "seed"
+  },
+  {
+    "id": "seed-20",
+    "multiplier": 1.01,
+    "status": "crash",
+    "hash": "seed"
+  },
+  {
+    "id": "seed-21",
+    "multiplier": 1.5,
+    "status": "crash",
+    "hash": "seed"
+  },
+  {
+    "id": "seed-22",
+    "multiplier": 1.88,
+    "status": "crash",
+    "hash": "seed"
+  },
+  {
+    "id": "seed-23",
+    "multiplier": 3.1,
+    "status": "crash",
+    "hash": "seed"
+  },
+  {
+    "id": "seed-24",
+    "multiplier": 1.05,
+    "status": "crash",
+    "hash": "seed"
+  },
+  {
+    "id": "seed-25",
+    "multiplier": 1.02,
+    "status": "crash",
+    "hash": "seed"
+  }
+]

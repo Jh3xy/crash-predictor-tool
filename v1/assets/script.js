@@ -89,19 +89,17 @@ function getDOMElements() {
 }
 
 /**
- * Run prediction and update UI using Look-Ahead Logic
+ * Run prediction and update UI using Standard Next-Round Logic
  */
 async function runPredictionAndRender(dataStore, predictor, uiController, liveSync, eventBus) { 
     const historyMultipliers = dataStore.getMultipliers();
     
-    // 🔥 KEY CHANGE: Use the new Look-Ahead Method from predictor.js
-    const result = predictor.predictLookAhead(historyMultipliers);
+    // 🔥 FIX: Reverted to standard next-round prediction
+    const result = predictor.predictNext(historyMultipliers);
     
-    // Calculate the ID for Round N + 2
+    // 🔥 FIX: Target is now N+1 (The upcoming round)
     // liveSync.currentGameId is Round N (Last Completed).
-    // UI simulates N+1 Running.
-    // We are predicting N+2.
-    result.gameId = liveSync.currentGameId + 2; 
+    result.gameId = liveSync.currentGameId + 1; 
 
     eventBus.emit('newPredictionMade', result);
     uiController.renderPrediction(result);
@@ -110,7 +108,7 @@ async function runPredictionAndRender(dataStore, predictor, uiController, liveSy
         console.error(`❌ Prediction Failed: ${result.message}`);
         uiController.setPredictButtonState('error'); 
     } else {
-        console.log(`✅ Look-Ahead Prediction (Target Round ${result.gameId}): ${result.predictedValue.toFixed(2)}x, Confidence: ${result.confidence}%`);
+        console.log(`✅ Next Round Prediction (Target Round ${result.gameId}): ${result.predictedValue.toFixed(2)}x, Confidence: ${result.confidence}%`);
     }
 }
 
@@ -177,9 +175,12 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // 4. Attach Event Bus Listeners
     
-    // Note: 'liveUpdate' is not used in history mode, but we keep the listener safe
-    eventBus.on('liveUpdate', (e) => {
-        // Optional: You could update a status here if needed
+    // 🔥 FIX: Listen for live multiplier ticks from LiveSyncing.js
+    // This updates the UI card in real-time as the rocket flies
+    eventBus.on('multiplierUpdate', (multiplier) => {
+        if (domElements.currentMultiplier) {
+            domElements.currentMultiplier.textContent = multiplier.toFixed(2) + 'x';
+        }
     });
     
     eventBus.on('newRoundCompleted', (round) => {

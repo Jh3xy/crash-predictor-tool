@@ -1,40 +1,59 @@
 // server.js - Crash Game WebSocket Proxy
 let pingInterval = null;
 
-// 🔥 CRITICAL FIX: The GraphQL query is updated to query the hash's subfield 'hash'.
 const CRASH_SUBSCRIPTION_MESSAGE = {
-    id: '1', // A unique ID for this subscription stream
+    id: '1', 
     type: 'subscribe', 
     payload: {
-        // The correct syntax: hash { hash } to query the string value inside the hash object.
         query: 'subscription { crash { event { ... on MultiplayerCrash { id, multiplier, status, hash { hash } } } } }'
     }
 };
 
-// 1. Setup the Server Side (talking to the Predictor Tool)
 const express = require('express');
 const { Server } = require('socket.io');
 const http = require('http');
+const fs = require('fs'); // 🔥 NEW: For saving history
 const app = express();
 const server = http.createServer(app);
 
-// Initialize socket.io for client communication (your predictor tool)
+// --- PERSISTENCE SETUP ---
+const HISTORY_FILE = 'history.json';
+let crashHistory = [];
+
+// 1. Load existing history if available
+if (fs.existsSync(HISTORY_FILE)) {
+    try {
+        const raw = fs.readFileSync(HISTORY_FILE);
+        crashHistory = JSON.parse(raw);
+        console.log(`📚 Loaded ${crashHistory.length} rounds from history.json`);
+    } catch (e) {
+        console.error('⚠️ Could not read history file, starting fresh.');
+    }
+}
+
 const io = new Server(server, {
     cors: {
-        // 🔥 CRITICAL FIX: Allowing multiple origins for your Live Server setup
         origin: ["http://localhost:8080", "http://127.0.0.1:5500"], 
         methods: ["GET", "POST"]
     }
 });
 
+// 2. Handle Client Connections
+io.on('connection', (socket) => {
+    console.log('✨ New Frontend Client Connected');
+    
+    // 🔥 Send the stored history immediately!
+    socket.emit('history', crashHistory);
+});
+
 const PORT = 3000;
 server.listen(PORT, () => {
     console.log(`✅ Proxy Server listening on http://localhost:${PORT}`);
-    connectToStake(); // Start the connection to Stake once our server is running
+    connectToStake(); 
 });
 
 
-// 2. Setup the Client Side (talking to the Stake WSS)
+// 3. Setup the Client Side (talking to the Stake WSS)
 const WebSocket = require('ws');
 const STAKE_WSS_URL = 'wss://stake.com/_api/websockets';
 let stakeWS = null;
@@ -42,7 +61,6 @@ let stakeWS = null;
 function connectToStake() {
     console.log(`⚡️ Attempting to connect to Stake at ${STAKE_WSS_URL}...`);
     
-    // CRITICAL FIX: The server demands the 'graphql-transport-ws' subprotocol.
     stakeWS = new WebSocket(STAKE_WSS_URL, ['graphql-transport-ws'], { 
         headers: {
             'Host': 'stake.com', 
@@ -54,76 +72,50 @@ function connectToStake() {
         }
     });
 
-    // --- Connection Events ---
     stakeWS.on('open', () => {
-        console.log('🔗 Successfully connected to Stake WebSocket.');
-
-        // 1. Send Connection_INIT to start the GraphQL-WS protocol
-        const initMessage = { 
-            type: 'connection_init', 
-            payload: {} // Clean, empty payload
-        }; 
-        
+        console.log('🔗 Connected to Stake WebSocket.');
+        const initMessage = { type: 'connection_init', payload: {} }; 
         stakeWS.send(JSON.stringify(initMessage));
-        console.log('➡️ Sent: connection_init');
     });
 
-    // --- Error and Close Events ---
-    stakeWS.on('error', (error) => {
-        console.error('❌ Stake WS Error:', error.message);
-    });
+    stakeWS.on('error', (error) => console.error('❌ Stake WS Error:', error.message));
 
     stakeWS.on('close', (code, reason) => {
-        // Log the exact close code and reason for debugging
-        console.warn(`⚠️ Stake WS closed. Code: ${code}. Reason: ${reason.toString()}. Reconnecting in 5 seconds...`);
-
-        // Stop the ping loop when connection closes
-        if (pingInterval) {
-            clearInterval(pingInterval);
-            pingInterval = null;
-        }
-
-        // Automatically reconnect after a delay
+        console.warn(`⚠️ Stake WS closed. Reconnecting...`);
+        if (pingInterval) clearInterval(pingInterval);
         setTimeout(connectToStake, 5000); 
     });
 
-    // --- Message Handler ---
     stakeWS.on('message', (data) => {
         try {
             const message = JSON.parse(data.toString());
             
-            // Check the type of message from the server
             if (message.type === 'connection_ack') {
-                // 2. Send the crash game subscription after the handshake is acknowledged
                 stakeWS.send(JSON.stringify(CRASH_SUBSCRIPTION_MESSAGE));
-                console.log('✅ Received: connection_ack. Starting crash game subscription...');
 
             } else if (message.type === 'ping') {
-                // Server sends 'ping'. Client MUST respond with 'pong'.
-                const pongMessage = JSON.stringify({ type: 'pong' });
-                stakeWS.send(pongMessage);
+                stakeWS.send(JSON.stringify({ type: 'pong' }));
                 
             } else if (message.type === 'data' || message.type === 'next') {
-                // This is the actual game data!
                 const crashData = message.payload.data.crash.event;
 
-                // 1. Log the incoming data (keep for debugging)
-                console.log('⬇️ Received Game Data:', crashData); 
-                
-                // 2. 🔥 CRITICAL CHANGE: Emit the data to all connected predictor clients!
+                // Send live update to client
                 io.emit('liveMultiplierUpdate', crashData);
 
-            } else if (message.type === 'error') {
-                // Log GraphQL errors cleanly
-                console.error('❌ GraphQL Error:', message.payload);
-            } else {
-                // Log all other messages for debugging
-                console.log('⬇️ Received Unknown Message:', message);
-            }
+                // 🔥 NEW: If round crashed, save it to history!
+                if (crashData.status === 'crash') {
+                    // Add to front of history
+                    crashHistory.unshift(crashData);
+                    
+                    // Keep only last 500
+                    if (crashHistory.length > 500) crashHistory.pop();
 
+                    // Save to disk
+                    fs.writeFileSync(HISTORY_FILE, JSON.stringify(crashHistory, null, 2));
+                }
+            } 
         } catch (e) {
-            // Handle non-JSON messages (like raw text pings or binary data)
-            console.log('⬇️ Received Non-JSON Data:', data.toString());
+            // Ignore parse errors
         }
     });
 }
