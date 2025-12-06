@@ -1196,7 +1196,9 @@ span.pattern-name:nth-of-type(3){
 .integrity h3{
     margin-bottom: 1rem;
 }
-
+.status-connected{
+    color: var(--color-status-success);
+}
 
 
 

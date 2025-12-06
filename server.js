@@ -104,14 +104,18 @@ function connectToStake() {
 
                 // 🔥 NEW: If round crashed, save it to history!
                 if (crashData.status === 'crash') {
-                    // Add to front of history
+                    // Add new round to the front
                     crashHistory.unshift(crashData);
-                    
-                    // Keep only last 500
-                    if (crashHistory.length > 500) crashHistory.pop();
+
+                    // CRITICAL: Always keep exactly the last 500 rounds
+                    if (crashHistory.length > 500) {
+                        crashHistory = crashHistory.slice(0, 500);
+                    }
 
                     // Save to disk
                     fs.writeFileSync(HISTORY_FILE, JSON.stringify(crashHistory, null, 2));
+                    
+                    console.log(`Saved crash ${crashData.id} | Total history: ${crashHistory.length} rounds`);
                 }
             } 
         } catch (e) {
