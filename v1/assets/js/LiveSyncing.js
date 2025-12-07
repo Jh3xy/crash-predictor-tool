@@ -18,7 +18,7 @@ export class LiveSync {
     }
 
     connect() {
-        const PROXY_URL = 'http://localhost:3000';
+        const PROXY_URL = 'https://workspace.jhxydevme.repl.co';
 
         if (typeof io === 'undefined') {
             console.error("Socket.IO client is not loaded.");
