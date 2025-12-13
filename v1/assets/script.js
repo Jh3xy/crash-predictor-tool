@@ -88,57 +88,6 @@ function getDOMElements() {
     };
 }
 
-/**
- * Run prediction and update UI using Standard Next-Round Logic
- */
-async function runPredictionAndRender(dataStore, predictor, uiController, liveSync, eventBus) { 
-    const historyMultipliers = dataStore.getMultipliers();
-    
-    // 🔥 FIX: Reverted to standard next-round prediction
-    const result = predictor.predictNext(historyMultipliers);
-    
-    // 🔥 FIX: Target is now N+1 (The upcoming round)
-    // liveSync.currentGameId is Round N (Last Completed).
-    result.gameId = liveSync.currentGameId + 1; 
-
-    eventBus.emit('newPredictionMade', result);
-    uiController.renderPrediction(result);
-    
-    if (result.error) {
-        console.error(`❌ Prediction Failed: ${result.message}`);
-        uiController.setPredictButtonState('error'); 
-    } else {
-        console.log(`✅ Next Round Prediction (Target Round ${result.gameId}): ${result.predictedValue.toFixed(2)}x, Confidence: ${result.confidence}%`);
-    }
-}
-
-/**
- * Handle Predict Button Click
- */
-function handlePredictClick(dataStore, predictor, uiController, liveSync, eventBus) { 
-    const historyMultipliers = dataStore.getMultipliers();
-    uiController.setPredictButtonState('loading'); 
-
-    if (historyMultipliers.length < 5) { // Lowered requirement for testing
-        const result = {
-            error: true, 
-            message: `Not enough history (${historyMultipliers.length}). Waiting for more data...`,
-            confidence: 0,
-        };
-        uiController.renderPrediction(result);
-        return 0; 
-    }
-
-    uiController.showLoadingState();
-    const ANALYSIS_DELAY_MS = 1000; // 1s delay for UI effect
-
-    setTimeout(() => {
-        runPredictionAndRender(dataStore, predictor, uiController, liveSync, eventBus); 
-    }, ANALYSIS_DELAY_MS);
-    
-    return ANALYSIS_DELAY_MS;
-}
-
 // =========================================================
 // APP ENTRY POINT
 // =========================================================
@@ -160,7 +109,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const historyLog = new HistoryLog(domElements, eventBus); 
 
     uiController.showInitialState();
-    const liveSync = new LiveSync(dataStore, verifier, eventBus); 
+
+    // 🛑 CRITICAL FIX: Pass uiController and predictor instances to LiveSync constructor
+    const liveSync = new LiveSync(dataStore, verifier, eventBus, uiController, predictor); 
     
     console.log('🚀 App Initialized. Starting LiveSync history connection...');
     
@@ -170,13 +121,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 3. Connect (This triggers the history fetch now)
-    liveSync.connect(); 
+    // 3. Connect (This triggers the history fetch now in the constructor)
+    // liveSync.connect(); // This line can now be removed as it's in the constructor
+
+    // 4. Attach Event Bus Listeners (These remain the same)
     
-    // 4. Attach Event Bus Listeners
-    
-    // 🔥 FIX: Listen for live multiplier ticks from LiveSyncing.js
-    // This updates the UI card in real-time as the rocket flies
     eventBus.on('multiplierUpdate', (multiplier) => {
         if (domElements.currentMultiplier) {
             domElements.currentMultiplier.textContent = multiplier.toFixed(2) + 'x';
@@ -184,10 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     eventBus.on('newRoundCompleted', (round) => {
-        // Update UI with the new "Last Crash" and "Simulated Status"
         uiController.renderNewRound(round);
-        
-        // Update Modals
         if (liveSync) {
              liveSync.updateModalHistory(); 
              liveSync.updateModalDiagnostics();
