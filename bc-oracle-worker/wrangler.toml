@@ -1,0 +1,14 @@
+
+name = "bc-oracle-worker"
+main = "src/worker-router.js"
+compatibility_date = "2025-12-12"
+
+# This section binds the Durable Object Class to the variable 'CRASH_ORACLE_DO'
+[[durable_objects.bindings]]
+name = "CRASH_ORACLE_DO"
+class_name = "CrashOracleDO"
+
+# This creates the namespace for the migration (required for storage)
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["CrashOracleDO"]

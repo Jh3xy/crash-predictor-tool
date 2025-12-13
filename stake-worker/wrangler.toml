@@ -1,0 +1,16 @@
+name = "stake-oracle" 
+main = "src/worker-router.js"
+compatibility_date = "2025-01-01"
+
+[durable_objects]
+bindings = [
+{ name = "ORACLE_DO", class_name = "OracleDO" }
+]
+
+[observability]
+enabled = true
+
+[[migrations]]
+tag = "v1"
+[[migrations.declarations]]
+name = "OracleDO"
