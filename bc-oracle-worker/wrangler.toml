@@ -12,3 +12,10 @@ class_name = "CrashOracleDO"
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["CrashOracleDO"]
+
+# NEW: Add a cron trigger (e.g., runs every hour)
+[triggers]
+crons = ["0 * * * *"]
+
+
+

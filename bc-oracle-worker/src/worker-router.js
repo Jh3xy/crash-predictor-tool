@@ -1,21 +1,23 @@
 
 // src/worker-router.js
 
-// CRITICAL: Export the class so wrangler.toml sees it
 import { CrashOracleDO } from './crash-oracle-do.js';
+import AuthWorker from './auth-worker.js'; // NEW: Import the auth worker logic
 export { CrashOracleDO }; 
 
 export default {
+  // Handle HTTP & WebSocket requests
   async fetch(request, env, ctx) {
-    const url = new URL(request.url);
-
-    // Get the Durable Object Stub for the GLOBAL ID
-    // We use the same DO instance for all connections/commands
     const id = env.CRASH_ORACLE_DO.idFromName("GLOBAL");
     const stub = env.CRASH_ORACLE_DO.get(id);
-
-    // ✅ FIX: Forward ALL requests to the Durable Object
-    // The DO's fetch handler will handle /ws (for WebSocket) and /reset (for storage clear)
+    // Forward ALL requests (including /api/history and /internal/update-auth) to the DO
     return stub.fetch(request);
   },
+
+  // NEW: Handle Cron Triggers
+  async scheduled(event, env, ctx) {
+    // Delegate the scheduled event to the AuthWorker logic
+    await AuthWorker.scheduled(event, env, ctx);
+  }
 };
+
