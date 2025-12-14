@@ -14,19 +14,67 @@ export class Verifier {
         this.eventBus = eventBus; 
         this.serverSeed = 'DEFAULT_MOCK_SEED_FOR_HMAC'; 
         this.cryptoEngine = new CryptoEngine();
+
+        // Simple queue for pending verifications
+        this._pendingQueue = [];
+        this._isProcessing = false;
+
         console.log('Verifier: Initialized.');
     }
 
+    /**
+     * Public API expected by LiveSync — enqueue a round for verification.
+     * Will process the queue sequentially.
+     */
+    addPendingVerification(round) {
+        if (!round || !round.gameId) {
+            console.warn('Verifier: addPendingVerification called with invalid round.');
+            return;
+        }
+
+        // avoid duplicates (cheap check)
+        if (this._pendingQueue.find(r => r.gameId === round.gameId)) {
+            return;
+        }
+
+        // mark initial state
+        round.verificationStatus = round.verificationStatus || 'Pending';
+        this._pendingQueue.push(round);
+
+        // begin processing if not already
+        if (!this._isProcessing) {
+            this._processQueue();
+        }
+    }
+
+    // internal: process the pending queue sequentially
+    async _processQueue() {
+        this._isProcessing = true;
+        while (this._pendingQueue.length > 0) {
+            const next = this._pendingQueue.shift();
+            try {
+                await this.verify(next);
+            } catch (e) {
+                console.error('Verifier: Error verifying round', next.gameId, e);
+                // mark failed
+                next.verificationStatus = 'Verification Error';
+                try { this.dataStore.updateRound(next.gameId, { verificationStatus: next.verificationStatus }); } catch (_) {}
+                // still continue with next items
+            }
+        }
+        this._isProcessing = false;
+    }
+
     async verify(round) {
-        // 🔥 BYPASS: If the data came from the Official API, we treat it as valid
-        // because we don't have the unhashed server seed for old rounds immediately.
+        if (!round) return;
+
+        // BYPASS: Official API data
         if (round.verificationStatus === 'Official Data') {
-            // Just update UI to show it's good
             this.eventBus.emit('roundVerified', round);
             return;
         }
 
-        // --- Standard Verification Logic (For Mock/Manual rounds) ---
+        // Standard verification
         const key = this.serverSeed; 
         const data = `${round.clientSeed}:${round.nonce}`; 
         
@@ -41,7 +89,7 @@ export class Verifier {
 
         round.verificationHash = calculatedHash;
         
-        // Simulate delay
+        // simulate a small verification delay (can be removed/reduced)
         await new Promise(resolve => setTimeout(resolve, 500)); 
 
         round.verificationStatus = round.finalMultiplier >= 2.00 ? 'Verified' : 'Low Payout Verified';

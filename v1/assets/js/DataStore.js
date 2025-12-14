@@ -3,7 +3,6 @@
  * Handles the storage and retrieval of crash game history.
  */
 
-// Mock data array: Multipliers for initial testing/fallback
 const MOCK_HISTORY_MULTIPLIERS = [
     1.02, 1.45, 1.98, 2.50, 1.01, 1.05, 1.67, 1.11, 3.45, 1.09,
     1.22, 1.04, 1.10, 1.50, 1.06, 1.99, 2.10, 1.01, 1.15, 1.03,
@@ -21,9 +20,6 @@ export class DataStore {
         console.log(`📦 DataStore: Initialized.`);
     }
     
-    /**
-     * Optional: Call this if fetching fails.
-     */
     loadMockHistory() {
         if (this.rounds.length > 0) return;
 
@@ -36,17 +32,12 @@ export class DataStore {
         });
     }
 
-    /**
-     * 🔥 NEW: Bulk loads history from the server.
-     * Expects an array of standardized round objects.
-     */
     setHistory(rounds) {
         if (!Array.isArray(rounds)) {
             console.error('❌ DataStore: setHistory received invalid data');
             return;
         }
-        
-        // Take the newest 500 rounds
+        // Keep newest-first, cap to MAX_ROUNDS
         this.rounds = rounds.slice(0, this.MAX_ROUNDS);
         console.log(`📦 DataStore: Loaded ${this.rounds.length} rounds from history.`);
     }
@@ -56,13 +47,8 @@ export class DataStore {
             console.error('❌ DataStore: Attempted to add invalid round data.');
             return;
         }
-        
-        // Add new round to the front (Newest First)
         this.rounds.unshift(roundData); 
-        
-        if (this.rounds.length > this.MAX_ROUNDS) {
-            this.rounds.pop(); 
-        }
+        if (this.rounds.length > this.MAX_ROUNDS) this.rounds.pop(); 
     }
 
     updateRound(gameId, updateData) {
@@ -78,9 +64,21 @@ export class DataStore {
         this.currentRound.multiplier = multiplier;
     }
 
+    /**
+     * Return newest-first multipliers (coerced to numbers).
+     * count: how many multipliers to return (default 200).
+     */
     getMultipliers(count = 200) {
         return this.rounds
                    .slice(0, count)
-                   .map(round => round.finalMultiplier);
+                   .map(round => Number(round.finalMultiplier) || 0);
+    }
+
+    /**
+     * Alias explicitly expected by LiveSync:
+     * returns the most recent 'count' multipliers (newest-first).
+     */
+    getRecentMultipliers(count = 10) {
+        return this.getMultipliers(count);
     }
 }
