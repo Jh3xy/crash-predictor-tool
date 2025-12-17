@@ -188,6 +188,7 @@ export class UIController {
         this.elements = elements;
         this.cells = []; 
         this.predictorCard = document.getElementById('ai-predictor');
+        this.dom = elements;
         
         // Initialize the 10 fixed history cells
         this.initializeHistoryCells(10); 
@@ -262,22 +263,22 @@ export class UIController {
      * Simulates the status of the NEXT round running.
      * @param {number} lastGameId - The ID of the round that just finished.
      */
-    updateSimulatedStatus(lastGameId) {
-        const nextRoundId = lastGameId + 1;
+    // updateSimulatedStatus(lastGameId) {
+    //     const nextRoundId = lastGameId + 1;
         
-        // Pulse the status dot green
-        if (this.elements.statusDot) {
-            this.elements.statusDot.className = 'status-dot'; 
-            this.elements.statusDot.style.backgroundColor = 'var(--color-status-success)';
-            this.elements.statusDot.style.boxShadow = '0 0 8px var(--color-status-success)';
-        }
+    //     // Pulse the status dot green
+    //     if (this.elements.statusDot) {
+    //         this.elements.statusDot.className = 'status-dot'; 
+    //         this.elements.statusDot.style.backgroundColor = 'var(--color-status-success)';
+    //         this.elements.statusDot.style.boxShadow = '0 0 8px var(--color-status-success)';
+    //     }
 
-        // Update Text (if exists)
-        if (this.elements.statusMessage) {
-            this.elements.statusMessage.textContent = `Round ${nextRoundId} Running...`;
-            this.elements.statusMessage.style.color = 'var(--text-secondary)';
-        }
-    }
+    //     // Update Text (if exists)
+    //     if (this.elements.statusMessage) {
+    //         this.elements.statusMessage.textContent = `Round ${nextRoundId} Running...`;
+    //         this.elements.statusMessage.style.color = 'var(--text-secondary)';
+    //     }
+    // }
 
     updateLiveMultiplier(multiplier) {
         // kept for compatibility
@@ -451,13 +452,13 @@ export class UIController {
         }
 
         // Update status dot/message
-        if (this.elements.statusDot) {
-            this.elements.statusDot.style.backgroundColor = 'var(--color-status-danger)';
-            this.elements.statusDot.style.boxShadow = '0 0 8px var(--color-status-danger)';
-        }
-        if (this.elements.statusMessage) {
-            this.elements.statusMessage.textContent = 'Round Ended';
-        }
+        // if (this.elements.statusDot) {
+        //     this.elements.statusDot.style.backgroundColor = 'var(--color-status-danger)';
+        //     this.elements.statusDot.style.boxShadow = '0 0 8px var(--color-status-danger)';
+        // }
+        // if (this.elements.statusMessage) {
+        //     this.elements.statusMessage.textContent = 'Round Ended';
+        // }
     }
 
     /**

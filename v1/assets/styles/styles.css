@@ -497,15 +497,22 @@ nav{
 .multiple{
     font-size: 3rem;
     color: var(--text-primary);
-    margin-bottom: 1.2rem;
+    /* margin-bottom: 1.2rem; */
     text-shadow: var(--shadow-glow-accent); 
+}
+.round-id{
+    font-size: .6rem;
+    opacity: 0.5;
+}
+.recents{
+    margin-top: 2rem;
 }
 .recents span{
     color: var(--text-secondary); /* Ensure secondary text for label */
 }
 .multiples-grid{
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
     gap: var(--spacing-small);
     max-width: 900px;
     margin-top: 10px;

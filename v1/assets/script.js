@@ -72,7 +72,7 @@ function getDOMElements() {
         clearHistoryBtn: document.getElementById('clear-history-btn'), 
         recentGrid: document.getElementById('recent-grid'),
         statusDot: document.getElementById('status-dot'),
-        // statusMessage: document.getElementById('status-message'),
+        statusMessage: document.getElementById('status-message'),
         predictBtn: document.getElementById('predict-btn'),
         predictedValue: document.getElementById('predicted-value'),
         predictedRoundId: document.getElementById('predicted-round-id'), 

@@ -35,7 +35,7 @@ export class EventEmitter {
                 try {
                     callback(data);
                 } catch (error) {
-                    console.error(`❌ EventEmitter: Error executing callback for event "${eventName}"`, error);
+                    // console.error(`❌ EventEmitter: Error executing callback for event "${eventName}"`, error);
                 }
             });
         }

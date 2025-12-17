@@ -72,10 +72,11 @@ export class LiveSync {
             console.log(
             `🕵️ [Debug] DataStore rounds count: ${this.dataStore.rounds.length}`
             );
+            console.log(this.dataStore.rounds)
 
             // Show newest 5 rounds (what the UI should reflect first)
             console.table(
-            this.dataStore.rounds.slice(0, 5).map(r => ({
+            this.dataStore.rounds.slice(0, 10).map(r => ({
                 gameId: r.gameId,
                 finalMultiplier: r.finalMultiplier,
                 verificationStatus: r.verificationStatus,
@@ -312,6 +313,26 @@ export class LiveSync {
     } catch (e) {
       console.warn('LiveSync: predictor failed:', e);
     }
+    // ---- ROUND ID DISPLAY LOGIC ----
+
+    // Last completed round (for .round-id)
+    const lastRoundId = standardized.gameId;
+
+    // Currently running round = last + 1
+    const runningRoundId = Number(lastRoundId) + 1;
+
+    // Update round-id element (past round)
+    const roundIdEl = document.querySelector('.round-id');
+    if (roundIdEl) {
+      roundIdEl.textContent = `Round ${lastRoundId}`;
+    }
+
+    // Update status message (running round)
+    if (this.uiController?.dom?.statusMessage) {
+      this.uiController.dom.statusMessage.textContent =
+        `Round ${runningRoundId} running`;
+    }
+
   }
 
   // -------------------------
