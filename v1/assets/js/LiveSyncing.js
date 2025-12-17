@@ -108,16 +108,31 @@ export class LiveSync {
         this.uiController.updateRecentMultipliers(this.dataStore.getRecentMultipliers(10));
       }
 
+      // // first prediction if predictor exists
+      // if (this.predictor && typeof this.predictor.predictNext === 'function') {
+      //   try {
+      //     const pred = this.predictor.predictNext(this.dataStore.getMultipliers(200));
+      //     if (this.uiController && typeof this.uiController.displayPrediction === 'function') {
+      //       this.uiController.displayPrediction(pred);
+      //     }
+      //   } catch (e) {
+      //     console.warn('LiveSync: predictor threw on initial run:', e);
+      //   }
+      // }
       // first prediction if predictor exists
       if (this.predictor && typeof this.predictor.predictNext === 'function') {
-        try {
-          const pred = this.predictor.predictNext(this.dataStore.getMultipliers(200));
-          if (this.uiController && typeof this.uiController.displayPrediction === 'function') {
-            this.uiController.displayPrediction(pred);
-          }
-        } catch (e) {
-          console.warn('LiveSync: predictor threw on initial run:', e);
-        }
+        // Run as an IIFE (Immediately Invoked Function Expression) to handle async
+        (async () => {
+            try {
+              // CHANGE: Wait for the worker response
+              const pred = await this.predictor.predictNext(this.dataStore.getMultipliers(500));
+              if (this.uiController && typeof this.uiController.displayPrediction === 'function') {
+                this.uiController.displayPrediction(pred);
+              }
+            } catch (e) {
+              console.warn('LiveSync: predictor threw on initial run:', e);
+            }
+        })();
       }
     } catch (e) {
       console.warn('LiveSync: UI update after history fetch failed:', e);
@@ -302,16 +317,40 @@ export class LiveSync {
       console.warn('LiveSync: eventBus emit failed:', e);
     }
 
+    // // Run predictor on updated history if available
+    // try {
+    //   if (this.predictor && typeof this.predictor.predictNext === 'function') {
+    //     const nextPrediction = this.predictor.predictNext(this.dataStore.getMultipliers(200));
+    //     if (this.uiController && typeof this.uiController.displayPrediction === 'function') {
+    //       this.uiController.displayPrediction(nextPrediction);
+    //     }
+    //   }
+    // } catch (e) {
+    //   console.warn('LiveSync: predictor failed:', e);
+    // }
     // Run predictor on updated history if available
     try {
       if (this.predictor && typeof this.predictor.predictNext === 'function') {
-        const nextPrediction = this.predictor.predictNext(this.dataStore.getMultipliers(200));
-        if (this.uiController && typeof this.uiController.displayPrediction === 'function') {
-          this.uiController.displayPrediction(nextPrediction);
-        }
+        (async () => {
+            try {
+                 // CHANGE: Wait for the worker response & use 500 history length
+                const nextPrediction = await this.predictor.predictNext(this.dataStore.getMultipliers(500));
+                
+                // OPTIONAL: Inject the TARGET Game ID (Current + 1)
+                if (this.currentGameId) {
+                    nextPrediction.gameId = Number(this.currentGameId) + 1;
+                }
+
+                if (this.uiController && typeof this.uiController.displayPrediction === 'function') {
+                  this.uiController.displayPrediction(nextPrediction);
+                }
+            } catch (innerErr) {
+                 console.warn('LiveSync: async prediction failed:', innerErr);
+            }
+        })();
       }
     } catch (e) {
-      console.warn('LiveSync: predictor failed:', e);
+      console.warn('LiveSync: predictor setup failed:', e);
     }
     // ---- ROUND ID DISPLAY LOGIC ----
 
@@ -334,7 +373,31 @@ export class LiveSync {
     }
 
   }
+  // --- Manual Trigger for the Button ---
+  async triggerManualPrediction() {
+    console.log('🤖 LiveSync: Manual prediction requested...');
+    
+    if (this.predictor && this.uiController) {
+      try {
+        // 1. Get history
+        const history = this.dataStore.getMultipliers(500);
+        
+        // 2. Await the worker prediction
+        const prediction = await this.predictor.predictNext(history);
+        
+        // 3. Set the target Game ID
+        if (this.currentGameId) {
+          prediction.gameId = parseInt(this.currentGameId) + 1;
+        }
 
+        // 4. Update the UI
+        this.uiController.displayPrediction(prediction);
+      } catch (err) {
+        console.error("❌ LiveSync: Manual prediction failed", err);
+        throw err; // Pass error back to script.js to handle
+      }
+    }
+  }
   // -------------------------
   // Modal helpers expected by script.js
   // -------------------------

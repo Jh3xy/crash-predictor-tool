@@ -115,9 +115,30 @@ document.addEventListener('DOMContentLoaded', () => {
     
     console.log('🚀 App Initialized. Starting LiveSync history connection...');
     
+    // if (domElements.predictBtn) {
+    //     domElements.predictBtn.addEventListener('click', () => {
+    //         handlePredictClick(dataStore, predictor, uiController, liveSync, eventBus); 
+    //     });
+    // }
+
+    // Triggers the prediction manually
     if (domElements.predictBtn) {
-        domElements.predictBtn.addEventListener('click', () => {
-            handlePredictClick(dataStore, predictor, uiController, liveSync, eventBus); 
+        domElements.predictBtn.addEventListener('click', async () => {
+            console.log('👆 Manual Prediction Triggered');
+            
+            // 1. Change button to "Analyzing..."
+            uiController.setPredictButtonState('loading');
+            
+            try {
+                // 2. Tell LiveSync to run the worker prediction
+                // We use 'await' because the worker math takes a split second
+                await liveSync.triggerManualPrediction();
+            } catch (err) {
+                console.error("Manual Prediction Error:", err);
+            } finally {
+                // 3. Change button back to "Analyze"
+                uiController.setPredictButtonState('idle');
+            }
         });
     }
 

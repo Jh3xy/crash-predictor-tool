@@ -290,6 +290,46 @@ export class UIController {
         if (this.elements.statusMessage) this.elements.statusMessage.textContent = message;
     }
 
+    // renderPrediction(result) {
+    //     if (this.elements.loadingOverlay) this.elements.loadingOverlay.style.display = 'none';
+        
+    //     if (result.error) {
+    //         this.showInitialState();
+    //         if (this.elements.analysisMessage) this.elements.analysisMessage.textContent = result.message;
+    //         this.setPredictButtonState('error');
+    //         return;
+    //     }
+
+    //     if (this.elements.predictionOutputDetails) {
+    //         this.elements.predictionOutputDetails.style.display = 'block';
+    //     }
+        
+    //     if (this.elements.predictedValue) {
+    //         this.elements.predictedValue.textContent = result.predictedValue.toFixed(2) + 'x';
+    //     }
+
+    //     // Display the Target Round ID (if present)
+    //     if (this.elements.predictedRoundId && result.gameId) {
+    //         this.elements.predictedRoundId.textContent = `Target: Round ${result.gameId}`;
+    //     }
+        
+    //     const confidenceVal = Math.min(result.confidence || 0, 100).toFixed(1) + '%';
+        
+    //     if (this.predictorCard) {
+    //         this.predictorCard.style.setProperty('--confidence-level', confidenceVal);
+    //     }
+    //     if (this.elements.confidencePercentage) {
+    //         this.elements.confidencePercentage.textContent = confidenceVal;
+    //     }
+
+    //     if (this.elements.avgMultiplier) this.elements.avgMultiplier.textContent = result.avgMultiplier ? result.avgMultiplier.toFixed(2) + 'x' : '--';
+    //     if (this.elements.volatility) this.elements.volatility.textContent = result.volatility ? result.volatility.toFixed(2) : '--';
+    //     if (this.elements.riskZone) this.elements.riskZone.textContent = (result.riskLevel || 'N/A').toUpperCase();
+    //     if (this.elements.analysisMessage) this.elements.analysisMessage.textContent = result.message;
+    // }
+
+    // ... inside UIController class ...
+
     renderPrediction(result) {
         if (this.elements.loadingOverlay) this.elements.loadingOverlay.style.display = 'none';
         
@@ -300,31 +340,63 @@ export class UIController {
             return;
         }
 
-        if (this.elements.predictionOutputDetails) {
-            this.elements.predictionOutputDetails.style.display = 'block';
-        }
+        if (this.elements.predictionOutputDetails) this.elements.predictionOutputDetails.style.display = 'block';
         
+        // 1. Existing Standard Fields
         if (this.elements.predictedValue) {
+            // We show the "Safety Exit" as the main big number? 
+            // Or keep Predicted? Let's keep Predicted but color it based on risk.
             this.elements.predictedValue.textContent = result.predictedValue.toFixed(2) + 'x';
+            this.elements.predictedValue.style.color = result.riskLevel === 'HIGH' ? 'var(--color-status-danger)' : 'var(--color-accent-primary)';
         }
 
-        // Display the Target Round ID (if present)
         if (this.elements.predictedRoundId && result.gameId) {
             this.elements.predictedRoundId.textContent = `Target: Round ${result.gameId}`;
         }
         
+        // 2. Confidence & Risk
         const confidenceVal = Math.min(result.confidence || 0, 100).toFixed(1) + '%';
-        
-        if (this.predictorCard) {
-            this.predictorCard.style.setProperty('--confidence-level', confidenceVal);
-        }
-        if (this.elements.confidencePercentage) {
-            this.elements.confidencePercentage.textContent = confidenceVal;
+        if (this.predictorCard) this.predictorCard.style.setProperty('--confidence-level', confidenceVal);
+        if (this.elements.confidencePercentage) this.elements.confidencePercentage.textContent = confidenceVal;
+        if (this.elements.riskZone) this.elements.riskZone.textContent = (result.riskLevel || 'N/A').toUpperCase();
+
+        // 3. INJECT GOD-MODE STATS (Dynamic DOM Injection)
+        // We look for the stats-grid and append/update our special "Safety" & "Bust" boxes
+        const grid = document.querySelector('.stats-grid');
+        if (grid) {
+            // Check if we already created them to avoid duplicates
+            let safetyBox = document.getElementById('god-mode-safety');
+            let bustBox = document.getElementById('god-mode-bust');
+
+            if (!safetyBox) {
+                // Create Safety Box
+                safetyBox = document.createElement('div');
+                safetyBox.className = 'stat-item';
+                safetyBox.id = 'god-mode-safety';
+                safetyBox.innerHTML = `<div class="stat-label">Safety Exit</div><div class="stat-value" style="color: var(--color-status-success)">--</div>`;
+                // Insert as second item (after Risk Zone)
+                grid.insertBefore(safetyBox, grid.children[1]);
+            }
+
+            if (!bustBox) {
+                // Create Bust Box
+                bustBox = document.createElement('div');
+                bustBox.className = 'stat-item';
+                bustBox.id = 'god-mode-bust';
+                bustBox.innerHTML = `<div class="stat-label">Bust Prob.</div><div class="stat-value" style="color: var(--color-status-danger)">--</div>`;
+                // Insert as third item
+                grid.insertBefore(bustBox, grid.children[2]);
+            }
+
+            // Update Values
+            safetyBox.querySelector('.stat-value').textContent = result.safetyExit ? result.safetyExit.toFixed(2) + 'x' : '--';
+            bustBox.querySelector('.stat-value').textContent = result.bustProbability ? result.bustProbability.toFixed(1) + '%' : '--';
         }
 
+        // 4. Map "Avg Target" to something useful if not provided
         if (this.elements.avgMultiplier) this.elements.avgMultiplier.textContent = result.avgMultiplier ? result.avgMultiplier.toFixed(2) + 'x' : '--';
-        if (this.elements.volatility) this.elements.volatility.textContent = result.volatility ? result.volatility.toFixed(2) : '--';
-        if (this.elements.riskZone) this.elements.riskZone.textContent = (result.riskLevel || 'N/A').toUpperCase();
+        if (this.elements.volatility) this.elements.volatility.textContent = result.matchCount ? `${result.matchCount} Matches` : '--'; // Repurposing Volatility for Match Count
+
         if (this.elements.analysisMessage) this.elements.analysisMessage.textContent = result.message;
     }
 
