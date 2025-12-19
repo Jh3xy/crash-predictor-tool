@@ -414,10 +414,13 @@ nav{
     width: 100%;
     max-width: 800px;
     margin: 0 auto 2rem;
+    /* display: grid;
+    gap: 15px;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); */
 }
-.full-column-width{
+/* .full-column-width{
     grid-column: 1 / -1;
-}
+} */
 .stat-item {
     background-color: var(--color-surface-card);
     padding: 10px;

@@ -17,6 +17,7 @@
 
     <!-- Scripts -->
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script  src="./assets/js/utils/info.js" defer></script>
     <script type="module" src="./assets/script.js" defer></script>
 </head>
 <body class="">
@@ -141,13 +142,12 @@
                         </div>
                         <div class="multipliers">
                             <span>
-                                Last Crash Multiplier
-                               
+                                Last Crash Multipliers
+                                <span class="round-id" style="display: block;"></span>
                             </span>
                             <p class="multiple" id="current-multiplier">
                                 --x
                             </p> 
-                            <span class="round-id" style="display: block;"></span>
                             <div class="recents">
                                 <span>Recent Multipliers (10)</span>
                                 <div class="multiples-grid" id="recent-grid">
@@ -221,9 +221,27 @@
                                 </div>
                             </div>  
                         </div>
-            
+                        <!-- <div class="model-stats-section">
+                            <h4>Prediction Engine Statistics</h4>
+                            <div class="stats-grid">
+                                <div class="stat-item">
+                                    <div class="stat-label">Total Predictions</div>
+                                    <div class="stat-value" id="model-total-predictions">0</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-label">Success Rate</div>
+                                    <div class="stat-value" id="model-success-rate">0%</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-label">Bayesian Win Rate</div>
+                                    <div class="stat-value" id="model-bayesian-rate">65.0%</div>
+                                </div>
+                            </div>
+                        </div> -->
+
                         <!-- Global Predict Button (Always visible) -->
                         <button id="predict-btn" class ="btn">Analyze</button>
+                   
                     </div>
                     <div class="card glass verifier p-l" id="crash-verfier">
                         <i class="fa-solid fa-circle-info modal-icon" data-modal-id="verifier-status"></i>

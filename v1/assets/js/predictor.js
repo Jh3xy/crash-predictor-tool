@@ -1,177 +1,269 @@
-// /**
-//  * js/predictor.js
-//  * * This module implements the detailed hybrid statistical and rules-based model
-//  * * for predicting the next crash multiplier.
-//  * * UPDATE: Look-Ahead method removed as live data is now available.
-//  */
 
-// // =================================================================
-// // 1. GLOBAL CONSTANTS FOR TUNING THE PREDICTION MODEL
-// // =================================================================
 
-// // --- Data Constraints ---
-// const MIN_ANALYSIS_LENGTH = 20;     // Minimum history rounds required for prediction
-// const MAX_ANALYSIS_LENGTH = 200;    // Maximum history rounds used for analysis
-
-// // --- Multiplier Thresholds ---
-// const LOW_MULTIPLIER_THRESHOLD = 2.00;   // Crash < 2.0x is considered 'Low'
-// const MEDIUM_MULTIPLIER_THRESHOLD = 10.00; // Crash < 10.0x is considered 'Medium'
-
-// // --- Short-Term Trend Rules ---
-// const SHORT_TERM_LENGTH = 7;             // Number of rounds for short-term trend analysis
-// const LOW_STREAK_COUNT_THRESHOLD = 5;    // Number of low rounds (<2.0x) needed to flag a low streak
-// const SPIKE_THRESHOLD = 5.00;            // Multiplier value that triggers a 'spike cooldown' trend
-
-// // --- Prediction Generation Weights ---
-// const VOLATILITY_HIGH_THRESHOLD = 2.0;   // Volatility > 2.0 is considered high risk
-// const BASE_PREDICTION_CAP = 10.00;       // Max value the prediction can reasonably suggest
-
-// // =================================================================
-// // 2. HELPER FUNCTIONS FOR STATISTICAL ANALYSIS
-// // =================================================================
-
-// // Function to calculate the average
-// function calculateAverage(arr) {
-//     if (arr.length === 0) return 0;
-//     return arr.reduce((sum, val) => sum + val, 0) / arr.length;
-// }
-
-// // Function to calculate standard deviation (volatility)
-// function calculateStandardDeviation(arr, mean) {
-//     if (arr.length < 2) return 0;
-//     const variance = arr.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / (arr.length - 1);
-//     return Math.sqrt(variance);
-// }
-
-// // =================================================================
-// // 3. CORE PREDICTOR CLASS
-// // =================================================================
-
-// export class CrashPredictor {
-    
-//     /**
-//      * The primary prediction function. Predicts Round N+1 based on history up to N.
-//      * @param {number[]} history - An array of past crash multipliers (newest first).
-//      * @returns {object} - Prediction result object.
-//      */
-//     predictNext(history) {
-//         // --- Input Validation ---
-//         if (!history || history.length < MIN_ANALYSIS_LENGTH) {
-//             return { 
-//                 error: true, 
-//                 message: `Insufficient history (${history ? history.length : 0} rounds). Minimum ${MIN_ANALYSIS_LENGTH} required.`,
-//                 confidence: 0
-//             };
-//         }
-
-//         // --- Data Preparation ---
-//         // Use only the defined maximum length for analysis
-//         const analysisHistory = history.slice(0, MAX_ANALYSIS_LENGTH); 
-//         const latestRound = history[0]; 
-
-//         // --- Core Stats ---
-//         const averageTarget = calculateAverage(analysisHistory);
-//         const volatility = calculateStandardDeviation(analysisHistory, averageTarget);
-
-//         // --- Initial Prediction (Based on average and volatility) ---
-//         // A simple model: average minus a factor of volatility.
-//         let predictedValue = averageTarget - (volatility * 0.5); 
-//         predictedValue = Math.max(1.01, Math.min(predictedValue, BASE_PREDICTION_CAP)); 
-
-//         // --- Confidence Calculation ---
-//         // Confidence increases with history size and decreases with volatility
-//         let confidence = Math.min(100, (analysisHistory.length / MIN_ANALYSIS_LENGTH) * 30);
-//         confidence -= volatility * 5; // Penalty for high volatility
-
-//         // --- Rules-Based Adjustments (Short-Term Trends) ---
-//         const shortTermHistory = history.slice(0, SHORT_TERM_LENGTH);
-//         let lowStreakCount = 0;
-//         const notes = [];
-
-//         for (const crash of shortTermHistory) {
-//             if (crash < LOW_MULTIPLIER_THRESHOLD) {
-//                 lowStreakCount++;
-//             }
-//         }
-        
-//         // Rule 1: Low Streak detected
-//         if (lowStreakCount >= LOW_STREAK_COUNT_THRESHOLD) {
-//             // If many low rounds just happened, the probability of a higher round is often increasing
-//             predictedValue += 0.5; // Bump prediction slightly
-//             confidence = Math.min(100, confidence + 15); // Increase confidence
-//             notes.push('Short-Term: Low multiplier streak suggests an impending higher round.');
-//         }
-
-//         // Rule 2: Recent Spike Cooldown
-//         if (latestRound >= SPIKE_THRESHOLD) {
-//             // A very high multiplier often leads to a quick regression (low round)
-//             predictedValue = Math.max(1.01, predictedValue * 0.75); // Lower prediction significantly
-//             confidence = Math.max(0, confidence - 20); // Decrease confidence
-//             notes.push('Short-Term: Recent spike cooldown.');
-//         }
-
-//         // --- Final Output Formatting ---
-//         confidence = Math.max(5, Math.min(95, confidence)); // Clamp confidence between 5% and 95%
-        
-//         const riskLevel = volatility > VOLATILITY_HIGH_THRESHOLD ? 'High' : (volatility > 1.0 ? 'Medium' : 'Low');
-        
-//         return {
-//             predictedValue: predictedValue,
-//             confidence: confidence,
-//             riskLevel: riskLevel,
-//             volatility: volatility,
-//             avgMultiplier: averageTarget,
-//             message: `CONFIDENCE: ${confidence.toFixed(2)}%. ${notes.join(' ')}`,
-//             error: false
-//         };
-//     }
-// }
 /**
  * js/predictor.js
- * Orchestrator for the Prophecy Engine (Worker-based).
+ * Wrapper for Adaptive Prediction Engine v4.0
  */
+
+import { AdvancedPredictionEngine } from './advanced-prediction-engine.js';
 
 export class CrashPredictor {
     constructor() {
-        this.worker = null;
-        this.pendingResolves = [];
-        this.initWorker();
+        this.engine = new AdvancedPredictionEngine();
+        this.lastPrediction = null;
+        this.lastModelPredictions = null; // 🔥 Store for performance tracking
+        
+        this._loadBayesianState();
+        this._loadModelWeights(); // 🔥 Load saved weights
+        
+        console.log('🎯 CrashPredictor initialized with Adaptive Engine v4.0');
+        console.log('📊 Starting Bayesian State:', this.engine.bayesianState);
+        console.log('⚖️ Initial Model Weights:', this.engine.modelWeights);
     }
 
-    initWorker() {
-        if (window.Worker) {
-            // Initialize the worker
-            this.worker = new Worker('./assets/js/prediction.worker.js', { type: 'module' });
+    _loadBayesianState() {
+        try {
+            const saved = localStorage.getItem('bayesianState');
+            if (saved) {
+                const state = JSON.parse(saved);
+                this.engine.bayesianState = state;
+                console.log('✅ Loaded Bayesian state:', state);
+            }
+        } catch (e) {
+            console.warn('⚠️ Failed to load Bayesian state:', e);
+        }
+    }
+
+    _saveBayesianState() {
+        try {
+            localStorage.setItem('bayesianState', JSON.stringify(this.engine.bayesianState));
+            console.log('💾 Saved Bayesian state');
+        } catch (e) {
+            console.warn('⚠️ Failed to save Bayesian state:', e);
+        }
+    }
+
+    // 🔥 NEW: Load/Save Model Weights
+    _loadModelWeights() {
+        try {
+            const saved = localStorage.getItem('modelWeights');
+            if (saved) {
+                const weights = JSON.parse(saved);
+                this.engine.modelWeights = weights;
+                console.log('✅ Loaded model weights:', weights);
+            }
+        } catch (e) {
+            console.warn('⚠️ Failed to load model weights:', e);
+        }
+    }
+
+    _saveModelWeights() {
+        try {
+            localStorage.setItem('modelWeights', JSON.stringify(this.engine.modelWeights));
+            console.log('💾 Saved model weights');
+        } catch (e) {
+            console.warn('⚠️ Failed to save model weights:', e);
+        }
+    }
+
+    async predictNext(history) {
+        try {
+            // Get predictions from all models (before consensus)
+            const cleanHistory = this.engine._cleanData(history.slice(0, 500));
+            this.engine._updateBustTracker(cleanHistory);
+            this.engine._updateEVTState(cleanHistory);
+            const features = this.engine._extractMultiTimeframeFeatures(cleanHistory);
+            const modelPredictions = this.engine._runPredictionModels(cleanHistory, features);
             
-            this.worker.onmessage = (e) => {
-                const result = e.data;
-                // Resolve the oldest pending promise
-                const resolve = this.pendingResolves.shift();
-                if (resolve) resolve(result);
+            // Store for later performance tracking
+            this.lastModelPredictions = modelPredictions;
+            
+            // Run full prediction
+            const result = this.engine.predict(history);
+            
+            this.lastPrediction = {
+                target: result.predictedValue,
+                confidence: result.confidence,
+                timestamp: Date.now()
             };
             
-            this.worker.onerror = (e) => {
-                console.error("Worker Error:", e);
-                const resolve = this.pendingResolves.shift();
-                if (resolve) resolve({ error: true, message: "Engine Failure" });
+            console.log('🎯 Prediction v4.0:', {
+                target: result.predictedValue.toFixed(2),
+                range: result.predictedRange.map(v => v.toFixed(2)),
+                safety: result.safetyZone.toFixed(2),
+                confidence: result.confidence.toFixed(1) + '%',
+                action: result.action,
+                modelWeights: result.modelWeights
+            });
+            
+            return this._transformForUI(result);
+            
+        } catch (error) {
+            console.error('❌ Prediction Error:', error);
+            return {
+                error: true,
+                message: 'Prediction engine error: ' + error.message,
+                confidence: 0,
+                predictedValue: 0,
+                riskLevel: 'UNKNOWN'
             };
         }
     }
 
     /**
-     * Async method to request prediction from worker
-     * NOTE: LiveSync needs to await this!
+     * 🔥 ENHANCED: Update with model performance tracking
      */
-    async predictNext(history) {
-        if (!this.worker) return { error: true, message: "Worker not supported" };
+    updateAfterRound(actual, predicted) {
+        if (!predicted || !actual) {
+            console.warn('⚠️ updateAfterRound called with invalid data:', { actual, predicted });
+            return;
+        }
         
-        return new Promise((resolve) => {
-            this.pendingResolves.push(resolve);
-            
-            // Send the history to the worker
-            // We use a larger slice now (500) for deep scanning
-            const cleanHistory = history.slice(0, 500).map(Number);
-            this.worker.postMessage({ history: cleanHistory });
+        const success = actual >= predicted;
+        
+        console.log('📊 Updating Engine State:', {
+            predicted: predicted.toFixed(2),
+            actual: actual.toFixed(2),
+            success: success,
+            beforeWinRate: (this.engine.bayesianState.priorWinRate * 100).toFixed(1) + '%'
         });
+        
+        // Update Bayesian state
+        this.engine.updateBayesianState(predicted, actual, success);
+        
+        // 🔥 Track individual model performance
+        if (this.lastModelPredictions) {
+            this.engine.trackModelPerformance(this.lastModelPredictions, actual);
+            console.log('📊 Model performance tracked');
+        }
+        
+        console.log('📊 Engine State After Update:', {
+            totalPredictions: this.engine.bayesianState.totalPredictions,
+            successCount: this.engine.bayesianState.successCount,
+            failureCount: this.engine.bayesianState.failureCount,
+            winRate: (this.engine.bayesianState.priorWinRate * 100).toFixed(1) + '%',
+            modelWeights: this.engine.modelWeights
+        });
+        
+        // Save both states
+        this._saveBayesianState();
+        this._saveModelWeights(); // 🔥 Save adaptive weights
+        
+        this.lastPrediction = null;
+        this.lastModelPredictions = null;
+    }
+
+    _transformForUI(engineResult) {
+        if (engineResult.error) {
+            return engineResult;
+        }
+
+        return {
+            predictedValue: engineResult.predictedValue,
+            confidence: engineResult.confidence,
+            riskLevel: engineResult.riskLevel,
+            mostLikely: engineResult.predictedValue,
+            predictedRange: engineResult.predictedRange,
+            safetyZone: engineResult.safetyZone,
+            bustProbability: engineResult.bustProbability,
+            volatility: engineResult.volatility,
+            avgMultiplier: this._formatAvgMultiplier(engineResult),
+            message: this._buildAnalysisMessage(engineResult),
+            action: engineResult.action,
+            reasoning: engineResult.reasoning,
+            kellyBetSize: engineResult.kellyBetSize,
+            kellyRecommendation: engineResult.kellyRecommendation,
+            modelAgreement: engineResult.modelAgreement,
+            currentTrend: engineResult.currentTrend,
+            bustAlert: engineResult.bustAlert,
+            evtAlert: engineResult.evtAlert,
+            bayesianWinRate: engineResult.bayesianWinRate,
+            historyAnalyzed: engineResult.historyAnalyzed,
+            confidenceInterval: engineResult.confidenceInterval, // 🔥 NEW
+            meanReversionSignal: engineResult.meanReversionSignal, // 🔥 NEW
+            error: false
+        };
+    }
+
+    _formatAvgMultiplier(result) {
+        const [min, max] = result.predictedRange;
+        return `${min.toFixed(2)}-${max.toFixed(2)}x`;
+    }
+
+    _buildAnalysisMessage(result) {
+        const parts = [];
+        parts.push(result.message);
+        
+        if (result.action !== 'SKIP ROUND' && result.kellyBetSize) {
+            parts.push(`Kelly: ${result.kellyBetSize}`);
+        }
+        
+        if (result.bustAlert) {
+            parts.push('⚠️ Bust alert');
+        }
+        if (result.evtAlert) {
+            parts.push('📊 EVT alert');
+        }
+        
+        // 🔥 Add mean reversion signal
+        if (result.meanReversionSignal && result.meanReversionSignal.signal !== 'weak') {
+            parts.push(`Reversion: ${result.meanReversionSignal.direction}`);
+        }
+        
+        return parts.join(' • ');
+    }
+
+    getBayesianWinRate() {
+        return this.engine.bayesianState.priorWinRate;
+    }
+
+    getStatistics() {
+        return {
+            totalPredictions: this.engine.bayesianState.totalPredictions,
+            successCount: this.engine.bayesianState.successCount,
+            failureCount: this.engine.bayesianState.failureCount,
+            winRate: this.engine.bayesianState.priorWinRate,
+            winRatePercent: (this.engine.bayesianState.priorWinRate * 100).toFixed(1) + '%',
+            modelWeights: this.engine.modelWeights, // 🔥 Include current weights
+            recentAccuracy: this._calculateRecentAccuracy()
+        };
+    }
+
+    // 🔥 NEW: Calculate accuracy over last N predictions
+    _calculateRecentAccuracy() {
+        const recent = this.engine.recentPredictions.slice(0, 20);
+        if (recent.length === 0) return 0;
+        
+        const successes = recent.filter(p => p.success).length;
+        return (successes / recent.length * 100).toFixed(1) + '%';
+    }
+
+    resetBayesianState() {
+        this.engine.bayesianState = {
+            priorWinRate: 0.50, // 🔥 Reset to neutral 50%
+            successCount: 0,
+            failureCount: 0,
+            totalPredictions: 0
+        };
+        
+        // 🔥 Also reset model weights to equal
+        this.engine.modelWeights = {
+            bayesian: 0.20,
+            statistical: 0.20,
+            frequency: 0.20,
+            evt: 0.20,
+            momentum: 0.20
+        };
+        
+        // Clear performance tracking
+        for (const model of Object.keys(this.engine.modelPerformance)) {
+            this.engine.modelPerformance[model] = { predictions: [], errors: [] };
+        }
+        
+        this.engine.recentPredictions = [];
+        
+        this._saveBayesianState();
+        this._saveModelWeights();
+        console.log('🔄 Engine reset to neutral state');
     }
 }

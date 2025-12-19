@@ -1,56 +1,41 @@
+
+
 /**
- * Manages the persistent log (via localStorage) of all predictions and their actual results.
- * It calculates prediction accuracy and manages the history log table and dashboard stats in the UI.
- *
- * NOTE: This version includes new methods to calculate time-based metrics (daily/24hr).
+ * HistoryLog with enhanced debugging and proper Bayesian integration
  */
 
-
 import { createConfirmationModal } from './utils/modalManager.js';
+
 export class HistoryLog {
-    
-    // We use a constant key for localStorage to avoid magic strings
     static STORAGE_KEY = 'predictorLog';
-    static MAX_ENTRIES = 50; // Keep history limited to 50 entries
+    static MAX_ENTRIES = 50;
     
     constructor(domElements, eventBus) {
         this.elements = domElements;
         this.eventBus = eventBus;
-        this.log = this.loadLog(); // Load log on initialization
+        this.log = this.loadLog();
         
-        // Ensure initial log stats are rendered when the app starts
         this.renderStats();
         
-        // --- EVENT LISTENERS (The integration points) ---
-        
-        // 1. Listen for a completed round for the ACTUAL multiplier
+        // Event listeners
         this.eventBus.on('newRoundCompleted', this.handleRoundCompleted.bind(this)); 
-        
-        // 2. Listen for a prediction run for the PREDICTED multiplier
         this.eventBus.on('newPredictionMade', this.handleNewPrediction.bind(this));
         
-        // 3. Attach clear history button listener (USING THE MODAL)
         if (this.elements.clearHistoryBtn) {
             this.elements.clearHistoryBtn.addEventListener('click', () => {
-                // We pass the *function* this.clearLog into the modal, 
-                // but we wrap it in another function () => { ... } to ensure 
-                // the 'this' context of the HistoryLog class is preserved.
                 createConfirmationModal(
                     'Clear Prediction History', 
                     'Are you sure you want to delete all prediction logs? This action cannot be undone.', 
-                        ()  => { 
-                        // This is the function that runs on CONFIRM click:
-                        this.clearLog(); // 🔥 Calls the new clearLog method below
-                        }
-                    );
-                });
+                    () => { 
+                        this.clearLog();
+                    }
+                );
+            });
         }
-        console.log(`HistoryLog: Initialized with ${this.log.length} entries.`);
+        
+        console.log(`📋 HistoryLog: Initialized with ${this.log.length} entries.`);
     }
 
-    // --- LOGIC: STORAGE & DATA MANAGEMENT ---
-    
-    /** Loads the prediction log from localStorage. */
     loadLog() {
         try {
             const logJson = localStorage.getItem(HistoryLog.STORAGE_KEY);
@@ -61,120 +46,147 @@ export class HistoryLog {
         }
     }
 
-    /** Saves the current log array to localStorage, limiting entries. */
     saveLog() {
-    try {
-        const limitedLog = this.log.slice(0, HistoryLog.MAX_ENTRIES);
-        localStorage.setItem(HistoryLog.STORAGE_KEY, JSON.stringify(limitedLog));
-        
-        // Ensure rendering is the LAST step after saving data
-        this.renderLog(); 
-        this.renderStats(); 
-    } catch (e) {
-        console.error("Error saving history log:", e);
+        try {
+            const limitedLog = this.log.slice(0, HistoryLog.MAX_ENTRIES);
+            localStorage.setItem(HistoryLog.STORAGE_KEY, JSON.stringify(limitedLog));
+            this.renderLog(); 
+            this.renderStats(); 
+        } catch (e) {
+            console.error("Error saving history log:", e);
+        }
     }
-}
     
-    /** * 🔥 NEW: Public method to clear the log, called by the confirmation modal. 
-     */
     clearLog() {
         localStorage.removeItem(HistoryLog.STORAGE_KEY);
-        this.log = []; // Reset internal array
+        this.log = [];
         this.renderLog();
         this.renderStats();
-        console.log("History log cleared via modal confirmation.");
+        console.log("📋 History log cleared via modal confirmation.");
     }
 
-    /** * DEPRECATED: Old method for clearing history with window.confirm. 
-     * Renamed to prevent collision with clearLog().
-     */
-    clearAllHistoryOld() {
-        localStorage.removeItem(HistoryLog.STORAGE_KEY);
-        this.log = []; // Reset internal array
-        this.renderLog();
-        this.renderStats();
-        console.log("History log cleared.");
-    }
-    
-    // --- LOGIC: EVENT HANDLERS (Integration with core app flow) ---
-    
     /**
-     * Handles when a prediction is made. Adds a new placeholder entry to the log.
-     * @param {object} predictionResult - The result object from CrashPredictor.
+     * 🔥 CRITICAL: Handle new predictions
      */
     handleNewPrediction(predictionResult) {
-        if (predictionResult.error) return; // Only log successful predictions
+        console.log('🎯 HistoryLog: New prediction received:', predictionResult);
         
-        const logId = predictionResult.gameId; 
+        if (predictionResult.error) {
+            console.warn('⚠️ HistoryLog: Ignoring error prediction');
+            return;
+        }
+        
+        const logId = String(predictionResult.gameId); // ðŸ"¥ FORCE STRING
 
-        // Check if an entry for this specific gameId already exists (important for reloads)
+        console.log(`ðŸŽ¯ NEW PREDICTION RECEIVED:`);
+        console.log(`   gameId: ${logId} (type: ${typeof logId})`);
+        console.log(`   predictedValue: ${predictionResult.predictedValue}x`);
+
+        // Check for duplicates
         const existingEntry = this.log.find(entry => entry.id === logId);
-        if (existingEntry) return;
+        if (existingEntry) {
+            console.warn('⚠️ HistoryLog: Duplicate prediction for gameId', logId);
+            return;
+        }
 
         const newEntry = {
-            id: logId, 
+            id: logId, // Now guaranteed to be string
             predicted: predictionResult.predictedValue,
-            actual: null, // Actual is unknown until round completes
+            actual: null,
             timestamp: new Date().toISOString(),
             roundStatus: 'PENDING',
             successRate: 0, 
-            diff: 0, // Initialize diff
+            diff: 0,
         };
         
-        // Add new entry to the start (most recent first)
         this.log.unshift(newEntry);
         
-        // Explicitly call renderStats() immediately after updating the log array
+        console.log('✅ HistoryLog: Prediction logged for Round', logId, 'Predicted:', newEntry.predicted.toFixed(2) + 'x');
+        
         this.renderStats(); 
-
-        this.saveLog(); // saveLog() will also call renderStats(), but calling it here ensures instant UI update.
+        this.saveLog();
     }
     
-    /**
- * Handles a round completion. Finds the matching PENDING entry and updates it 
- * with the actual crash value and calculates the SUCCESS RATE.
- * @param {object} roundData - The round data (with finalMultiplier).
- */
-handleRoundCompleted(roundData) {
-    const logEntry = this.log.find(entry => entry.id === roundData.gameId);
+    handleRoundCompleted(roundData) {
+    const completedGameId = String(roundData.gameId); // ðŸ"¥ FORCE STRING
+    
+    console.log(`ðŸ"Š ROUND COMPLETED:`);
+    console.log(`   gameId: ${completedGameId} (type: ${typeof completedGameId})`);
+    console.log(`   multiplier: ${roundData.finalMultiplier.toFixed(2)}x`);
+    console.log(`   Looking for matching prediction...`);
+    
+    // ðŸ"¥ Enhanced search with logging
+    const logEntry = this.log.find(entry => {
+        const match = String(entry.id) === completedGameId;
+        if (entry.roundStatus === 'PENDING') {
+            console.log(`   Checking entry ${entry.id} (${typeof entry.id}) - Match: ${match}`);
+        }
+        return match;
+    });
 
-    // Ensure we found a pending entry for this round
-    if (logEntry && logEntry.roundStatus === 'PENDING') {
+        if (!logEntry) {
+            console.warn('⚠️ HistoryLog: No prediction log found for round', roundData.gameId);
+            console.log('📋 Current pending predictions:', this.log.filter(e => e.roundStatus === 'PENDING').map(e => e.id));
+            return;
+        }
+
+        if (logEntry.roundStatus !== 'PENDING') {
+            console.warn('⚠️ HistoryLog: Round', roundData.gameId, 'already processed');
+            return;
+        }
+
         logEntry.actual = roundData.finalMultiplier;
         logEntry.roundStatus = 'COMPLETED';
         
-        // --- 1. Calculate Difference ---
         const diff = Math.abs(logEntry.actual - logEntry.predicted);
         
-        // --- 2. Calculate Success Rate (STRICTLY GREATER THAN) ---
-        let successRate = 0;
-        
-        // If actual crash value is STRICTLY GREATER than predicted, the bet succeeded.
-        if (logEntry.actual > logEntry.predicted) { 
-            successRate = 100;
-        } 
-        
-        // --- 3. Store Results ---
-        logEntry.successRate = successRate; 
-        logEntry.diff = diff; // Store diff back on the entry
+        // 🔥 SUCCESS CRITERIA: Actual >= Predicted (bet would have won)
+        const success = logEntry.actual >= logEntry.predicted;
+        logEntry.successRate = success ? 100 : 0;
+        logEntry.diff = diff;
 
-        console.log(`HistoryLog: Updated prediction log for Round ${logEntry.id} with actual crash at ${logEntry.actual}x. Success Rate: ${successRate}%`);
-        
-        // --- 4. Save and Render UI (Called ONLY ONCE) ---
-        this.saveLog(); 
-        // saveLog() calls renderStats() and renderLog(), updating the dashboard and table.
-    } else {
-        console.warn(`HistoryLog: No pending log entry found for round ${roundData.gameId}.`);
-    }
-}
+        console.log(`📊 HistoryLog: Round ${logEntry.id} - ${success ? 'SUCCESS ✅' : 'MISS ❌'}`);
+        console.log(`   Predicted: ${logEntry.predicted.toFixed(2)}x | Actual: ${logEntry.actual.toFixed(2)}x | Diff: ${diff.toFixed(2)}`);
+
+        // ðŸ"¥ EMIT Bayesian update event
+try {
+    console.log(`🔥 EMITTING BAYESIAN UPDATE:`);
+    console.log(`   Predicted: ${logEntry.predicted.toFixed(2)}x`);
+    console.log(`   Actual: ${logEntry.actual.toFixed(2)}x`);
+    console.log(`   Success: ${success}`);
     
-    // --- LOGIC: TIME-BASED DATA RETRIEVAL ---
+    this.eventBus.emit('updateBayesianState', {
+        predicted: logEntry.predicted,
+        actual: logEntry.actual,
+        success: success
+    });
+    
+    console.log('✅ Bayesian event emitted successfully');
+    
+    // ðŸ"¥ IMMEDIATE VERIFICATION
+    setTimeout(() => {
+        console.log(`📊 Engine state after update:`, window.predictor.getStatistics());
+    }, 100);
+        
+    } catch (e) {
+        console.error('❌ Failed to emit Bayesian update:', e);
+    }
+        
+        this.saveLog();
 
-    /**
-     * Retrieves completed log entries that occurred within the last specified number of hours.
-     * @param {number} hours - The number of hours to look back (e.g., 24).
-     * @returns {Array} Filtered list of completed log entries.
-     */
+        // ðŸ"¥ DEBUG: Show current state
+        console.log(`ðŸ"‹ HISTORY LOG STATE:`);
+        console.log(`   Total entries: ${this.log.length}`);
+        console.log(`   Pending: ${this.log.filter(e => e.roundStatus === 'PENDING').length}`);
+        console.log(`   Completed: ${this.log.filter(e => e.roundStatus === 'COMPLETED').length}`);
+        
+        const pendingIds = this.log
+            .filter(e => e.roundStatus === 'PENDING')
+            .map(e => e.id)
+            .slice(0, 5);
+        console.log(`   Next 5 pending IDs: [${pendingIds.join(', ')}]`);
+    }
+
     getLogForLastXHours(hours) {
         const cutoffTime = Date.now() - (hours * 60 * 60 * 1000);
         return this.log.filter(entry => 
@@ -183,14 +195,8 @@ handleRoundCompleted(roundData) {
         );
     }
 
-    /**
-     * Calculates the count of predictions made since the start of today (local midnight).
-     * This is useful for the "+X today" indicator.
-     * @returns {number} The count of predictions made today.
-     */
     calculateTodayCount() {
         const now = new Date();
-        // Set cutoff to 00:00:00 local time today
         const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0); 
         const midnightTime = midnight.getTime();
 
@@ -199,126 +205,93 @@ handleRoundCompleted(roundData) {
         ).length;
     }
     
-    /**
-     * 🔥 NEW: Public method to retrieve the specified number of the most recent history logs.
-     * @param {number} count - The number of recent logs to retrieve (defaults to 30).
-     * @returns {Array} List of recent log entries.
-     */
     getRecentHistory(count = 30) {
-        // Since this.log is sorted newest first (due to unshift), slice is correct
         return this.log.slice(0, count);
     }
 
-    // --- UI RENDERING ---
+   renderStats() {
+        // ðŸ"¥ FIX: Only count actual predictions made by user
+     const totalPredictions = this.log.length;
+     const completedPredictions = this.log.filter(l => l.roundStatus === 'COMPLETED').length;
     
-    /** Renders the statistical summary (Total Predictions and Overall Success Rate). */
-renderStats() {
-    // --- 1. OVERALL STATS (All-Time) ---
-    const totalPredictions = this.log.length;
+        console.log(`📊 STATS UPDATE: ${totalPredictions} total, ${completedPredictions} completed`);
     
-    // Calculate daily change for Total Predictions
-    const todayCount = this.calculateTodayCount(); 
+     const todayCount = this.calculateTodayCount(); 
 
-    const completedLogs = this.log.filter(l => l.roundStatus === 'COMPLETED');
-    const totalSuccessRate = completedLogs.reduce((sum, entry) => sum + entry.successRate, 0);
-    const overallSuccessRate = completedLogs.length > 0 ? (totalSuccessRate / completedLogs.length) : 0;
-    
-    // --- 2. 24-HOUR & WEEKLY STATS ---
-    const last24HrLogs = this.getLogForLastXHours(24);
-    const last24HrCompletedLogs = last24HrLogs.filter(l => l.roundStatus === 'COMPLETED');
-
-    // Win Rate (24 Hours)
-    const total24HrSuccess = last24HrCompletedLogs.filter(l => l.successRate === 100).length;
-    // Ensure winRate24Hr is a number for .toFixed(), default to 0 if no logs
-    const winRate24Hr = last24HrCompletedLogs.length > 0 ? (total24HrSuccess / last24HrCompletedLogs.length) * 100 : 0; 
-
-    // Avg Difference (24 Hours)
-    const totalDiff24Hr = last24HrCompletedLogs.reduce((sum, entry) => sum + entry.diff, 0);
-    // Ensure avgDiff24Hr is a number for .toFixed(), default to 0 if no logs
-    const avgDiff24Hr = last24HrCompletedLogs.length > 0 ? (totalDiff24Hr / last24HrCompletedLogs.length) : 0; 
-    
-    // Calculate the weekly change for Avg. Accuracy
-    // NOTE: This assumes you have implemented calculateWeeklyAccuracyChange() 
-    const weeklyChange = this.calculateWeeklyAccuracyChange ? this.calculateWeeklyAccuracyChange() : 0;
-
-    // --- UI UPDATES ---
-    
-    // Update Total Predictions (All Time) - Dashboard Card
-    if (this.elements.totalPredictionsValue) {
-        this.elements.totalPredictionsValue.textContent = totalPredictions.toLocaleString();
-    }
-
-    // 🔥 Update Total Predictions (All Time) - Log Footer
-    if (this.elements.totalPredictionsFooter) {
-        this.elements.totalPredictionsFooter.textContent = totalPredictions.toLocaleString();
-    }
-    
-    // Update new Daily Change Span ("+X today") - ADDS COLOR CLASS
-    if (this.elements.dailyChangeSpan) { 
-        const sign = todayCount >= 0 ? '+' : '';
-        this.elements.dailyChangeSpan.textContent = `${sign}${todayCount.toLocaleString()} today`;
+        const completedLogs = this.log.filter(l => l.roundStatus === 'COMPLETED');
+        const totalSuccessRate = completedLogs.reduce((sum, entry) => sum + entry.successRate, 0);
+        const overallSuccessRate = completedLogs.length > 0 ? (totalSuccessRate / completedLogs.length) : 0;
         
-        // Apply color class: green if positive, red if negative
-        let colorClass = 'stat-summary';
-        if (todayCount > 0) {
-            colorClass = 'stat-summary up-text'; 
-        } else if (todayCount < 0) {
-            colorClass = 'stat-summary down-text'; 
-        }
-        this.elements.dailyChangeSpan.className = colorClass;
-    }
+        const last24HrLogs = this.getLogForLastXHours(24);
+        const last24HrCompletedLogs = last24HrLogs.filter(l => l.roundStatus === 'COMPLETED');
 
-    // Update Overall Accuracy (All Time - for the main log footer)
-    if (this.elements.overallAccuracy) {
-         this.elements.overallAccuracy.textContent = overallSuccessRate.toFixed(1) + '%';
-    }
+        const total24HrSuccess = last24HrCompletedLogs.filter(l => l.successRate === 100).length;
+        const winRate24Hr = last24HrCompletedLogs.length > 0 ? (total24HrSuccess / last24HrCompletedLogs.length) * 100 : 0; 
 
-    // Update Avg. Accuracy Card (Big Number)
-    if (this.elements.avgAccuracyValue) { 
-        // Using Overall Success Rate (All Time) for the big number
-        this.elements.avgAccuracyValue.textContent = overallSuccessRate.toFixed(1) + '%';
-    }
-    
-    // Update Avg. Accuracy Card (Weekly Change Span) - ADDS COLOR CLASS
-    if (this.elements.avgAccuracyWeeklyChange) {
-        const sign = weeklyChange >= 0 ? '+' : '';
-        this.elements.avgAccuracyWeeklyChange.textContent = `${sign}${weeklyChange.toFixed(1)}% this week`;
+        const totalDiff24Hr = last24HrCompletedLogs.reduce((sum, entry) => sum + entry.diff, 0);
+        const avgDiff24Hr = last24HrCompletedLogs.length > 0 ? (totalDiff24Hr / last24HrCompletedLogs.length) : 0; 
         
-        // Apply color class: green if positive, red if negative
-        let colorClass = 'stat-summary';
-        if (weeklyChange > 0) {
-            colorClass = 'stat-summary up-text'; 
-        } else if (weeklyChange < 0) {
-            colorClass = 'stat-summary down-text'; 
+        const weeklyChange = this.calculateWeeklyAccuracyChange ? this.calculateWeeklyAccuracyChange() : 0;
+
+        // UI updates
+        if (this.elements.totalPredictionsValue) {
+            this.elements.totalPredictionsValue.textContent = totalPredictions.toLocaleString();
         }
-        this.elements.avgAccuracyWeeklyChange.className = colorClass;
+
+        if (this.elements.totalPredictionsFooter) {
+            this.elements.totalPredictionsFooter.textContent = totalPredictions.toLocaleString();
+        }
+        
+        if (this.elements.dailyChangeSpan) { 
+            const sign = todayCount >= 0 ? '+' : '';
+            this.elements.dailyChangeSpan.textContent = `${sign}${todayCount.toLocaleString()} today`;
+            
+            let colorClass = 'stat-summary';
+            if (todayCount > 0) {
+                colorClass = 'stat-summary up-text'; 
+            } else if (todayCount < 0) {
+                colorClass = 'stat-summary down-text'; 
+            }
+            this.elements.dailyChangeSpan.className = colorClass;
+        }
+
+        if (this.elements.overallAccuracy) {
+             this.elements.overallAccuracy.textContent = overallSuccessRate.toFixed(1) + '%';
+        }
+
+        if (this.elements.avgAccuracyValue) { 
+            this.elements.avgAccuracyValue.textContent = overallSuccessRate.toFixed(1) + '%';
+        }
+        
+        if (this.elements.avgAccuracyWeeklyChange) {
+            const sign = weeklyChange >= 0 ? '+' : '';
+            this.elements.avgAccuracyWeeklyChange.textContent = `${sign}${weeklyChange.toFixed(1)}% this week`;
+            
+            let colorClass = 'stat-summary';
+            if (weeklyChange > 0) {
+                colorClass = 'stat-summary up-text'; 
+            } else if (weeklyChange < 0) {
+                colorClass = 'stat-summary down-text'; 
+            }
+            this.elements.avgAccuracyWeeklyChange.className = colorClass;
+        }
+        
+        if (this.elements.winRateValue) { 
+            const accText = winRate24Hr.toFixed(1) + '%';
+            this.elements.winRateValue.textContent = accText;
+        }
+
+        if (this.elements.activeSessionsValue) { 
+            this.elements.activeSessionsValue.textContent = last24HrCompletedLogs.length.toLocaleString();
+        }
+
+        if (this.elements.clearHistoryBtn) {
+            this.elements.clearHistoryBtn.disabled = totalPredictions === 0;
+        }
+        
+        this.renderLog(); 
     }
     
-    // Update Win Rate (24Hr)
-    if (this.elements.winRateValue) { 
-        const accText = winRate24Hr.toFixed(1) + '%';
-        this.elements.winRateValue.textContent = accText;
-    }
-
-    // NOTE: avgDiff24Hr logic is likely intended for a separate card or is not displayed on your current dashboard
-    /* if (this.elements.avgDiff24Hr) {
-         this.elements.avgDiff24Hr.textContent = `±${avgDiff24Hr.toFixed(2)}`;
-    }
-    */
-
-    // Update Active Sessions (24Hr Prediction Count)
-    if (this.elements.activeSessionsValue) { 
-        this.elements.activeSessionsValue.textContent = last24HrCompletedLogs.length.toLocaleString();
-    }
-
-    if (this.elements.clearHistoryBtn) {
-        this.elements.clearHistoryBtn.disabled = totalPredictions === 0;
-    }
-    
-    this.renderLog(); 
-}
-    
-    /** Renders the history table rows. */
     renderLog() {
         if (!this.elements.historyLogBody) {
              console.error("HistoryLog: Target element 'history-log-body' not found in DOM.");
@@ -327,24 +300,17 @@ renderStats() {
 
         this.elements.historyLogBody.innerHTML = ''; 
 
-        // Append the new rows (newest first)
         this.log.forEach(item => {
             const row = this.createHistoryRow(item);
             this.elements.historyLogBody.appendChild(row);
         });
     }
 
-    /**
-     * Helper to dynamically create a single history row (the log-row div).
-     * @param {object} item The log entry item.
-     * @returns {HTMLElement} The created <div> element for the row.
-     */
     createHistoryRow(item) {
         const rowDiv = document.createElement('div');
         rowDiv.classList.add('log-row');
         
         const predictedValue = item.predicted || 0; 
-        
         const predictedText = predictedValue ? predictedValue.toFixed(2) + 'x' : '--';
         let actualText = '--';
         let diffText = '--';
@@ -353,12 +319,8 @@ renderStats() {
         
         if (item.roundStatus === 'COMPLETED') {
             actualText = item.actual.toFixed(2) + 'x';
-            
-            // Defensive check for diff (using stored item.diff is best)
             const diff = item.diff !== undefined ? item.diff : Math.abs(item.actual - item.predicted);
             diffText = `±${diff.toFixed(2)}`;
-            
-            // Defensive check for successRate
             const successRate = item.successRate !== undefined ? item.successRate : 0;
             successText = successRate.toFixed(0) + '%'; 
             
@@ -372,13 +334,11 @@ renderStats() {
             rowDiv.classList.add('pending-row');
         }
         
-        // Format Timestamp
         const timestamp = new Date(item.timestamp).toLocaleTimeString('en-US', {
             year: 'numeric', month: 'numeric', day: 'numeric', 
             hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
         }).replace(',', '');
         
-        // Ensure all five column DIVs are correctly placed and filled
         rowDiv.innerHTML = `
             <div class="time"><span>${timestamp}</span></div>
             <div class="predicted"><span>${predictedText}</span></div>
@@ -390,16 +350,10 @@ renderStats() {
         return rowDiv;
     }
 
-    /**
-     * Public method to retrieve data needed for the performance chart.
-     * @returns {object} An object containing labels, predicted values, and actual values for the last 20 completed rounds.
-     */
     getChartData() {
         const completedLogs = this.log.filter(l => l.roundStatus === 'COMPLETED');
-        // Get last 20, then reverse for chart display (oldest on left)
         const last20Logs = completedLogs.slice(0, 20).reverse(); 
 
-        // Use the game ID for labels
         const labels = last20Logs.map(item => `R${item.id}`); 
         const predictedValues = last20Logs.map(item => item.predicted);
         const actualValues = last20Logs.map(item => item.actual);
@@ -407,5 +361,3 @@ renderStats() {
         return { labels, predictedValues, actualValues };
     }
 }
-
-

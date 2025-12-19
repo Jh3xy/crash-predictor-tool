@@ -1,6 +1,8 @@
-// script.js
 
-// Import core modules
+
+
+// script.js - FIXED VERSION
+
 import { DataStore } from './js/DataStore.js';
 import { LiveSync } from './js/LiveSyncing.js'; 
 import { Verifier } from './js/Verifier.js'; 
@@ -11,11 +13,9 @@ import { HistoryLog } from './js/HistoryLog.js';
 import { listenForTabs } from './js/utils/tabs.js';
 import { populateAndShowModal } from './js/utils/modalManager.js'; 
 
-// Initiate tab listeners
 const tabs = document.querySelectorAll('.tab');
 listenForTabs(tabs);
 
-// --- Sidebar Logic ---
 function setupSidebar() {
     const menuToggle = document.getElementById('menu-toggle');
     const sidebar = document.querySelector('.sidebar');
@@ -52,15 +52,11 @@ function setupSidebar() {
     }
 }
 
-/**
- * Helper to gather DOM elements
- */
 function getDOMElements() {
     return {
         currentMultiplier: document.getElementById('current-multiplier'),
         historyLogBody: document.getElementById('history-log-body'),
         overallAccuracy: document.getElementById('overall-accuracy'),
-        // Dashboard Stats
         totalPredictionsValue: document.getElementById('total-predictions-value'), 
         dailyChangeSpan: document.getElementById('total-predictions-daily-change'), 
         totalPredictionsFooter: document.getElementById('total-predictions-footer'),
@@ -68,7 +64,6 @@ function getDOMElements() {
         avgAccuracyWeeklyChange: document.getElementById('avg-accuracy-weekly-change'), 
         winRateValue: document.getElementById('win-rate-value'), 
         activeSessionsValue: document.getElementById('active-sessions-value'),
-
         clearHistoryBtn: document.getElementById('clear-history-btn'), 
         recentGrid: document.getElementById('recent-grid'),
         statusDot: document.getElementById('status-dot'),
@@ -93,10 +88,8 @@ function getDOMElements() {
 // =========================================================
 document.addEventListener('DOMContentLoaded', () => {
     
-    // 1. Initialize Sidebar
     setupSidebar();
 
-    // 2. Initialize Core Systems
     const eventBus = new EventEmitter();
     const domElements = getDOMElements();
     const dataStore = new DataStore();
@@ -104,49 +97,55 @@ document.addEventListener('DOMContentLoaded', () => {
     const verifier = new Verifier(dataStore, eventBus); 
     const predictor = new CrashPredictor(); 
     const uiController = new UIController(domElements); 
+
+    // 🔥 EXPOSE predictor to window for debugging
+    window.predictor = predictor;
+    window.dataStore = dataStore;
+    window.eventBus = eventBus;
+    console.log('🔧 Debug: predictor, dataStore, and eventBus exposed to window');
+
+    // 🔥 Bayesian feedback loop
+    eventBus.on('updateBayesianState', (data) => {
+        console.log('📊 Bayesian Update Event Received:', data);
+        predictor.updateAfterRound(data.actual, data.predicted);
+    });
     
-    // Pass eventBus to HistoryLog
     const historyLog = new HistoryLog(domElements, eventBus); 
 
     uiController.showInitialState();
 
-    // 🛑 CRITICAL FIX: Pass uiController and predictor instances to LiveSync constructor
     const liveSync = new LiveSync(dataStore, verifier, eventBus, uiController, predictor); 
     
-    console.log('🚀 App Initialized. Starting LiveSync history connection...');
+    // 🔥 EXPOSE liveSync for debugging
+    window.liveSync = liveSync;
     
-    // if (domElements.predictBtn) {
-    //     domElements.predictBtn.addEventListener('click', () => {
-    //         handlePredictClick(dataStore, predictor, uiController, liveSync, eventBus); 
-    //     });
-    // }
+    console.log('🚀 App Initialized. LiveSync connecting...');
+    window.logSystemReady();
 
-    // Triggers the prediction manually
+    // 🔥 FIX: Proper button handler with loading states
     if (domElements.predictBtn) {
         domElements.predictBtn.addEventListener('click', async () => {
-            console.log('👆 Manual Prediction Triggered');
+            console.log('\n\n\n👆 Manual Prediction Button Clicked');
+            console.log('📊 Current Game ID:', liveSync.currentGameId);
+            console.log('📊 DataStore rounds:', dataStore.rounds.length);
             
-            // 1. Change button to "Analyzing..."
+            // Show loading state
+            uiController.showLoadingState();
             uiController.setPredictButtonState('loading');
             
             try {
-                // 2. Tell LiveSync to run the worker prediction
-                // We use 'await' because the worker math takes a split second
                 await liveSync.triggerManualPrediction();
+                console.log('✅ Prediction completed successfully');
             } catch (err) {
-                console.error("Manual Prediction Error:", err);
+                console.error('❌ Manual Prediction Error:', err);
+                uiController.setPredictButtonState('error');
             } finally {
-                // 3. Change button back to "Analyze"
-                uiController.setPredictButtonState('idle');
+                // Button state is set by renderPrediction
             }
         });
     }
 
-    // 3. Connect (This triggers the history fetch now in the constructor)
-    // liveSync.connect(); // This line can now be removed as it's in the constructor
-
-    // 4. Attach Event Bus Listeners (These remain the same)
-    
+    // Event listeners
     eventBus.on('multiplierUpdate', (multiplier) => {
         if (domElements.currentMultiplier) {
             domElements.currentMultiplier.textContent = multiplier.toFixed(2) + 'x';
@@ -163,6 +162,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     eventBus.on('roundVerified', (round) => {
         uiController.renderNewRound(round);
+    });
+
+    // Model stats update function
+    function updateModelStats(predictor) {
+        const stats = predictor.getStatistics();
+        
+        const totalEl = document.getElementById('model-total-predictions');
+        const successEl = document.getElementById('model-success-rate');
+        const bayesianEl = document.getElementById('model-bayesian-rate');
+        
+        if (totalEl) totalEl.textContent = stats.totalPredictions;
+        if (successEl) successEl.textContent = stats.winRatePercent;
+        if (bayesianEl) bayesianEl.textContent = stats.winRatePercent;
+        
+        console.log('📊 Model Stats Updated:', stats);
+    }
+
+    // Update stats after Bayesian updates
+    eventBus.on('updateBayesianState', () => {
+        updateModelStats(predictor);
     });
 
     // =========================================================================================
@@ -221,4 +240,9 @@ document.addEventListener('DOMContentLoaded', () => {
             populateAndShowModal(userGuide.getAttribute('data-modal-id'));
         });
     }
+
+    // 🔥 DEBUG: Log when predictions are made
+    eventBus.on('newPredictionMade', (data) => {
+        console.log('🎯 NEW PREDICTION MADE:', data);
+    });
 });
