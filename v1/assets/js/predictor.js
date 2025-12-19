@@ -1,84 +1,84 @@
-
-
 /**
  * js/predictor.js
- * Wrapper for Adaptive Prediction Engine v4.0
+ * Wrapper for Quantile-Based Prediction Engine
  */
 
-import { AdvancedPredictionEngine } from './advanced-prediction-engine.js';
+import { QuantilePredictionEngine } from './quantile-prediction-engine.js';
 
 export class CrashPredictor {
     constructor() {
-        this.engine = new AdvancedPredictionEngine();
+        this.engine = new QuantilePredictionEngine();
         this.lastPrediction = null;
-        this.lastModelPredictions = null; // 🔥 Store for performance tracking
         
-        this._loadBayesianState();
-        this._loadModelWeights(); // 🔥 Load saved weights
+        this._loadState();
         
-        console.log('🎯 CrashPredictor initialized with Adaptive Engine v4.0');
-        console.log('📊 Starting Bayesian State:', this.engine.bayesianState);
-        console.log('⚖️ Initial Model Weights:', this.engine.modelWeights);
+        console.log('🎯 CrashPredictor initialized with Quantile Engine');
+        console.log('📊 Stats:', this.engine.getStatistics());
     }
 
-    _loadBayesianState() {
+    _loadState() {
         try {
-            const saved = localStorage.getItem('bayesianState');
-            if (saved) {
-                const state = JSON.parse(saved);
-                this.engine.bayesianState = state;
-                console.log('✅ Loaded Bayesian state:', state);
+            // Load prediction stats
+            const predStats = localStorage.getItem('predictionStats_v2');
+            if (predStats) {
+                this.engine.predictionStats = JSON.parse(predStats);
+                console.log('✅ Loaded prediction stats:', this.engine.predictionStats);
+            }
+            
+            // Load raw history
+            const rawHistory = localStorage.getItem('rawHistory_v2');
+            if (rawHistory) {
+                this.engine.rawHistory = JSON.parse(rawHistory);
+                console.log(`✅ Loaded ${this.engine.rawHistory.length} rounds of market data`);
+            }
+            
+            // Load calibration
+            const calibration = localStorage.getItem('targetQuantile_v2');
+            if (calibration) {
+                this.engine.targetQuantile = parseFloat(calibration);
+                console.log(`✅ Loaded calibrated quantile: ${(this.engine.targetQuantile * 100).toFixed(1)}th percentile`);
             }
         } catch (e) {
-            console.warn('⚠️ Failed to load Bayesian state:', e);
+            console.warn('⚠️ Failed to load state:', e);
         }
     }
 
-    _saveBayesianState() {
+    _saveState() {
         try {
-            localStorage.setItem('bayesianState', JSON.stringify(this.engine.bayesianState));
-            console.log('💾 Saved Bayesian state');
+            localStorage.setItem('predictionStats_v2', JSON.stringify(this.engine.predictionStats));
+            localStorage.setItem('rawHistory_v2', JSON.stringify(this.engine.rawHistory.slice(0, 1000))); // Save first 1000
+            localStorage.setItem('targetQuantile_v2', this.engine.targetQuantile.toString());
         } catch (e) {
-            console.warn('⚠️ Failed to save Bayesian state:', e);
+            console.warn('⚠️ Failed to save state:', e);
         }
     }
 
-    // 🔥 NEW: Load/Save Model Weights
-    _loadModelWeights() {
+    /**
+     * 🔥 PASSIVE LEARNING - Called on EVERY round
+     */
+    learnFromMarketData(multiplier) {
         try {
-            const saved = localStorage.getItem('modelWeights');
-            if (saved) {
-                const weights = JSON.parse(saved);
-                this.engine.modelWeights = weights;
-                console.log('✅ Loaded model weights:', weights);
+            this.engine.learnFromMarketData(multiplier);
+            
+            // Save every 50 rounds to avoid spam
+            if (this.engine.rawHistory.length % 50 === 0) {
+                this._saveState();
             }
-        } catch (e) {
-            console.warn('⚠️ Failed to load model weights:', e);
+        } catch (error) {
+            console.error('❌ Passive Learning Error:', error);
         }
     }
 
-    _saveModelWeights() {
-        try {
-            localStorage.setItem('modelWeights', JSON.stringify(this.engine.modelWeights));
-            console.log('💾 Saved model weights');
-        } catch (e) {
-            console.warn('⚠️ Failed to save model weights:', e);
-        }
-    }
-
+    /**
+     * 🎯 ACTIVE PREDICTION - Called when user clicks button
+     */
     async predictNext(history) {
         try {
-            // Get predictions from all models (before consensus)
-            const cleanHistory = this.engine._cleanData(history.slice(0, 500));
-            this.engine._updateBustTracker(cleanHistory);
-            this.engine._updateEVTState(cleanHistory);
-            const features = this.engine._extractMultiTimeframeFeatures(cleanHistory);
-            const modelPredictions = this.engine._runPredictionModels(cleanHistory, features);
+            console.log(`\n🎯 PREDICTION REQUEST`);
+            console.log(`   Market data: ${this.engine.rawHistory.length} rounds`);
+            console.log(`   History provided: ${history.length} rounds`);
+            console.log(`   Current calibration: ${(this.engine.targetQuantile * 100).toFixed(1)}th percentile`);
             
-            // Store for later performance tracking
-            this.lastModelPredictions = modelPredictions;
-            
-            // Run full prediction
             const result = this.engine.predict(history);
             
             this.lastPrediction = {
@@ -87,14 +87,9 @@ export class CrashPredictor {
                 timestamp: Date.now()
             };
             
-            console.log('🎯 Prediction v4.0:', {
-                target: result.predictedValue.toFixed(2),
-                range: result.predictedRange.map(v => v.toFixed(2)),
-                safety: result.safetyZone.toFixed(2),
-                confidence: result.confidence.toFixed(1) + '%',
-                action: result.action,
-                modelWeights: result.modelWeights
-            });
+            console.log(`✅ Prediction: ${result.predictedValue.toFixed(2)}x @ ${result.confidence.toFixed(1)}% confidence`);
+            console.log(`   Action: ${result.action}`);
+            console.log(`   Safety Exit: ${result.safetyZone.toFixed(2)}x\n`);
             
             return this._transformForUI(result);
             
@@ -111,7 +106,7 @@ export class CrashPredictor {
     }
 
     /**
-     * 🔥 ENHANCED: Update with model performance tracking
+     * 📊 UPDATE AFTER PREDICTION - Called when predicted round completes
      */
     updateAfterRound(actual, predicted) {
         if (!predicted || !actual) {
@@ -121,36 +116,18 @@ export class CrashPredictor {
         
         const success = actual >= predicted;
         
-        console.log('📊 Updating Engine State:', {
-            predicted: predicted.toFixed(2),
-            actual: actual.toFixed(2),
-            success: success,
-            beforeWinRate: (this.engine.bayesianState.priorWinRate * 100).toFixed(1) + '%'
-        });
+        console.log(`\n📊 PREDICTION RESULT:`);
+        console.log(`   Predicted: ${predicted.toFixed(2)}x`);
+        console.log(`   Actual: ${actual.toFixed(2)}x`);
+        console.log(`   Result: ${success ? '✅ WIN' : '❌ LOSS'}`);
         
-        // Update Bayesian state
-        this.engine.updateBayesianState(predicted, actual, success);
+        this.engine.updateAfterPrediction(predicted, actual, success);
         
-        // 🔥 Track individual model performance
-        if (this.lastModelPredictions) {
-            this.engine.trackModelPerformance(this.lastModelPredictions, actual);
-            console.log('📊 Model performance tracked');
-        }
+        const stats = this.engine.getStatistics();
+        console.log(`   Overall: ${stats.successCount}W / ${stats.failureCount}L = ${stats.winRatePercent}\n`);
         
-        console.log('📊 Engine State After Update:', {
-            totalPredictions: this.engine.bayesianState.totalPredictions,
-            successCount: this.engine.bayesianState.successCount,
-            failureCount: this.engine.bayesianState.failureCount,
-            winRate: (this.engine.bayesianState.priorWinRate * 100).toFixed(1) + '%',
-            modelWeights: this.engine.modelWeights
-        });
-        
-        // Save both states
-        this._saveBayesianState();
-        this._saveModelWeights(); // 🔥 Save adaptive weights
-        
+        this._saveState();
         this.lastPrediction = null;
-        this.lastModelPredictions = null;
     }
 
     _transformForUI(engineResult) {
@@ -165,105 +142,41 @@ export class CrashPredictor {
             mostLikely: engineResult.predictedValue,
             predictedRange: engineResult.predictedRange,
             safetyZone: engineResult.safetyZone,
-            bustProbability: engineResult.bustProbability,
             volatility: engineResult.volatility,
-            avgMultiplier: this._formatAvgMultiplier(engineResult),
-            message: this._buildAnalysisMessage(engineResult),
+            message: engineResult.message,
             action: engineResult.action,
             reasoning: engineResult.reasoning,
-            kellyBetSize: engineResult.kellyBetSize,
-            kellyRecommendation: engineResult.kellyRecommendation,
-            modelAgreement: engineResult.modelAgreement,
-            currentTrend: engineResult.currentTrend,
-            bustAlert: engineResult.bustAlert,
-            evtAlert: engineResult.evtAlert,
-            bayesianWinRate: engineResult.bayesianWinRate,
+            
+            // Context
+            marketMedian: engineResult.marketMedian,
+            recentMedian: engineResult.recentMedian,
+            targetQuantile: engineResult.targetQuantile,
+            predictionWinRate: engineResult.predictionWinRate,
             historyAnalyzed: engineResult.historyAnalyzed,
-            confidenceInterval: engineResult.confidenceInterval, // 🔥 NEW
-            meanReversionSignal: engineResult.meanReversionSignal, // 🔥 NEW
+            
             error: false
         };
     }
 
-    _formatAvgMultiplier(result) {
-        const [min, max] = result.predictedRange;
-        return `${min.toFixed(2)}-${max.toFixed(2)}x`;
-    }
-
-    _buildAnalysisMessage(result) {
-        const parts = [];
-        parts.push(result.message);
-        
-        if (result.action !== 'SKIP ROUND' && result.kellyBetSize) {
-            parts.push(`Kelly: ${result.kellyBetSize}`);
-        }
-        
-        if (result.bustAlert) {
-            parts.push('⚠️ Bust alert');
-        }
-        if (result.evtAlert) {
-            parts.push('📊 EVT alert');
-        }
-        
-        // 🔥 Add mean reversion signal
-        if (result.meanReversionSignal && result.meanReversionSignal.signal !== 'weak') {
-            parts.push(`Reversion: ${result.meanReversionSignal.direction}`);
-        }
-        
-        return parts.join(' • ');
-    }
-
-    getBayesianWinRate() {
-        return this.engine.bayesianState.priorWinRate;
-    }
-
     getStatistics() {
-        return {
-            totalPredictions: this.engine.bayesianState.totalPredictions,
-            successCount: this.engine.bayesianState.successCount,
-            failureCount: this.engine.bayesianState.failureCount,
-            winRate: this.engine.bayesianState.priorWinRate,
-            winRatePercent: (this.engine.bayesianState.priorWinRate * 100).toFixed(1) + '%',
-            modelWeights: this.engine.modelWeights, // 🔥 Include current weights
-            recentAccuracy: this._calculateRecentAccuracy()
-        };
+        return this.engine.getStatistics();
     }
 
-    // 🔥 NEW: Calculate accuracy over last N predictions
-    _calculateRecentAccuracy() {
-        const recent = this.engine.recentPredictions.slice(0, 20);
-        if (recent.length === 0) return 0;
-        
-        const successes = recent.filter(p => p.success).length;
-        return (successes / recent.length * 100).toFixed(1) + '%';
-    }
-
-    resetBayesianState() {
-        this.engine.bayesianState = {
-            priorWinRate: 0.50, // 🔥 Reset to neutral 50%
+    resetStats() {
+        this.engine.predictionStats = {
+            totalPredictions: 0,
             successCount: 0,
             failureCount: 0,
-            totalPredictions: 0
+            winRate: 0.50,
+            calibrationHistory: []
         };
+        this.engine.targetQuantile = 0.40;
+        this.engine.rawHistory = [];
         
-        // 🔥 Also reset model weights to equal
-        this.engine.modelWeights = {
-            bayesian: 0.20,
-            statistical: 0.20,
-            frequency: 0.20,
-            evt: 0.20,
-            momentum: 0.20
-        };
+        localStorage.removeItem('predictionStats_v2');
+        localStorage.removeItem('rawHistory_v2');
+        localStorage.removeItem('targetQuantile_v2');
         
-        // Clear performance tracking
-        for (const model of Object.keys(this.engine.modelPerformance)) {
-            this.engine.modelPerformance[model] = { predictions: [], errors: [] };
-        }
-        
-        this.engine.recentPredictions = [];
-        
-        this._saveBayesianState();
-        this._saveModelWeights();
-        console.log('🔄 Engine reset to neutral state');
+        console.log('🔄 All stats reset');
     }
 }
