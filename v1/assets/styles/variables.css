@@ -193,5 +193,416 @@ body.theme-mint {
   --sidebar-active-border: var(--color-accent-primary);
 }
 
+/* =========================================================================
+   6. SUNSET DRIVE THEME (Warm Dark)
+   ========================================================================= */
+body.theme-sunset {
+  /* BACKGROUNDS: Deep warm purple/browns */
+  --color-background-base: hsla(280, 25%, 12%, 1); 
+  --color-surface-card: hsla(280, 20%, 18%, 1); 
+  --color-surface-glass: hsla(280, 20%, 18%, 0.9);
 
+  /* ACCENT: Hot Orange/Coral */
+  --color-accent-primary: hsla(15, 90%, 60%, 1); 
+  --color-accent-hover: hsla(15, 90%, 60%, 0.85); 
+  --color-accent-glow: hsla(15, 90%, 60%, 0.3); 
 
+  /* TEXT */
+  --text-primary: hsla(20, 30%, 90%, 1); 
+  --text-secondary: hsla(20, 20%, 70%, 0.8);
+
+  /* STATUS */
+  --color-status-success: hsla(150, 60%, 50%, 1);
+  --color-status-danger: hsla(340, 80%, 55%, 1);
+  --color-status-warning: hsla(45, 100%, 50%, 1); 
+
+  /* UI BORDERS & GLOW */
+  --border-subtle: hsla(15, 90%, 60%, 0.3); 
+  --card-border: 1px solid var(--border-subtle);
+  --sidebar-active-bg: hsla(15, 90%, 60%, 0.15); 
+  --sidebar-active-border: var(--color-accent-primary);
+}
+
+/* =========================================================================
+   7. FOREST FLOOR THEME (Nature Dark)
+   ========================================================================= */
+body.theme-forest {
+  /* BACKGROUNDS: Deep Moss/Pine */
+  --color-background-base: hsla(150, 30%, 8%, 1); 
+  --color-surface-card: hsla(150, 20%, 14%, 1); 
+  --color-surface-glass: hsla(150, 20%, 14%, 0.9);
+
+  /* ACCENT: Earthy Gold/Chartreuse */
+  --color-accent-primary: hsla(85, 60%, 55%, 1); 
+  --color-accent-hover: hsla(85, 60%, 55%, 0.85); 
+  --color-accent-glow: hsla(85, 60%, 55%, 0.3); 
+
+  /* TEXT */
+  --text-primary: hsla(100, 10%, 90%, 1); 
+  --text-secondary: hsla(100, 10%, 70%, 0.8);
+
+  /* STATUS */
+  --color-status-success: hsla(140, 50%, 50%, 1);
+  --color-status-danger: hsla(0, 60%, 60%, 1); /* Muted Red */
+  --color-status-warning: hsla(35, 90%, 55%, 1); 
+
+  /* UI */
+  --card-radius: 16px; /* softer, rounder feel */
+  --border-subtle: hsla(85, 60%, 55%, 0.2); 
+  --card-border: 1px solid var(--border-subtle);
+  --sidebar-active-bg: hsla(85, 60%, 55%, 0.1); 
+  --sidebar-active-border: var(--color-accent-primary);
+}
+
+/* =========================================================================
+   8. CYBER AMBER THEME (High Contrast/Terminal)
+   ========================================================================= */
+body.theme-amber {
+  /* BACKGROUNDS: Pure Black/Dark Gray */
+  --color-background-base: hsla(0, 0%, 5%, 1); 
+  --color-surface-card: hsla(0, 0%, 10%, 1); 
+  --color-surface-glass: hsla(0, 0%, 10%, 0.95);
+
+  /* ACCENT: Retro Terminal Amber */
+  --color-accent-primary: hsla(45, 100%, 50%, 1); 
+  --color-accent-hover: hsla(45, 100%, 50%, 0.85); 
+  --color-accent-glow: hsla(45, 100%, 50%, 0.4); 
+
+  /* TEXT */
+  --text-primary: hsla(45, 100%, 90%, 1); 
+  --text-secondary: hsla(45, 50%, 60%, 0.8);
+
+  /* FORCE MONOSPACE FONT (Optional stylistic choice for this theme) */
+  /* --ff-primary: 'Roboto Mono', monospace; */ 
+
+  /* STATUS - Kept monochromatic where possible */
+  --color-status-success: var(--color-accent-primary);
+  --color-status-danger: hsla(0, 80%, 50%, 1);
+  --color-status-warning: hsla(30, 100%, 50%, 1); 
+
+  /* UI - Hard edges for tech feel */
+  --card-radius: 2px; 
+  --border-subtle: hsla(45, 100%, 50%, 0.5); 
+  --card-border: 1px solid var(--border-subtle);
+  --sidebar-active-bg: hsla(45, 100%, 50%, 0.1); 
+  --sidebar-active-border: var(--color-accent-primary);
+}
+
+/* =========================================================================
+   9. SOFT LATTE THEME (Warm Light)
+   ========================================================================= */
+body.theme-latte {
+  /* BACKGROUNDS: Cream/Paper */
+  --color-background-base: hsla(35, 30%, 94%, 1); 
+  --color-surface-card: hsla(35, 30%, 98%, 1); 
+  --color-surface-glass: hsla(35, 30%, 98%, 0.9);
+
+  /* ACCENT: Coffee/Bronze */
+  --color-accent-primary: hsla(25, 60%, 45%, 1); 
+  --color-accent-hover: hsla(25, 60%, 45%, 0.85); 
+  --color-accent-glow: hsla(25, 60%, 45%, 0.2); 
+
+  /* TEXT: Dark Espresso/Gray */
+  --text-primary: hsla(25, 20%, 20%, 1); 
+  --text-secondary: hsla(25, 15%, 50%, 0.8);
+
+  /* STATUS */
+  --color-status-success: hsla(140, 60%, 40%, 1);
+  --color-status-danger: hsla(0, 70%, 55%, 1);
+  --color-status-warning: hsla(35, 90%, 50%, 1); 
+
+  /* UI */
+  --card-radius: 8px;
+  --card-shadow: 0 4px 12px rgba(90, 80, 70, 0.08); /* Warm shadow */
+  --border-subtle: hsla(25, 60%, 45%, 0.15); 
+  --card-border: 1px solid var(--border-subtle);
+  --sidebar-active-bg: hsla(25, 60%, 45%, 0.1); 
+  --sidebar-active-border: var(--color-accent-primary);
+  
+  /* Update Chart Cells for Light Mode */
+  --cell-high: var(--color-accent-primary);
+  --cell-medium: hsla(140, 50%, 45%, 1);
+  --cell-moderate: var(--color-status-warning);
+  --cell-low: var(--color-status-danger);
+}
+
+/* =========================================================================
+   10. MATRIX CODE THEME (Hacker)
+   ========================================================================= */
+body.theme-matrix {
+  /* BACKGROUNDS: Pitch Black */
+  --color-background-base: hsla(0, 0%, 0%, 1); 
+  --color-surface-card: hsla(120, 20%, 5%, 1); 
+  --color-surface-glass: hsla(120, 20%, 5%, 0.95);
+
+  /* ACCENT: Terminal Green */
+  --color-accent-primary: hsla(120, 100%, 50%, 1); 
+  --color-accent-hover: hsla(120, 100%, 50%, 0.85); 
+  --color-accent-glow: hsla(120, 100%, 50%, 0.5); 
+
+  /* TEXT: Green tinted */
+  --text-primary: hsla(120, 50%, 90%, 1); 
+  --text-secondary: hsla(120, 40%, 60%, 0.8);
+
+  /* STATUS */
+  --color-status-success: hsla(120, 100%, 50%, 1); /* Same as accent */
+  --color-status-danger: hsla(0, 100%, 40%, 1); /* Dark Red to pop against black */
+  --color-status-warning: hsla(60, 100%, 50%, 1); 
+
+  /* UI - Thin, sharp borders */
+  --card-radius: 0px; /* Sharp corners for retro feel */
+  --border-subtle: hsla(120, 100%, 50%, 0.4); 
+  --card-border: 1px solid var(--border-subtle);
+  --sidebar-active-bg: hsla(120, 100%, 50%, 0.15); 
+  --sidebar-active-border: var(--color-accent-primary);
+}
+
+/* =========================================================================
+   11. ROYAL VELVET THEME (Luxury)
+   ========================================================================= */
+body.theme-royal {
+  /* BACKGROUNDS: Rich Dark Plum */
+  --color-background-base: hsla(270, 40%, 15%, 1); 
+  --color-surface-card: hsla(270, 30%, 22%, 1); 
+  --color-surface-glass: hsla(270, 30%, 22%, 0.9);
+
+  /* ACCENT: Gold */
+  --color-accent-primary: hsla(45, 80%, 60%, 1); 
+  --color-accent-hover: hsla(45, 80%, 70%, 1); 
+  --color-accent-glow: hsla(45, 80%, 60%, 0.3); 
+
+  /* TEXT */
+  --text-primary: hsla(45, 20%, 95%, 1); 
+  --text-secondary: hsla(270, 20%, 70%, 0.8);
+
+  /* STATUS */
+  --color-status-success: hsla(150, 40%, 50%, 1);
+  --color-status-danger: hsla(340, 60%, 55%, 1);
+  --color-status-warning: hsla(30, 90%, 60%, 1); 
+
+  /* UI */
+  --card-radius: 20px; /* Very round */
+  --border-subtle: hsla(45, 80%, 60%, 0.2); 
+  --card-border: 1px solid var(--border-subtle);
+  --sidebar-active-bg: hsla(45, 80%, 60%, 0.1); 
+  --sidebar-active-border: var(--color-accent-primary);
+}
+
+/* =========================================================================
+   12. ICEBERG THEME (Cold)
+   ========================================================================= */
+body.theme-ice {
+  /* BACKGROUNDS: Desaturated Blue-Grey */
+  --color-background-base: hsla(200, 25%, 18%, 1); 
+  --color-surface-card: hsla(200, 20%, 25%, 1); 
+  --color-surface-glass: hsla(200, 20%, 25%, 0.9);
+
+  /* ACCENT: Icy Cyan */
+  --color-accent-primary: hsla(190, 90%, 70%, 1); 
+  --color-accent-hover: hsla(190, 90%, 80%, 1); 
+  --color-accent-glow: hsla(190, 90%, 70%, 0.4); 
+
+  /* TEXT */
+  --text-primary: hsla(200, 10%, 95%, 1); 
+  --text-secondary: hsla(200, 10%, 70%, 0.8);
+
+  /* STATUS - Cool tones */
+  --color-status-success: hsla(160, 70%, 60%, 1); /* Minty Green */
+  --color-status-danger: hsla(350, 70%, 70%, 1); /* Soft Red */
+  --color-status-warning: hsla(40, 80%, 70%, 1); /* Soft Yellow */
+
+  /* UI */
+  --card-radius: 12px;
+  --border-subtle: hsla(190, 50%, 70%, 0.2); 
+  --card-border: 1px solid var(--border-subtle);
+  --sidebar-active-bg: hsla(190, 90%, 70%, 0.15); 
+  --sidebar-active-border: var(--color-accent-primary);
+}
+
+/* =========================================================================
+   13. HAZARD THEME (Industrial)
+   ========================================================================= */
+body.theme-hazard {
+  /* BACKGROUNDS: Concrete Grey */
+  --color-background-base: hsla(210, 10%, 12%, 1); 
+  --color-surface-card: hsla(210, 10%, 18%, 1); 
+  --color-surface-glass: hsla(210, 10%, 18%, 0.9);
+
+  /* ACCENT: Safety Orange */
+  --color-accent-primary: hsla(25, 100%, 55%, 1); 
+  --color-accent-hover: hsla(25, 100%, 55%, 0.85); 
+  --color-accent-glow: hsla(25, 100%, 55%, 0.3); 
+
+  /* TEXT */
+  --text-primary: hsla(0, 0%, 95%, 1); 
+  --text-secondary: hsla(0, 0%, 60%, 0.8);
+
+  /* STATUS */
+  --color-status-success: hsla(120, 50%, 50%, 1);
+  --color-status-danger: hsla(0, 70%, 50%, 1);
+  --color-status-warning: hsla(50, 100%, 50%, 1); 
+
+  /* UI - Heavy borders */
+  --card-radius: 6px;
+  --border-subtle: hsla(25, 100%, 55%, 0.4); 
+  --card-border: 2px solid var(--border-subtle); /* Thicker border */
+  --sidebar-active-bg: hsla(25, 100%, 55%, 0.15); 
+  --sidebar-active-border: var(--color-accent-primary);
+}
+
+/* =========================================================================
+   14. LO-FI TWILIGHT THEME (Based on Screenshot)
+   ========================================================================= */
+body.theme-twilight {
+  /* BACKGROUNDS: Deep Indigo/Violet from the bottom of the sky */
+  --color-background-base: hsla(255, 45%, 15%, 1); 
+  --color-surface-card: hsla(255, 35%, 22%, 1); 
+  --color-surface-glass: hsla(255, 35%, 22%, 0.85);
+
+  /* ACCENT: The bright Lavender-Pink from the highlights */
+  --color-accent-primary: hsla(280, 50%, 75%, 1); 
+  --color-accent-hover: hsla(280, 50%, 85%, 1); 
+  --color-accent-glow: hsla(280, 50%, 75%, 0.4); 
+
+  /* TEXT: Soft Lavender White (like your clock numbers) */
+  --text-primary: hsla(255, 30%, 92%, 1); 
+  --text-secondary: hsla(255, 20%, 75%, 0.8);
+
+  /* STATUS: Warm colors pulled from the clouds */
+  --color-status-success: hsla(160, 40%, 60%, 1); 
+  --color-status-danger: hsla(330, 60%, 65%, 1); /* Dusty Rose */
+  --color-status-warning: hsla(35, 80%, 70%, 1); /* Sunset Orange */
+
+  /* UI */
+  --card-radius: 14px;
+  --border-subtle: hsla(280, 50%, 75%, 0.25); 
+  --card-border: 1px solid var(--border-subtle);
+  --sidebar-active-bg: hsla(280, 50%, 75%, 0.15); 
+  --sidebar-active-border: var(--color-accent-primary);
+  
+  /* Chart Cells */
+  --cell-high: var(--color-accent-primary);
+  --cell-medium: hsla(255, 40%, 60%, 1);
+  --cell-moderate: var(--color-status-warning);
+  --cell-low: var(--color-status-danger);
+}
+/* =========================================================================
+   15. MONOKAI PRO THEME (Professional Dark)
+   ========================================================================= */
+body.theme-monokai {
+  /* BACKGROUNDS: Warm Charcoal */
+  --color-background-base: hsla(300, 3%, 15%, 1); 
+  --color-surface-card: hsla(300, 3%, 18%, 1); 
+  --color-surface-glass: hsla(300, 3%, 18%, 0.9);
+
+  /* ACCENT: The iconic Monokai Pink */
+  --color-accent-primary: hsla(330, 100%, 70%, 1); 
+  --color-accent-hover: hsla(330, 100%, 70%, 0.85); 
+  --color-accent-glow: hsla(330, 100%, 70%, 0.3); 
+
+  /* TEXT: Off-white and Muted Grey */
+  --text-primary: hsla(60, 10%, 98%, 1); 
+  --text-secondary: hsla(300, 5%, 70%, 0.8);
+
+  /* STATUS */
+  --color-status-success: hsla(85, 60%, 65%, 1); /* Monokai Green */
+  --color-status-danger: hsla(5, 80%, 65%, 1);  /* Monokai Red */
+  --color-status-warning: hsla(45, 100%, 70%, 1); /* Monokai Yellow */
+
+  /* UI */
+  --card-radius: 4px;
+  --border-subtle: hsla(330, 100%, 70%, 0.2); 
+  --card-border: 1px solid var(--border-subtle);
+  --sidebar-active-bg: hsla(330, 100%, 70%, 0.1); 
+  --sidebar-active-border: var(--color-accent-primary);
+}
+
+/* =========================================================================
+   16. HALCYON THEME (Deep Minimal Blue)
+   ========================================================================= */
+body.theme-halcyon {
+  /* BACKGROUNDS: Deep Navy-Grey */
+  --color-background-base: hsla(220, 25%, 14%, 1); 
+  --color-surface-card: hsla(220, 20%, 18%, 1); 
+  --color-surface-glass: hsla(220, 20%, 18%, 0.9);
+
+  /* ACCENT: Halcyon Cyan */
+  --color-accent-primary: hsla(190, 80%, 65%, 1); 
+  --color-accent-hover: hsla(190, 80%, 75%, 1); 
+  --color-accent-glow: hsla(190, 80%, 65%, 0.3); 
+
+  /* TEXT: Desaturated Blue-Grey */
+  --text-primary: hsla(220, 15%, 85%, 1); 
+  --text-secondary: hsla(220, 15%, 65%, 0.8);
+
+  /* STATUS */
+  --color-status-success: hsla(150, 50%, 60%, 1);
+  --color-status-danger: hsla(350, 70%, 65%, 1);
+  --color-status-warning: hsla(40, 90%, 70%, 1); 
+
+  /* UI */
+  --card-radius: 8px;
+  --border-subtle: hsla(190, 80%, 65%, 0.15); 
+  --card-border: 1px solid var(--border-subtle);
+  --sidebar-active-bg: hsla(190, 80%, 65%, 0.1); 
+}
+
+/* =========================================================================
+   17. ATOM ONE DARK THEME (The Classic)
+   ========================================================================= */
+body.theme-atom {
+  /* BACKGROUNDS: Classic Grey-Blue */
+  --color-background-base: hsla(220, 13%, 18%, 1); 
+  --color-surface-card: hsla(220, 12%, 22%, 1); 
+  --color-surface-glass: hsla(220, 12%, 22%, 0.9);
+
+  /* ACCENT: Atom Blue */
+  --color-accent-primary: hsla(207, 82%, 66%, 1); 
+  --color-accent-hover: hsla(207, 82%, 76%, 1); 
+  --color-accent-glow: hsla(207, 82%, 66%, 0.3); 
+
+  /* TEXT */
+  --text-primary: hsla(220, 14%, 71%, 1); 
+  --text-secondary: hsla(220, 10%, 50%, 0.8);
+
+  /* STATUS */
+  --color-status-success: hsla(95, 38%, 62%, 1);
+  --color-status-danger: hsla(355, 65%, 65%, 1);
+  --color-status-warning: hsla(39, 67%, 69%, 1); 
+
+  /* UI */
+  --card-radius: 6px;
+  --border-subtle: hsla(220, 14%, 25%, 1); 
+  --card-border: 1px solid var(--border-subtle);
+  --sidebar-active-bg: hsla(207, 82%, 66%, 0.1); 
+}
+
+/* =========================================================================
+   18. DRACULA THEME (The Developer Favorite)
+   ========================================================================= */
+body.theme-dracula {
+  /* BACKGROUNDS: Deep Purple-Grey */
+  --color-background-base: hsla(231, 15%, 18%, 1); 
+  --color-surface-card: hsla(231, 15%, 25%, 1); 
+  --color-surface-glass: hsla(231, 15%, 25%, 0.9);
+
+  /* ACCENT: Dracula Purple */
+  --color-accent-primary: hsla(265, 89%, 78%, 1); 
+  --color-accent-hover: hsla(265, 89%, 85%, 1); 
+  --color-accent-glow: hsla(265, 89%, 78%, 0.3); 
+
+  /* TEXT */
+  --text-primary: hsla(60, 30%, 96%, 1); 
+  --text-secondary: hsla(225, 27%, 51%, 0.8);
+
+  /* STATUS */
+  --color-status-success: hsla(135, 94%, 65%, 1);
+  --color-status-danger: hsla(0, 100%, 67%, 1);
+  --color-status-warning: hsla(65, 92%, 76%, 1); 
+
+  /* UI */
+  --card-radius: 10px;
+  --border-subtle: hsla(265, 89%, 78%, 0.2); 
+  --card-border: 1px solid var(--border-subtle);
+  --sidebar-active-bg: hsla(265, 89%, 78%, 0.1); 
+}

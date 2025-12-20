@@ -10,6 +10,7 @@ import { CrashPredictor } from './js/predictor.js';
 import { UIController } from './js/UIController.js'; 
 import { EventEmitter } from './js/EventEmitter.js'; 
 import { HistoryLog } from './js/HistoryLog.js'; 
+import { BacktestingSystem } from './js/BacktestingSystem.js';
 import { listenForTabs } from './js/utils/tabs.js';
 import { populateAndShowModal } from './js/utils/modalManager.js'; 
 
@@ -97,6 +98,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const verifier = new Verifier(dataStore, eventBus); 
     const predictor = new CrashPredictor(); 
     const uiController = new UIController(domElements); 
+
+    window.backtester = new BacktestingSystem(predictor, dataStore);
+    console.log('🤖 Backtesting system ready! Use: backtester.runBacktest(100)');
 
     // 🔥 EXPOSE predictor to window for debugging
     window.predictor = predictor;
