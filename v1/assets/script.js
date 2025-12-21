@@ -250,3 +250,29 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('🎯 NEW PREDICTION MADE:', data);
     });
 });
+
+/*
+const settingBtn = document.querySelector('.icon[data-modal-id="settings"]')
+settingBtn.addEventListener("click", ()=>{
+    setTimeout(() => {
+        const settingsModal = document.querySelector(".app-modal")
+        const themes = document.querySelectorAll(".dropdown-option")
+        console.log(themes)
+        
+        themes.forEach(
+            (theme)=> {
+                theme.addEventListener("click", ()=>{
+                    themes.forEach(
+                        (t)=>{
+                            t.classList.remove('is-active')
+                        }
+                    )
+                    theme.classList.add("is-active")
+                    console.log(theme)
+                })
+            }
+        )
+    }, 1000);
+})
+*/
+

@@ -606,3 +606,45 @@ body.theme-dracula {
   --card-border: 1px solid var(--border-subtle);
   --sidebar-active-bg: hsla(265, 89%, 78%, 0.1); 
 }
+
+/* =========================================================================
+   19. DREAM CITY THEME (60-30-10 Palette)
+   ========================================================================= */
+body.theme-dream {
+  /* --- 60% DOMINANT: Deep Rooftop Purple --- */
+  /* Using the dark purple from the building shadows in your screenshot */
+  --color-background-base: hsla(265, 50%, 10%, 1); 
+  --color-surface-card: hsla(265, 45%, 16%, 1); 
+  --color-surface-glass: hsla(265, 45%, 16%, 0.9);
+
+  /* --- 10% ACCENT: Icon Sunset Pink --- */
+  /* Pulled from the pinkish glow in the cloud layers and icon borders */
+  --color-accent-primary: hsla(315, 90%, 75%, 1); 
+  --color-accent-hover: hsla(315, 90%, 85%, 1); 
+  --color-accent-glow: hsla(315, 90%, 75%, 0.4); 
+
+  /* --- 30% SECONDARY: Clock Number Lavender --- */
+  /* The soft, almost white lavender from the 0257 numbers */
+  --text-primary: hsla(260, 80%, 94%, 1); 
+  --text-secondary: hsla(260, 40%, 70%, 0.8);
+
+  /* STATUS COLORS (Adjusted to fit the dream vibe) */
+  --color-status-success: hsla(160, 60%, 65%, 1); /* Minty */
+  --color-status-danger: hsla(340, 70%, 65%, 1); /* Rose Red */
+  --color-status-warning: hsla(40, 90%, 70%, 1); /* Sunset Gold */
+
+  /* UI STYLING */
+  /* Using the accent color for borders to match the icon style you liked */
+  --card-radius: 16px; /* Rounder, bubbly feel like the font */
+  --border-subtle: hsla(315, 90%, 75%, 0.3); 
+  --card-border: 1px solid var(--border-subtle);
+  
+  --sidebar-active-bg: hsla(315, 90%, 75%, 0.15); 
+  --sidebar-active-border: var(--color-accent-primary);
+
+  /* CHART CELLS */
+  --cell-high: var(--color-accent-primary);
+  --cell-medium: hsla(260, 60%, 60%, 1);
+  --cell-moderate: var(--color-status-warning);
+  --cell-low: var(--color-status-danger);
+}

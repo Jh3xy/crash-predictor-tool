@@ -76,8 +76,8 @@
     /* 6. STATS GRID: Predictor stats layout */
     .stats-grid {
         display: grid;
-        /* grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); */
-        /* grid-template-columns: 2fr 1fr 1fr 1fr 1fr; */
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); 
+        grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
         gap: var(--spacing-small);
     }
     .stat-item.full-column-width {
