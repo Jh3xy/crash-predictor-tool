@@ -1,20 +1,22 @@
 
 /**
- * 🎯 QUANTILE-BASED PREDICTION ENGINE
+ * 🎯 QUANTILE-BASED PREDICTION ENGINE v1.5
+ * NEW FEATURES: Volume Detection, Kelly Criterion Betting
  * Based on combined recommendations from DeepSeek, Gemini, and mathematical analysis
  * Core principle: Target 40th percentile for 60% win rate
- * NO mean reversion, NO averaging - pure statistical quantile targeting
  */
 
 export class QuantilePredictionEngine {
   constructor() {
-    this.name = "Quantile Engine - Reviews Approved";
+    this.name = "Quantile Engine v1.5 - With Volume Detection & Kelly";
     
-    // Feature flags
+    // 🆕 EXPANDED Feature flags
     this.features = {
       winsorization: false,
-      houseEdgeBlend: false,
-      dynamicConfidence: false
+      houseEdgeBlend: true,
+      dynamicConfidence: false,
+      volumeDetection: false,    // 🆕 Detect high-volume bust clusters
+      kellyBetting: false         // 🆕 Kelly Criterion bet sizing
     };
     
     this.houseEdge = 0.01; // 1% house edge
@@ -33,11 +35,11 @@ export class QuantilePredictionEngine {
       successCount: 0,
       failureCount: 0,
       winRate: 0.50,
-      calibrationHistory: [] // Track last 20 for calibration
+      calibrationHistory: []
     };
     
-    console.log("🎯 Quantile Engine Initialized");
-    console.log("📊 Target: 40th percentile for 60% win rate");
+    console.log("🎯 Quantile Engine v1.5 Initialized");
+    console.log("🆕 New Features: Volume Detection, Kelly Criterion");
   }
 
   /**
@@ -68,7 +70,7 @@ export class QuantilePredictionEngine {
 
     let cleanHistory = this._cleanData(history.slice(0, 500));
 
-    // 🔥 NEW: Winsorization (trim outliers)
+    // 🔥 FEATURE: Winsorization (trim outliers)
     if (this.features.winsorization) {
       const p99 = this._calculateQuantile(cleanHistory, 0.99);
       cleanHistory = cleanHistory.map(v => Math.min(v, p99));
@@ -77,16 +79,21 @@ export class QuantilePredictionEngine {
 
     const recent50 = cleanHistory.slice(0, 50);
     const recent20 = cleanHistory.slice(0, 20);
-
     
+    // 🆕 FEATURE: Volume Detection - Detect bust clusters
+    let volumeAdjustment = 1.0;
+    if (this.features.volumeDetection) {
+      volumeAdjustment = this._detectBustVolume(recent20);
+      if (volumeAdjustment !== 1.0) {
+        console.log(`📊 Volume adjustment: ${volumeAdjustment.toFixed(2)}x (${volumeAdjustment < 1 ? 'bust cluster detected' : 'low bust rate'})`);
+      }
+    }
+
     // Calculate market statistics
     const stats = this._calculateStats(cleanHistory);
     const recentStats = this._calculateStats(recent50);
     
     // 1. Base target: Empirical quantile
-    // let target = this._calculateQuantile(cleanHistory, this.targetQuantile);
-
-    // NEW CODE:
     const empirical = this._calculateQuantile(cleanHistory, this.targetQuantile);
     const theoretical = (1 - this.houseEdge) / this.targetWinRate; // ~1.65x
 
@@ -102,15 +109,15 @@ export class QuantilePredictionEngine {
     
     console.log(`📊 Base quantile (${(this.targetQuantile * 100).toFixed(0)}th percentile): ${target.toFixed(2)}x`);
     
-    // 2. Volatility adjustment (Reviews: Be conservative in chaos)
+    // 2. Volatility + Volume adjustments
     const volatilityMultiplier = this._getVolatilityAdjustment(recentStats.volatility, stats.volatility);
-    target *= volatilityMultiplier;
+    target *= volatilityMultiplier * volumeAdjustment; // Apply both
     
-    console.log(`📊 After volatility adjustment (${volatilityMultiplier.toFixed(2)}x): ${target.toFixed(2)}x`);
+    console.log(`📊 After volatility (${volatilityMultiplier.toFixed(2)}x) + volume (${volumeAdjustment.toFixed(2)}x): ${target.toFixed(2)}x`);
     
-    // 3. Bootstrap confidence interval (Reviews: Safety bounds)
+    // 3. Bootstrap confidence interval
     const lowerBound = this._bootstrapQuantile(cleanHistory, this.targetQuantile * 0.75, 100);
-    target = Math.max(target, lowerBound); // Don't go below safety bound
+    target = Math.max(target, lowerBound);
     
     console.log(`📊 Bootstrap lower bound: ${lowerBound.toFixed(2)}x, Final: ${target.toFixed(2)}x`);
     
@@ -118,9 +125,6 @@ export class QuantilePredictionEngine {
     target = Math.max(1.1, Math.min(target, 8.0));
     
     // Calculate confidence
-    // const confidence = this._calculateConfidence(cleanHistory, target, stats);
-
-    // NEW CODE:
     let confidence;
     if (this.features.dynamicConfidence) {
       // Calculate bootstrap variance
@@ -136,11 +140,17 @@ export class QuantilePredictionEngine {
       confidence = this._calculateConfidence(cleanHistory, target, stats);
     }
     
-    // Determine action based on confidence
+    // Determine action
     const action = this._determineAction(confidence, target, recentStats.volatility);
     
-    // Safety exit (30th percentile - Reviews recommendation)
+    // Safety exit
     const safetyExit = this._calculateQuantile(cleanHistory, 0.30);
+    
+    // 🆕 FEATURE: Kelly Criterion bet sizing
+    let kellyBetSize = null;
+    if (this.features.kellyBetting && this.predictionStats.totalPredictions >= 10) {
+      kellyBetSize = this._calculateKellyBet(confidence, target);
+    }
     
     return {
       predictedValue: target,
@@ -164,7 +174,58 @@ export class QuantilePredictionEngine {
       predictionWinRate: (this.predictionStats.winRate * 100).toFixed(1) + '%',
       historyAnalyzed: cleanHistory.length,
       
+      // 🆕 Kelly Criterion (if enabled)
+      kellyBetSize: kellyBetSize,
+      
       error: false
+    };
+  }
+
+  /**
+   * 🆕 VOLUME DETECTION: Detect bust clusters
+   * If recent 20 rounds have high bust rate (>60%), be MORE conservative
+   */
+  _detectBustVolume(recent20) {
+    const bustCount = recent20.filter(m => m < 2.0).length;
+    const bustRate = bustCount / recent20.length;
+    
+    if (bustRate > 0.70) {
+      // VERY HIGH bust cluster - reduce target significantly
+      return 0.85;
+    } else if (bustRate > 0.60) {
+      // High bust cluster - reduce target moderately
+      return 0.92;
+    } else if (bustRate < 0.40) {
+      // Low bust rate - can be slightly aggressive
+      return 1.05;
+    }
+    
+    return 1.0; // Normal
+  }
+
+  /**
+   * 🆕 KELLY CRITERION: Calculate optimal bet size
+   * Kelly % = (bp - q) / b
+   * Where: b = odds-1, p = win probability, q = loss probability
+   */
+  _calculateKellyBet(confidence, target) {
+    const winProb = confidence / 100;
+    const lossProb = 1 - winProb;
+    const odds = target; // Payout multiplier
+    
+    // Full Kelly
+    const kellyPercent = ((odds * winProb) - lossProb) / odds;
+    
+    // Fractional Kelly (0.25 = Quarter Kelly, safer)
+    const fractionalKelly = kellyPercent * 0.25;
+    
+    // Cap between 0% and 5% of bankroll
+    const cappedKelly = Math.max(0, Math.min(fractionalKelly, 0.05));
+    
+    return {
+      full: Math.max(0, kellyPercent * 100).toFixed(1) + '%',
+      fractional: (fractionalKelly * 100).toFixed(1) + '%',
+      recommended: (cappedKelly * 100).toFixed(1) + '%'
     };
   }
 
@@ -186,14 +247,13 @@ export class QuantilePredictionEngine {
   }
 
   /**
-   * Bootstrap quantile estimation (for confidence intervals)
+   * Bootstrap quantile estimation
    */
   _bootstrapQuantile(data, quantile, iterations) {
     const results = [];
     const n = data.length;
     
     for (let i = 0; i < iterations; i++) {
-      // Resample with replacement
       const sample = [];
       for (let j = 0; j < n; j++) {
         sample.push(data[Math.floor(Math.random() * n)]);
@@ -201,7 +261,6 @@ export class QuantilePredictionEngine {
       results.push(this._calculateQuantile(sample, quantile));
     }
     
-    // Return 10th percentile of bootstrap samples (conservative)
     return this._calculateQuantile(results, 0.10);
   }
 
@@ -211,54 +270,42 @@ export class QuantilePredictionEngine {
   _getVolatilityAdjustment(recentVol, longTermVol) {
     const ratio = recentVol / Math.max(0.1, longTermVol);
     
-    if (ratio > 1.5) {
-      // High volatility - very conservative
-      return 0.85;
-    } else if (ratio > 1.2) {
-      // Moderate volatility - slightly conservative
-      return 0.92;
-    } else if (ratio < 0.7) {
-      // Low volatility - can be slightly aggressive
-      return 1.05;
-    }
+    if (ratio > 1.5) return 0.85;      // High volatility - very conservative
+    else if (ratio > 1.2) return 0.92; // Moderate volatility
+    else if (ratio < 0.7) return 1.05; // Low volatility - slightly aggressive
     
     return 1.0; // Normal
   }
 
   /**
-   * Calculate confidence based on sample size and distribution stability
+   * Calculate confidence
    */
   _calculateConfidence(history, target, stats) {
-    let confidence = 50; // Start neutral
+    let confidence = 50;
     
-    // 1. Sample size boost
+    // Sample size boost
     const sampleBoost = Math.min(20, (history.length / 500) * 20);
     confidence += sampleBoost;
     
-    // 2. Prediction track record
+    // Track record
     if (this.predictionStats.totalPredictions >= 10) {
       const trackRecordBoost = (this.predictionStats.winRate - 0.50) * 40;
       confidence += trackRecordBoost;
     }
     
-    // 3. Volatility penalty
-    if (stats.volatility > 2.5) {
-      confidence -= 15;
-    } else if (stats.volatility < 1.5) {
-      confidence += 10;
-    }
+    // Volatility penalty
+    if (stats.volatility > 2.5) confidence -= 15;
+    else if (stats.volatility < 1.5) confidence += 10;
     
-    // 4. Target realism check
+    // Target realism
     const medianRatio = target / stats.median;
-    if (medianRatio > 1.5 || medianRatio < 0.7) {
-      confidence -= 10; // Target far from median
-    }
+    if (medianRatio > 1.5 || medianRatio < 0.7) confidence -= 10;
     
     return Math.max(30, Math.min(95, confidence));
   }
 
   /**
-   * Determine action based on confidence
+   * Determine action
    */
   _determineAction(confidence, target, volatility) {
     if (confidence >= 70 && volatility < 2.0) {
@@ -289,7 +336,7 @@ export class QuantilePredictionEngine {
   }
 
   /**
-   * 🔥 BAYESIAN CALIBRATION - Adjust quantile based on actual performance
+   * 🔥 BAYESIAN CALIBRATION
    */
   updateAfterPrediction(predicted, actual, success) {
     this.predictionStats.totalPredictions++;
@@ -303,13 +350,11 @@ export class QuantilePredictionEngine {
     this.predictionStats.winRate = 
       this.predictionStats.successCount / this.predictionStats.totalPredictions;
     
-    // Track for calibration
     this.predictionStats.calibrationHistory.unshift({ predicted, actual, success });
     if (this.predictionStats.calibrationHistory.length > 20) {
       this.predictionStats.calibrationHistory.length = 20;
     }
     
-    // Calibrate quantile after 10+ predictions
     if (this.predictionStats.totalPredictions >= 10 && 
         this.predictionStats.totalPredictions % 5 === 0) {
       this._calibrateQuantile();
@@ -324,15 +369,14 @@ export class QuantilePredictionEngine {
   }
 
   /**
-   * Auto-adjust quantile to reach target win rate
+   * Auto-adjust quantile
    */
   _calibrateQuantile() {
     const currentWinRate = this.predictionStats.winRate;
     const error = this.targetWinRate - currentWinRate;
     
-    console.log(`🔧 Calibrating quantile: Target ${(this.targetWinRate * 100).toFixed(0)}%, Actual ${(currentWinRate * 100).toFixed(1)}%`);
+    console.log(`🔧 Calibrating: Target ${(this.targetWinRate * 100).toFixed(0)}%, Actual ${(currentWinRate * 100).toFixed(1)}%`);
     
-    // Adjust quantile with small learning rate
     const learningRate = 0.02;
     this.targetQuantile = Math.max(0.20, Math.min(0.60, this.targetQuantile + error * learningRate));
     
@@ -340,7 +384,7 @@ export class QuantilePredictionEngine {
   }
 
   /**
-   * Calculate comprehensive statistics
+   * Calculate statistics
    */
   _calculateStats(data) {
     if (!data || data.length === 0) {
@@ -359,7 +403,7 @@ export class QuantilePredictionEngine {
   }
 
   /**
-   * Get current statistics
+   * Get statistics
    */
   getStatistics() {
     const stats = this._calculateStats(this.rawHistory.slice(0, 500));
