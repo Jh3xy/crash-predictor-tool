@@ -10,6 +10,15 @@ export class QuantilePredictionEngine {
   constructor() {
     this.name = "Quantile Engine - Reviews Approved";
     
+    // Feature flags
+    this.features = {
+      winsorization: false,
+      houseEdgeBlend: false,
+      dynamicConfidence: false
+    };
+    
+    this.houseEdge = 0.01; // 1% house edge
+
     // Raw history buffer (stores actual multipliers)
     this.rawHistory = [];
     this.MAX_HISTORY = 2000;
@@ -57,16 +66,39 @@ export class QuantilePredictionEngine {
       return this._errorResponse("Need at least 50 rounds of history");
     }
 
-    const cleanHistory = this._cleanData(history.slice(0, 500));
+    let cleanHistory = this._cleanData(history.slice(0, 500));
+
+    // 🔥 NEW: Winsorization (trim outliers)
+    if (this.features.winsorization) {
+      const p99 = this._calculateQuantile(cleanHistory, 0.99);
+      cleanHistory = cleanHistory.map(v => Math.min(v, p99));
+      console.log(`📊 Winsorized at 99th percentile: ${p99.toFixed(2)}x`);
+    }
+
     const recent50 = cleanHistory.slice(0, 50);
     const recent20 = cleanHistory.slice(0, 20);
+
     
     // Calculate market statistics
     const stats = this._calculateStats(cleanHistory);
     const recentStats = this._calculateStats(recent50);
     
     // 1. Base target: Empirical quantile
-    let target = this._calculateQuantile(cleanHistory, this.targetQuantile);
+    // let target = this._calculateQuantile(cleanHistory, this.targetQuantile);
+
+    // NEW CODE:
+    const empirical = this._calculateQuantile(cleanHistory, this.targetQuantile);
+    const theoretical = (1 - this.houseEdge) / this.targetWinRate; // ~1.65x
+
+    let target;
+    if (this.features.houseEdgeBlend && cleanHistory.length < 500) {
+      // Blend for small samples
+      const blend = 0.5;
+      target = blend * empirical + (1 - blend) * theoretical;
+      console.log(`📊 Blended target: ${empirical.toFixed(2)}x (empirical) + ${theoretical.toFixed(2)}x (theoretical) = ${target.toFixed(2)}x`);
+    } else {
+      target = empirical;
+    }
     
     console.log(`📊 Base quantile (${(this.targetQuantile * 100).toFixed(0)}th percentile): ${target.toFixed(2)}x`);
     
@@ -86,7 +118,23 @@ export class QuantilePredictionEngine {
     target = Math.max(1.1, Math.min(target, 8.0));
     
     // Calculate confidence
-    const confidence = this._calculateConfidence(cleanHistory, target, stats);
+    // const confidence = this._calculateConfidence(cleanHistory, target, stats);
+
+    // NEW CODE:
+    let confidence;
+    if (this.features.dynamicConfidence) {
+      // Calculate bootstrap variance
+      const bootstrapSamples = [];
+      for (let i = 0; i < 50; i++) {
+        bootstrapSamples.push(this._bootstrapQuantile(cleanHistory, this.targetQuantile, 50));
+      }
+      const bootstrapStd = this._standardDeviation(bootstrapSamples);
+      const variancePenalty = (bootstrapStd / target) * 50;
+      confidence = Math.max(30, Math.min(95, 70 - variancePenalty));
+      console.log(`📊 Dynamic confidence: std=${bootstrapStd.toFixed(3)}, penalty=${variancePenalty.toFixed(1)}, conf=${confidence.toFixed(1)}%`);
+    } else {
+      confidence = this._calculateConfidence(cleanHistory, target, stats);
+    }
     
     // Determine action based on confidence
     const action = this._determineAction(confidence, target, recentStats.volatility);
@@ -118,6 +166,12 @@ export class QuantilePredictionEngine {
       
       error: false
     };
+  }
+
+  _standardDeviation(arr) {
+    const mean = arr.reduce((a, b) => a + b, 0) / arr.length;
+    const variance = arr.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / arr.length;
+    return Math.sqrt(variance);
   }
 
   /**

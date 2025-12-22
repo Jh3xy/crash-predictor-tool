@@ -1,6 +1,3 @@
-
-
-
 // script.js - FIXED VERSION
 
 import { DataStore } from './js/DataStore.js';
@@ -13,6 +10,25 @@ import { HistoryLog } from './js/HistoryLog.js';
 import { BacktestingSystem } from './js/BacktestingSystem.js';
 import { listenForTabs } from './js/utils/tabs.js';
 import { populateAndShowModal } from './js/utils/modalManager.js'; 
+
+// 🔥 Apply saved theme immediately on page load
+function applySavedTheme() {
+    const savedTheme = localStorage.getItem('selectedTheme') || 'default';
+    const body = document.body;
+    
+    body.className = body.className.split(' ').filter(c => 
+        !c.startsWith('theme-') && c !== 'cool-metric' && c !== 'vapor-wave'
+    ).join(' ');
+    
+    if (savedTheme !== 'default') {
+        body.classList.add(savedTheme);
+    }
+    
+    console.log('✅ Applied saved theme on page load:', savedTheme);
+}
+
+// Call it immediately before DOMContentLoaded
+applySavedTheme();
 
 const tabs = document.querySelectorAll('.tab');
 listenForTabs(tabs);
@@ -51,6 +67,86 @@ function setupSidebar() {
             });
         });
     }
+}
+
+// Initialize theme dropdown in settings modal
+function initializeThemeDropdown() {
+    const dropdown = document.getElementById('themeDropdown');
+    if (!dropdown) return; // Safety check
+    
+    const header = dropdown.querySelector('.dropdown-header');
+    const headerText = dropdown.querySelector('.dropdown-header-text');
+    const items = dropdown.querySelectorAll('.dropdown-item');
+    const body = document.body;
+
+    // Load and apply saved theme immediately
+    const savedTheme = localStorage.getItem('selectedTheme') || 'default';
+    applyTheme(savedTheme);
+
+    function applyTheme(themeClass, themeName) {
+        // Remove all theme classes
+        body.className = body.className.split(' ').filter(c => 
+            !c.startsWith('theme-') && c !== 'cool-metric' && c !== 'vapor-wave'
+        ).join(' ');
+        
+        // Add modal-open back if it was removed
+        if (document.querySelector('.app-modal')) {
+            body.classList.add('modal-open');
+        }
+        
+        // Add new theme class (unless it's default)
+        if (themeClass !== 'default') {
+            body.classList.add(themeClass);
+        }
+        
+        // Update selected state in dropdown
+        items.forEach(i => i.classList.remove('selected'));
+        const selectedItem = dropdown.querySelector(`[data-theme="${themeClass}"]`);
+        if (selectedItem) {
+            selectedItem.classList.add('selected');
+            const displayName = themeName || selectedItem.getAttribute('data-name');
+            headerText.innerHTML = `<span class="current-theme-indicator"></span>${displayName}`;
+        }
+        
+        // Save to localStorage
+        localStorage.setItem('selectedTheme', themeClass);
+        console.log('Theme changed to:', themeClass);
+    }
+
+    // Toggle dropdown
+    header.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropdown.classList.toggle('active');
+    });
+
+    // Select item
+    items.forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.stopPropagation();
+            
+            const themeClass = item.getAttribute('data-theme');
+            const themeName = item.getAttribute('data-name');
+            
+            applyTheme(themeClass, themeName);
+            dropdown.classList.remove('active');
+        });
+    });
+
+    // Close dropdown when clicking outside
+    const closeDropdownOutside = (e) => {
+        if (!dropdown.contains(e.target)) {
+            dropdown.classList.remove('active');
+        }
+    };
+    document.addEventListener('click', closeDropdownOutside);
+
+    // Close dropdown on Escape key
+    const closeDropdownEscape = (e) => {
+        if (e.key === 'Escape' && dropdown.classList.contains('active')) {
+            dropdown.classList.remove('active');
+        }
+    };
+    document.addEventListener('keydown', closeDropdownEscape);
 }
 
 function getDOMElements() {
@@ -204,9 +300,16 @@ document.addEventListener('DOMContentLoaded', () => {
         '[data-modal-id="card-info-active-sessions"]' 
     );
 
+    // Settings modal with theme dropdown
     if (settingBtn) {
         settingBtn.addEventListener('click', () => {
             populateAndShowModal(settingBtn.getAttribute('data-modal-id'));
+            
+            // Initialize dropdown immediately after modal is shown
+            // Use requestAnimationFrame to ensure DOM is ready
+            requestAnimationFrame(() => {
+                initializeThemeDropdown();
+            });
         });
     }
 
@@ -250,29 +353,3 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('🎯 NEW PREDICTION MADE:', data);
     });
 });
-
-/*
-const settingBtn = document.querySelector('.icon[data-modal-id="settings"]')
-settingBtn.addEventListener("click", ()=>{
-    setTimeout(() => {
-        const settingsModal = document.querySelector(".app-modal")
-        const themes = document.querySelectorAll(".dropdown-option")
-        console.log(themes)
-        
-        themes.forEach(
-            (theme)=> {
-                theme.addEventListener("click", ()=>{
-                    themes.forEach(
-                        (t)=>{
-                            t.classList.remove('is-active')
-                        }
-                    )
-                    theme.classList.add("is-active")
-                    console.log(theme)
-                })
-            }
-        )
-    }, 1000);
-})
-*/
-

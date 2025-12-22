@@ -21,12 +21,19 @@ import { modalContents } from './modalData.js';
  */
 function closeModal() {
     const userGuide = document.getElementById('user-guide')
-    const homeTab = document.querySelector('.tab')
+    const tabs = document.querySelectorAll('.tab')
     if (currentModal) {
         BODY.removeChild(currentModal);
         BODY.classList.remove('modal-open');
         userGuide.classList.remove('active');
-        homeTab.classList.add('active');
+        tabs.forEach(
+            (tab)=>{
+                tab.classList.remove('active')
+            }
+        )
+        const homeTab = document.querySelector(".tab")
+        homeTab.classList.add('active')
+
         currentModal = null;
         
         // Restore focus to the element that opened the modal (good for A11Y)

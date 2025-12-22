@@ -11,15 +11,95 @@ const modalContents = {
             <p class="modal-desc">Customize your experience here. This could include theme switching, data limits, and more.</p>
             <div class="setting-item">
                 <label for="theme-switch">Change Theme:</label>
-                <div class="select-wrapper">
-                    <select id="theme-switch">
-                        <option value="default" class="dropdown-option is-active" data-theme-id="default">Deep Space (Default)</option>
-                        <option value="theme-violet" class="dropdown-option" data-theme-id="theme-violet">Tech Violet</option>
-                        <option value="theme-mint" class="dropdown-option" data-theme-id="theme-mint">Neon Mint</option>
-                        <option value="cool-metric" class="dropdown-option" data-theme-id="cool-metric">Cool Metric (Light)</option>
-                        <option value="vapor-wave" class="dropdown-option" data-theme-id="vapor-wave">Vapor Wave</option>
-                    </select>
+                <div class="dropdown-container">
+        <div class="dropdown" id="themeDropdown">
+            <div class="dropdown-header">
+                <span class="dropdown-header-text">
+                    <span class="current-theme-indicator"></span>
+                    Deep Space
+                </span>
+                <div class="dropdown-arrow"></div>
+            </div>
+                <div class="dropdown-list">
+                    <div class="dropdown-item selected" data-theme="default" data-name="Deep Space">
+                        <span class="theme-indicator" data-theme="default"></span>
+                        Deep Space
+                    </div>
+                    <div class="dropdown-item" data-theme="cool-metric" data-name="Cool Metric">
+                        <span class="theme-indicator" data-theme="cool-metric"></span>
+                        Cool Metric
+                    </div>
+                    <div class="dropdown-item" data-theme="vapor-wave" data-name="Vapor Wave">
+                        <span class="theme-indicator" data-theme="vapor-wave"></span>
+                        Vapor Wave
+                    </div>
+                    <div class="dropdown-item" data-theme="theme-violet" data-name="Tech Violet">
+                        <span class="theme-indicator" data-theme="theme-violet"></span>
+                        Tech Violet
+                    </div>
+                    <div class="dropdown-item" data-theme="theme-mint" data-name="Neon Mint">
+                        <span class="theme-indicator" data-theme="theme-mint"></span>
+                        Neon Mint
+                    </div>
+                    <div class="dropdown-item" data-theme="theme-sunset" data-name="Sunset Drive">
+                        <span class="theme-indicator" data-theme="theme-sunset"></span>
+                        Sunset Drive
+                    </div>
+                    <div class="dropdown-item" data-theme="theme-forest" data-name="Forest Floor">
+                        <span class="theme-indicator" data-theme="theme-forest"></span>
+                        Forest Floor
+                    </div>
+                    <div class="dropdown-item" data-theme="theme-amber" data-name="Cyber Amber">
+                        <span class="theme-indicator" data-theme="theme-amber"></span>
+                        Cyber Amber
+                    </div>
+                    <div class="dropdown-item" data-theme="theme-latte" data-name="Soft Latte">
+                        <span class="theme-indicator" data-theme="theme-latte"></span>
+                        Soft Latte
+                    </div>
+                    <div class="dropdown-item" data-theme="theme-matrix" data-name="Matrix Code">
+                        <span class="theme-indicator" data-theme="theme-matrix"></span>
+                        Matrix Code
+                    </div>
+                    <div class="dropdown-item" data-theme="theme-royal" data-name="Royal Velvet">
+                        <span class="theme-indicator" data-theme="theme-royal"></span>
+                        Royal Velvet
+                    </div>
+                    <div class="dropdown-item" data-theme="theme-ice" data-name="Iceberg">
+                        <span class="theme-indicator" data-theme="theme-ice"></span>
+                        Iceberg
+                    </div>
+                    <div class="dropdown-item" data-theme="theme-hazard" data-name="Hazard">
+                        <span class="theme-indicator" data-theme="theme-hazard"></span>
+                        Hazard
+                    </div>
+                    <div class="dropdown-item" data-theme="theme-twilight" data-name="Lo-Fi Twilight">
+                        <span class="theme-indicator" data-theme="theme-twilight"></span>
+                        Lo-Fi Twilight
+                    </div>
+                    <div class="dropdown-item" data-theme="theme-monokai" data-name="Monokai Pro">
+                        <span class="theme-indicator" data-theme="theme-monokai"></span>
+                        Monokai Pro
+                    </div>
+                    <div class="dropdown-item" data-theme="theme-halcyon" data-name="Halcyon">
+                        <span class="theme-indicator" data-theme="theme-halcyon"></span>
+                        Halcyon
+                    </div>
+                    <div class="dropdown-item" data-theme="theme-atom" data-name="Atom One Dark">
+                        <span class="theme-indicator" data-theme="theme-atom"></span>
+                        Atom One Dark
+                    </div>
+                    <div class="dropdown-item" data-theme="theme-dracula" data-name="Dracula">
+                        <span class="theme-indicator" data-theme="theme-dracula"></span>
+                        Dracula
+                    </div>
+                    <div class="dropdown-item" data-theme="theme-dream" data-name="Dream City">
+                        <span class="theme-indicator" data-theme="theme-dream"></span>
+                        Dream City
+                    </div>
                 </div>
+            </div>
+        </div>
             </div>
             <p class="text-secondary info">More themes coming soon...</p>
         `
