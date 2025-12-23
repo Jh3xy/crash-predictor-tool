@@ -27,9 +27,6 @@ function applySavedTheme() {
     console.log('✅ Applied saved theme on page load:', savedTheme);
 }
 
-// Call it immediately before DOMContentLoaded
-applySavedTheme();
-
 const tabs = document.querySelectorAll('.tab');
 listenForTabs(tabs);
 

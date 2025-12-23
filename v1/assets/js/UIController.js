@@ -847,11 +847,11 @@ _renderAlerts(result) {
         const volatility = this._calcStdDev(multipliers, avg);
         const winRate = this._calcWinRate(multipliers);
 
-        if (this.elements.totalPredictionsValue) this.elements.totalPredictionsValue.textContent = total;
-        if (this.elements.totalPredictionsFooter) this.elements.totalPredictionsFooter.textContent = `Last ${total} rounds`;
+        // if (this.elements.totalPredictionsValue) this.elements.totalPredictionsValue.textContent = total;
+        // if (this.elements.totalPredictionsFooter) this.elements.totalPredictionsFooter.textContent = `Last ${total} rounds`;
         if (this.elements.avgMultiplier) this.elements.avgMultiplier.textContent = total ? avg.toFixed(2) + 'x' : '--';
         if (this.elements.volatility) this.elements.volatility.textContent = total ? volatility.toFixed(2) : '--';
-        if (this.elements.winRateValue) this.elements.winRateValue.textContent = `${(winRate * 100).toFixed(1)}%`;
+        // if (this.elements.winRateValue) this.elements.winRateValue.textContent = `${(winRate * 100).toFixed(1)}%`;
     }
 
     /**

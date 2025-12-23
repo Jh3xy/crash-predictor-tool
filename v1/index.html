@@ -21,6 +21,15 @@
     <script type="module" src="./assets/script.js" defer></script>
 </head>
 <body class="">
+    <!-- Set theme immediately DOM loads -->
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('selectedTheme') || 'default';
+            if (savedTheme !== 'default') {
+                document.body.classList.add(savedTheme);
+            }
+        })();
+    </script>
     <div class="dashboard">
         <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
         <header>
@@ -97,34 +106,6 @@
                 <h2>Overview</h2>
                 <p class="text-secondary font-md">Real-time crash analytics and AI-powered predictions</p>
                 <div class="cards mt-xl">
-                    <!-- <div class="card glass" id="live-sync">
-                        <div class="card-title">
-                            <div class="tag">
-                                <span>
-                                    <i class="fa-solid fa-tower-broadcast"></i>
-                                </span>
-                                <h3>Live Sync</h3>
-                            </div>
-                            <span class="status"> Not Connected</span>
-                        </div>
-                        <div class="multipliers">
-                            <span>Current Multiplier</span>
-                            <p class="multiple">4.37x</p>
-                            <div class="recents">
-                                <span>Recent Multipliers</span>
-                                <div class="multiples-grid">
-                                    <div class="center">1.52x</div>
-                                    <div class="center">3.21x</div>
-                                    <div class="center">1.08x</div>
-                                    <div class="center">2.47x</div>
-                                    <div class="center">5.67x</div>
-                                    <div class="center">1.23x</div>
-                                    <div class="center">2.38x</div>
-                                    <div class="center">1.76x</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div> -->
                     <div class="card glass full-width p-l" id="live-sync">
                         <i class="fa-solid fa-circle-info modal-icon" data-modal-id="live-sync-detail"></i>
                         <div class="card-title">
