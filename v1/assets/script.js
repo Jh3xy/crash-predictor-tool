@@ -12,6 +12,10 @@ import { FeatureTester } from './js/FeatureTester.js';
 import { populateAndShowModal } from './js/utils/modalManager.js'; 
 import { listenForTabs } from './js/utils/tabs.js';
 
+// New Features
+import { FeatureDiagnostic } from './js/utils/FeatureDiagnostic.js';
+import { TimeAwareAnalyzer } from './js/utils/TimeAwareAnalyzer.js';
+
 // 🔥 Apply saved theme immediately on page load
 function applySavedTheme() {
     const savedTheme = localStorage.getItem('selectedTheme') || 'default';
@@ -184,7 +188,7 @@ function getDOMElements() {
 document.addEventListener('DOMContentLoaded', () => {
     
     setupSidebar();
-
+    
     const eventBus = new EventEmitter();
     const domElements = getDOMElements();
     const dataStore = new DataStore();
@@ -192,33 +196,37 @@ document.addEventListener('DOMContentLoaded', () => {
     const verifier = new Verifier(dataStore, eventBus); 
     const predictor = new CrashPredictor(); 
     const uiController = new UIController(domElements); 
+    const historyLog = new HistoryLog(domElements, eventBus); 
+    const liveSync = new LiveSync(dataStore, verifier, eventBus, uiController, predictor); 
 
-    // 🔥 ADD THIS LINE HERE:
+
+    const diagnostic = new FeatureDiagnostic(predictor, dataStore);
+    const timeAnalyzer = new TimeAwareAnalyzer();
+
+    // Expose for console access and debugging
     window.tester = new FeatureTester(predictor, dataStore);
-
     window.backtester = new BacktestingSystem(predictor, dataStore);
-    console.log('🤖 Backtesting system ready! Use: backtester.runBacktest(100)');
-
-    // 🔥 EXPOSE predictor to window for debugging
+    window.diagnostic = new FeatureDiagnostic(predictor, dataStore);
+    window.timeAnalyzer = new TimeAwareAnalyzer()
     window.predictor = predictor;
     window.dataStore = dataStore;
     window.eventBus = eventBus;
-    console.log('🔧 Debug: predictor, dataStore, and eventBus exposed to window');
+    window.liveSync = liveSync;
+    
+    const history = dataStore.getMultipliers(500);
+    timeAnalyzer.autoConfigureEngine(predictor.engine, history);
+
+    console.log('🤖 Backtesting system ready! Use: backtester.runBacktest(100)');
+    console.log('🔧 Debug: tester, backtester, predictor, dataStore, LiveSync and eventBus exposed to window');
 
     // 🔥 Bayesian feedback loop
     eventBus.on('updateBayesianState', (data) => {
         console.log('📊 Bayesian Update Event Received:', data);
         predictor.updateAfterRound(data.actual, data.predicted);
     });
-    
-    const historyLog = new HistoryLog(domElements, eventBus); 
 
     uiController.showInitialState();
 
-    const liveSync = new LiveSync(dataStore, verifier, eventBus, uiController, predictor); 
-    
-    // 🔥 EXPOSE liveSync for debugging
-    window.liveSync = liveSync;
     
     console.log('🚀 App Initialized. LiveSync connecting...');
     window.logSystemReady();
@@ -235,6 +243,10 @@ document.addEventListener('DOMContentLoaded', () => {
             uiController.setPredictButtonState('loading');
             
             try {
+            // 🆕 AUTO-CONFIGURE BASED ON TIME (optional)
+            const history = dataStore.getMultipliers(500);
+            timeAnalyzer.autoConfigureEngine(predictor.engine, history);
+
                 await liveSync.triggerManualPrediction();
                 console.log('✅ Prediction completed successfully');
             } catch (err) {

@@ -309,26 +309,37 @@ try {
     createHistoryRow(item) {
         const rowDiv = document.createElement('div');
         rowDiv.classList.add('log-row');
-        
+
         const predictedValue = item.predicted || 0; 
         const predictedText = predictedValue ? predictedValue.toFixed(2) + 'x' : '--';
+
         let actualText = '--';
         let diffText = '--';
         let successText = 'N/A'; 
         let accClass = '';
-        
+
         if (item.roundStatus === 'COMPLETED') {
             actualText = item.actual.toFixed(2) + 'x';
+            
+            // Using your fallback logic for the difference
             const diff = item.diff !== undefined ? item.diff : Math.abs(item.actual - item.predicted);
             diffText = `±${diff.toFixed(2)}`;
-            const successRate = item.successRate !== undefined ? item.successRate : 0;
-            successText = successRate.toFixed(0) + '%'; 
-            
-            if (successRate === 100) {
+
+            // 1. Assign values to the variables already declared above
+            // 2. We check if successRate exists to determine if it's a Win or Loss
+            if (item.successRate !== undefined && item.successRate > 0) {
+                successText = 'Win';
+            } else {
+                successText = 'Loss';
+            }
+
+            // 3. Check the successText string to set the color class
+            if (successText === 'Win') {
                 accClass = 'green';
             } else {
                 accClass = 'red';
             }
+
         } else if (item.roundStatus === 'PENDING') {
             successText = 'PENDING';
             rowDiv.classList.add('pending-row');

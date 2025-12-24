@@ -126,7 +126,7 @@ export class UIController {
 
         // === 2. ROUND ID ===
         if (this.elements.predictedRoundId && result.gameId) {
-            this.elements.predictedRoundId.textContent = `Target: Round ${result.gameId}`;
+            this.elements.predictedRoundId.textContent = `Round ${result.gameId}`;
         }
 
         // === 3. CONFIDENCE LEVEL ===
@@ -347,7 +347,7 @@ export class UIController {
         if (this.elements.currentMultiplier) {
             const el = this.elements.currentMultiplier;
             // el.style.transition = 'transform 180ms ease, color 220ms ease';
-            el.style.transform = 'scale(1.08)';
+            // el.style.transform = 'scale(1.08)';
             el.style.color = 'var(--color-danger)';
             setTimeout(() => {
                 el.style.transform = '';

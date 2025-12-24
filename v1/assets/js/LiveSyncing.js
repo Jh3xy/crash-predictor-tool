@@ -125,70 +125,169 @@ export class LiveSync {
     this.connectWebSocket();
   }
 
-  connectWebSocket() {
-    if (this.ws) {
-      try { this.ws.close(); } catch (e) {}
-      this.ws = null;
+  // connectWebSocket() {
+  //   if (this.ws) {
+  //     try { this.ws.close(); } catch (e) {}
+  //     this.ws = null;
+  //   }
+  //   if (this._reconnectTimer) {
+  //     clearTimeout(this._reconnectTimer);
+  //     this._reconnectTimer = null;
+  //   }
+
+  //   console.log('🔌 LiveSync: connecting WebSocket to', this.WS_BASE);
+  //   try {
+  //     this.ws = new WebSocket(this.WS_BASE);
+  //   } catch (err) {
+  //     console.error('❌ LiveSync: WebSocket constructor failed:', err);
+  //     this._scheduleReconnect();
+  //     return;
+  //   }
+
+  //   this.ws.onopen = () => {
+  //     console.log('✅ WebSocket Connected for Live Updates');
+  //   };
+
+  //   this.ws.onmessage = (evt) => {
+  //     let payload;
+  //     try {
+  //       payload = JSON.parse(evt.data);
+  //     } catch (e) {
+  //       console.error('Bad message from Worker (non-JSON):', e, evt.data);
+  //       return;
+  //     }
+
+  //     const id = payload.id ?? payload.gameId ?? payload.gameIdString;
+  //     const multiplier = Number(payload.multiplier ?? payload.rate ?? payload.finalMultiplier);
+
+  //     if (!id) {
+  //       console.warn('LiveSync: received WS payload without id', payload);
+  //       return;
+  //     }
+
+  //     const normalized = {
+  //       id: id.toString(),
+  //       multiplier: Number.isFinite(multiplier) ? multiplier : 0,
+  //       hash: payload.hash ?? payload.verificationHash ?? null,
+  //       raw: payload
+  //     };
+
+  //     console.log('\n\n')
+  //     console.log('🕵️ [Debug] WS Received Round ID:', normalized.id, '@ ', normalized.multiplier + 'x');
+  //     this.handleCompletedRound(normalized);
+  //   };
+
+  //   this.ws.onclose = (evt) => {
+  //     console.warn('⚠️ LiveSync: WebSocket closed – scheduling reconnect...', evt && evt.code, evt && evt.reason);
+  //     // const statMsg = document.getElementById("staus-message")
+  //     // console.log(statMsg)
+  //     this._scheduleReconnect();
+  //   };
+
+  //   this.ws.onerror = (err) => {
+  //     console.error('❌ WebSocket Error:', err);
+  //     this._scheduleReconnect();
+  //   };
+  // }
+
+  // Inside LiveSync class in LiveSyncing.js
+
+    connectWebSocket() {
+        if (this.ws) {
+            try { this.ws.close(); } catch (e) {}
+            this.ws = null;
+        }
+        if (this._reconnectTimer) {
+            clearTimeout(this._reconnectTimer);
+            this._reconnectTimer = null;
+        }
+
+        console.log('🔌 LiveSync: connecting WebSocket to', this.WS_BASE);
+        try {
+            this.ws = new WebSocket(this.WS_BASE);
+        } catch (err) {
+            console.error('❌ LiveSync: WebSocket constructor failed:', err);
+            this._scheduleReconnect();
+            return;
+        }
+
+        this.ws.onopen = () => {
+            console.log('✅ WebSocket Connected for Live Updates');
+            
+            // 1. STOP the countdown if it's running
+            if (this.reconnectInterval) {
+                clearInterval(this.reconnectInterval);
+                this.reconnectInterval = null;
+            }
+
+            // 2. Clear the "Disconnecting" message
+            if (this.uiController?.dom?.statusMessage) {
+                this.uiController.dom.statusMessage.textContent = "Connected";
+                this.uiController.dom.statusMessage.color = "";
+                this.uiController.dom.statusDot.style.backgroundColor = "var(--color-status-success)";
+            }
+        };
+
+        this.ws.onmessage = (evt) => {
+            let payload;
+            try {
+                payload = JSON.parse(evt.data);
+            } catch (e) {
+                console.error('Bad message from Worker (non-JSON):', e, evt.data);
+                return;
+            }
+
+            const id = payload.id ?? payload.gameId ?? payload.gameIdString;
+            const multiplier = Number(payload.multiplier ?? payload.rate ?? payload.finalMultiplier);
+
+            if (!id) return;
+
+            const normalized = {
+                id: id.toString(),
+                multiplier: Number.isFinite(multiplier) ? multiplier : 0,
+                hash: payload.hash ?? payload.verificationHash ?? null,
+                raw: payload
+            };
+
+            this.handleCompletedRound(normalized);
+        };
+
+        this.ws.onclose = (evt) => {
+            console.warn('⚠️ LiveSync: WebSocket closed – scheduling reconnect...');
+            
+            // START THE COUNTDOWN
+            this.startDisconnectCountdown();
+            
+            this._scheduleReconnect();
+        };
+
+        this.ws.onerror = (err) => {
+            console.error('❌ WebSocket Error:', err);
+            this._scheduleReconnect();
+        };
     }
-    if (this._reconnectTimer) {
-      clearTimeout(this._reconnectTimer);
-      this._reconnectTimer = null;
+
+    // NEW METHOD: Put this right below connectWebSocket()
+    startDisconnectCountdown() {
+        // Prevent multiple intervals from running at once
+        if (this.reconnectInterval) clearInterval(this.reconnectInterval);
+
+        let timeLeft = 10;
+        const statusEl = this.uiController?.dom?.statusMessage;
+
+        if (!statusEl) return;
+        
+        this.reconnectInterval = setInterval(() => {
+            statusEl.textContent = `Retrying.. ${timeLeft}s`;
+            
+            timeLeft--;
+
+            if (timeLeft < 0) {
+                timeLeft = 10; // Reset the loop
+            }
+        }, 1000);
     }
 
-    console.log('🔌 LiveSync: connecting WebSocket to', this.WS_BASE);
-    try {
-      this.ws = new WebSocket(this.WS_BASE);
-    } catch (err) {
-      console.error('❌ LiveSync: WebSocket constructor failed:', err);
-      this._scheduleReconnect();
-      return;
-    }
-
-    this.ws.onopen = () => {
-      console.log('✅ WebSocket Connected for Live Updates');
-    };
-
-    this.ws.onmessage = (evt) => {
-      let payload;
-      try {
-        payload = JSON.parse(evt.data);
-      } catch (e) {
-        console.error('Bad message from Worker (non-JSON):', e, evt.data);
-        return;
-      }
-
-      const id = payload.id ?? payload.gameId ?? payload.gameIdString;
-      const multiplier = Number(payload.multiplier ?? payload.rate ?? payload.finalMultiplier);
-
-      if (!id) {
-        console.warn('LiveSync: received WS payload without id', payload);
-        return;
-      }
-
-      const normalized = {
-        id: id.toString(),
-        multiplier: Number.isFinite(multiplier) ? multiplier : 0,
-        hash: payload.hash ?? payload.verificationHash ?? null,
-        raw: payload
-      };
-
-      console.log('\n\n')
-      console.log('🕵️ [Debug] WS Received Round ID:', normalized.id, '@ ', normalized.multiplier + 'x');
-      this.handleCompletedRound(normalized);
-    };
-
-    this.ws.onclose = (evt) => {
-      console.warn('⚠️ LiveSync: WebSocket closed – scheduling reconnect...', evt && evt.code, evt && evt.reason);
-      // const statMsg = document.getElementById("staus-message")
-      // console.log(statMsg)
-      this._scheduleReconnect();
-    };
-
-    this.ws.onerror = (err) => {
-      console.error('❌ WebSocket Error:', err);
-      this._scheduleReconnect();
-    };
-  }
 
   _scheduleReconnect() {
     if (this._reconnectTimer) return;

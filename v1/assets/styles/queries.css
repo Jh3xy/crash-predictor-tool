@@ -8,6 +8,23 @@
     }
 }
 
+@media (max-width: 960px){
+    .table-header,
+    .log-row {
+        grid-template-columns: 2fr 1fr 1fr; 
+        font-size: 0.82rem;
+        
+    }
+
+    .table-header h4:nth-child(4),
+    .table-header h4:nth-child(3),
+    .log-row div:nth-child(3),
+    .log-row div:nth-child(4){
+        display: none;
+        justify-self: center;
+    }
+}
+
 /* --- A. TABLET / Desktop (min-width: 769px) --- */
 @media (min-width: 961px) {
     
@@ -99,21 +116,6 @@
 
     .tag span{
         display: block;
-    }
-}
-
-@media (max-width: 960px){
-    .table-header,
-    .log-row {
-        grid-template-columns: 2fr 1fr 1fr 1fr; 
-        font-size: 0.82rem;
-        
-    }
-
-    .table-header h4:nth-child(4),
-    .log-row div:nth-child(4){
-        display: none;
-        justify-self: center;
     }
 }
 

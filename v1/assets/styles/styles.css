@@ -733,8 +733,8 @@ p.desc{
     color: var(--color-status-success);
 }
 .accuracy span{
-    padding: .3rem;
-    border-radius: 10px;
+    padding: .3rem .5rem;
+    border-radius: 7px;
 }
 .accuracy span.green{
     color: var(--color-status-success);

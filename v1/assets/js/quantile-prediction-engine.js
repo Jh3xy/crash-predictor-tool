@@ -1,36 +1,34 @@
 
-
 /**
- * 🎯 QUANTILE-BASED PREDICTION ENGINE v2.0
- * CLEAN VERSION: Starts with YOUR proven baseline
- * NEW FEATURES: All toggleable (OFF by default)
+ * 🎯 QUANTILE-BASED PREDICTION ENGINE v2.0 - COMPLETE FIXED VERSION
  * 
- * YOUR BASELINE (55-58% accuracy):
- * - houseEdgeBlend: true (ONLY THIS ONE)
- * - All others: false
+ * FIXES:
+ * - ✅ CUSUM now correctly detects DOWNWARD shifts (bust clusters)
+ * - ✅ Improved sensitivity and reset logic
+ * - ✅ Better logging for debugging
  * 
- * NEW FEATURES (test one by one):
- * - kaplanMeier: Survival analysis
- * - weibullHazard: Instantaneous risk
- * - cusumDetection: Regime shift detection
+ * FEATURES (all toggleable):
+ * - houseEdgeBlend: true (YOUR BASELINE)
+ * - kaplanMeier: false (test with diagnostic first)
+ * - weibullHazard: false (test with diagnostic first)
+ * - cusumDetection: false (test with diagnostic first)
  */
 
 export class QuantilePredictionEngine {
   constructor() {
-    this.name = "Quantile Engine v2.0 - Modular Testing";
+    this.name = "Quantile Engine v2.0 - Fixed & Optimized";
     
-    // ✅ YOUR PROVEN BASELINE (DO NOT CHANGE)
+    // YOUR PROVEN BASELINE
     this.features = {
+      cusumDetection: true,
+      houseEdgeBlend: true,  
+      kaplanMeier: true,
       winsorization: false,
-      houseEdgeBlend: true,      // ✅ Only enabled feature
       dynamicConfidence: false,
       volumeDetection: false,
       kellyBetting: false,
-      
-      // 🆕 NEW FEATURES (All OFF by default - test one at a time)
-      kaplanMeier: true,      // Toggle in browser: predictor.engine.features.kaplanMeier = true
-      weibullHazard: false,    // Toggle in browser: predictor.engine.features.weibullHazard = true
-      cusumDetection: false    // Toggle in browser: predictor.engine.features.cusumDetection = true
+      // NEW FEATURES (test with diagnostic tool)
+      weibullHazard: false,
     };
     
     this.houseEdge = 0.01;
@@ -48,18 +46,20 @@ export class QuantilePredictionEngine {
       calibrationHistory: []
     };
     
-    // CUSUM state
+    // 🔥 FIXED CUSUM CONFIG
     this.cusum = {
       statistic: 0,
-      mean: 2.0,
-      slack: 0.5,
-      threshold: 4.0,
-      alertActive: false
+      mean: 2.0,           // Expected mean multiplier
+      slack: 0.5,          // Drift tolerance (k parameter)
+      threshold: 3.0,      // Alert threshold (H parameter) - LOWERED for more sensitivity
+      alertActive: false,
+      consecutiveBusts: 0, // Track consecutive low multipliers
+      lastValues: []       // Store last 10 values for debugging
     };
     
-    console.log("🎯 Quantile Engine v2.0 Initialized");
+    console.log("🎯 Quantile Engine v2.0 - Fixed CUSUM Initialized");
     console.log("📊 Baseline Config:", this.features);
-    console.log("💡 To test features: predictor.engine.features.kaplanMeier = true");
+    console.log("🔧 CUSUM: Detects bust clusters (mean: 2.0x, threshold: 3.0)");
   }
 
   learnFromMarketData(multiplier) {
@@ -75,29 +75,91 @@ export class QuantilePredictionEngine {
       this._updateCUSUM(multiplier);
     }
     
-    if (this.rawHistory.length % 50 === 0) {
+    if (this.rawHistory.length % 100 === 0) {
       const stats = this._calculateStats(this.rawHistory.slice(0, 500));
-      console.log(`📊 Market: ${this.rawHistory.length} rounds, Median: ${stats.median.toFixed(2)}x`);
+      console.log(`📊 Market: ${this.rawHistory.length} rounds`);
+      console.log(`   Median: ${stats.median.toFixed(2)}x, Vol: ${stats.volatility.toFixed(2)}`);
+      if (this.features.cusumDetection && this.cusum.alertActive) {
+        console.log(`   🔴 CUSUM ALERT ACTIVE (stat: ${this.cusum.statistic.toFixed(2)})`);
+      }
     }
   }
 
   /**
-   * 🆕 CUSUM CHANGE-POINT DETECTION
+   * 🔥 FIXED CUSUM CHANGE-POINT DETECTION
+   * Now correctly detects DOWNWARD shifts (bust clusters)
    */
   _updateCUSUM(multiplier) {
-    this.cusum.statistic = Math.max(0, 
-      this.cusum.statistic + multiplier - this.cusum.mean - this.cusum.slack
-    );
+    // Store last values for debugging
+    this.cusum.lastValues.unshift(multiplier);
+    if (this.cusum.lastValues.length > 10) {
+      this.cusum.lastValues.length = 10;
+    }
     
-    if (this.cusum.statistic > this.cusum.threshold) {
+    // 🔥 FIX: Detect DOWNWARD shifts (when multipliers are below mean)
+    // OLD (WRONG): statistic += multiplier - mean - slack
+    // NEW (CORRECT): statistic += mean - multiplier - slack
+    
+    const deviation = this.cusum.mean - multiplier;
+    this.cusum.statistic = Math.max(0, this.cusum.statistic + deviation - this.cusum.slack);
+    
+    // Track consecutive busts for better detection
+    if (multiplier < 1.5) {
+      this.cusum.consecutiveBusts++;
+    } else {
+      // Faster reset when seeing normal/high multipliers
+      this.cusum.consecutiveBusts = 0;
+      if (multiplier > this.cusum.mean) {
+        this.cusum.statistic = Math.max(0, this.cusum.statistic - 0.5);
+      }
+    }
+    
+    // 🔥 DUAL TRIGGER SYSTEM
+    // Trigger 1: CUSUM statistic exceeds threshold
+    // Trigger 2: 4+ consecutive busts in last 6 rounds
+    const consecutiveTrigger = this.cusum.consecutiveBusts >= 4;
+    const statisticTrigger = this.cusum.statistic > this.cusum.threshold;
+    
+    if (statisticTrigger || consecutiveTrigger) {
       if (!this.cusum.alertActive) {
-        console.log('🔴 CUSUM: Cold streak detected');
+        console.log('🔴 CUSUM ALERT: Bust cluster detected');
+        console.log(`   Statistic: ${this.cusum.statistic.toFixed(2)} / ${this.cusum.threshold}`);
+        console.log(`   Consecutive busts: ${this.cusum.consecutiveBusts}`);
+        console.log(`   Last 10 values: ${this.cusum.lastValues.map(v => v.toFixed(2)).join(', ')}`);
         this.cusum.alertActive = true;
       }
-    } else if (this.cusum.statistic < 1.0 && this.cusum.alertActive) {
+    } 
+    // Reset alert when market normalizes
+    else if (this.cusum.statistic < 1.0 && this.cusum.consecutiveBusts === 0 && this.cusum.alertActive) {
       console.log('✅ CUSUM: Market normalized');
+      console.log(`   Statistic: ${this.cusum.statistic.toFixed(2)}`);
       this.cusum.alertActive = false;
     }
+  }
+
+  /**
+   * 🆕 MANUAL CUSUM RESET
+   */
+  resetCUSUM() {
+    this.cusum.statistic = 0;
+    this.cusum.alertActive = false;
+    this.cusum.consecutiveBusts = 0;
+    this.cusum.lastValues = [];
+    console.log('🔄 CUSUM manually reset');
+  }
+
+  /**
+   * 🆕 GET CUSUM STATUS
+   */
+  getCUSUMStatus() {
+    return {
+      enabled: this.features.cusumDetection,
+      statistic: this.cusum.statistic.toFixed(2),
+      threshold: this.cusum.threshold,
+      alertActive: this.cusum.alertActive,
+      consecutiveBusts: this.cusum.consecutiveBusts,
+      lastValues: this.cusum.lastValues.map(v => v.toFixed(2))
+    };
   }
 
   /**
@@ -122,7 +184,7 @@ export class QuantilePredictionEngine {
     const stats = this._calculateStats(cleanHistory);
     const recentStats = this._calculateStats(recent50);
     
-    // ===== BASE PREDICTION (Your proven method) =====
+    // ===== BASE PREDICTION =====
     const empirical = this._calculateQuantile(cleanHistory, this.targetQuantile);
     const theoretical = (1 - this.houseEdge) / this.targetWinRate;
 
@@ -134,41 +196,37 @@ export class QuantilePredictionEngine {
       target = empirical;
     }
     
-    console.log(`📊 Base target: ${target.toFixed(2)}x (empirical: ${empirical.toFixed(2)}x)`);
-    
-    // ===== NEW FEATURE 1: Kaplan-Meier (if enabled) =====
+    // ===== KAPLAN-MEIER (if enabled) =====
     if (this.features.kaplanMeier) {
       const kmResult = this._kaplanMeierPredict(cleanHistory, this.targetQuantile);
       const kmTarget = kmResult.recommendedTarget;
-      
-      // Blend KM with base target
       target = (target + kmTarget) / 2;
-      console.log(`📊 Kaplan-Meier: ${kmTarget.toFixed(2)}x → Final: ${target.toFixed(2)}x`);
     }
     
-    // ===== NEW FEATURE 2: Weibull Hazard (if enabled) =====
+    // ===== WEIBULL HAZARD (if enabled) =====
     let hazardMultiplier = 1.0;
+    let hazardAdvice = null;
     if (this.features.weibullHazard) {
       const hazard = this._calculateWeibullHazard(cleanHistory);
       hazardMultiplier = hazard.multiplier;
-      console.log(`📊 Weibull: ${hazard.interpretation} → ${hazard.multiplier.toFixed(2)}x adjustment`);
+      hazardAdvice = hazard.advice;
     }
     
-    // ===== NEW FEATURE 3: CUSUM (if enabled) =====
+    // ===== CUSUM (if enabled) =====
     let cusumMultiplier = 1.0;
     let cusumWarning = null;
     if (this.features.cusumDetection && this.cusum.alertActive) {
-      cusumMultiplier = 0.85;
+      cusumMultiplier = 0.80; // More aggressive reduction
       cusumWarning = 'BUST CLUSTER ACTIVE';
-      console.log(`🔴 CUSUM: Alert active → 0.85x adjustment`);
     }
     
-    // ===== OLD FEATURES (if enabled) =====
+    // ===== VOLUME DETECTION (if enabled) =====
     let volumeMultiplier = 1.0;
     if (this.features.volumeDetection) {
       volumeMultiplier = this._detectBustVolume(recent20);
     }
     
+    // ===== VOLATILITY (if enabled) =====
     let volatilityMultiplier = 1.0;
     if (this.features.dynamicConfidence) {
       volatilityMultiplier = this._getVolatilityAdjustment(recentStats.volatility, stats.volatility);
@@ -187,8 +245,9 @@ export class QuantilePredictionEngine {
     // Calculate confidence
     let confidence = this._calculateConfidence(cleanHistory, target, stats);
     
+    // Reduce confidence if CUSUM alert
     if (this.features.cusumDetection && this.cusum.alertActive) {
-      confidence *= 0.85;
+      confidence *= 0.80;
     }
     
     // Determine action
@@ -221,9 +280,11 @@ export class QuantilePredictionEngine {
       riskLevel: recentStats.volatility > 2.5 ? 'HIGH' : recentStats.volatility > 1.8 ? 'MEDIUM' : 'LOW',
       volatility: recentStats.volatility.toFixed(2),
       
-      // New metrics (only if features enabled)
+      // New metrics
+      weibullAdvice: hazardAdvice,
       cusumAlert: this.features.cusumDetection ? this.cusum.alertActive : null,
       cusumWarning: cusumWarning,
+      cusumStatistic: this.features.cusumDetection ? this.cusum.statistic.toFixed(2) : null,
       survivalProbability: this.features.kaplanMeier 
         ? this._kaplanMeierSurvival(cleanHistory, target).toFixed(3)
         : null,
@@ -241,7 +302,7 @@ export class QuantilePredictionEngine {
   }
 
   /**
-   * 🆕 KAPLAN-MEIER SURVIVAL FUNCTION
+   * KAPLAN-MEIER SURVIVAL FUNCTION
    */
   _kaplanMeierSurvival(history, target) {
     const sorted = [...history].sort((a, b) => a - b);
@@ -291,7 +352,7 @@ export class QuantilePredictionEngine {
   }
 
   /**
-   * 🆕 WEIBULL HAZARD FUNCTION
+   * WEIBULL HAZARD FUNCTION
    */
   _calculateWeibullHazard(history) {
     const mean = this._mean(history);
@@ -384,11 +445,12 @@ export class QuantilePredictionEngine {
   }
 
   _determineAction(confidence, target, volatility, cusumAlert) {
-    if (cusumAlert) {
+    // 🔥 FIXED: Only skip if CUSUM is actually detecting something meaningful
+    if (cusumAlert && this.cusum.consecutiveBusts >= 3) {
       return {
         type: 'SKIP ROUND',
-        message: `⚠️ Regime shift - Skip round`,
-        reasoning: `CUSUM alert: Bust cluster active`
+        message: `⚠️ Bust cluster detected - Skip round`,
+        reasoning: `CUSUM: ${this.cusum.consecutiveBusts} consecutive busts detected`
       };
     }
     
