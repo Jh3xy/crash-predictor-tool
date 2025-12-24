@@ -326,7 +326,7 @@ export class LiveSync {
         }
 
         console.log(`📊 Predicting with ${history.length} rounds of history`);
-        console.log(`📊 Recent history sample:`, history.slice(0, 5));
+        console.log(`📊 Recent history sample:`, history.slice(0, 50));
         
         // 2. Run prediction
         const prediction = await this.predictor.predictNext(history);

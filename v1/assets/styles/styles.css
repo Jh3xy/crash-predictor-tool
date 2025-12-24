@@ -325,7 +325,7 @@ nav{
 }
 .card.predictor .predicted-round-id{
     position: absolute;
-    top: 2rem;
+    top: 1rem;
     right: 2rem;
     background: var(--color-surface-card); 
     padding: .5rem;
@@ -411,28 +411,38 @@ nav{
     Stats Grid
     ------------------------------------------------------------------------- */
 .stats-grid {
-    width: 100%;
-    max-width: 800px;
+    max-width: 500px;
     margin: 0 auto 2rem;
     /* display: grid;
     gap: 15px;
     grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); */
 }
-/* .full-column-width{
+/* Stats Grid - IMPROVED */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+.full-column-width{
     grid-column: 1 / -1;
-} */
+}
 .stat-item {
     background-color: var(--color-surface-card);
     padding: 10px;
     border-radius: 6px;
     text-align: center;
     border: 1px solid var(--border-subtle);
-    margin-bottom: 1rem;
 }
 .stat-label {
-    font-size: 0.75rem;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
     color: var(--text-secondary);
-    margin-bottom: 2px;
+    margin-bottom: 6px;
+    gap: 4px;
+    margin: auto;
 }
 .stat-value {
     font-size: 1rem;
@@ -1130,8 +1140,8 @@ p.action-note{
     color: var(--text-secondary); 
 }
 .card.predictor .modal-icon{
-    top: 2.58rem;
-    right:  7.5rem;
+    top: 0.48rem;
+    right: -1.8rem;
 }
 
 /* --- RISK LEVEL GRID --- */
@@ -1367,3 +1377,221 @@ span.pattern-name:nth-of-type(3){
         .theme-indicator[data-theme="theme-dracula"] { background: hsla(265, 89%, 78%, 1); }
         .theme-indicator[data-theme="theme-dream"] { background: hsla(315, 90%, 75%, 1); }
 
+
+
+        .prediction-card {
+            background: var(--color-card);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .target-round {
+            font-size: 12px;
+            color: var(--text-secondary);
+            background: rgba(255,255,255,0.05);
+            padding: 4px 12px;
+            border-radius: 12px;
+        }
+        
+        /* Main Prediction Display */
+        .prediction-main {
+            text-align: center;
+            margin-bottom: 24px;
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(26,188,156,0.1) 0%, rgba(26,188,156,0.05) 100%);
+            border-radius: 12px;
+            border: 1px solid rgba(26,188,156,0.2);
+        }
+        
+        .prediction-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+        
+        .prediction-value {
+            font-size: 48px;
+            font-weight: 700;
+            color: var(--color-accent);
+            line-height: 1;
+            margin-bottom: 12px;
+        }
+        
+        .prediction-range {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        /* Action Badge */
+        .action-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 12px;
+        }
+        
+        .action-badge.strong { 
+            background: rgba(39,174,96,0.2); 
+            color: var(--color-success);
+            border: 1px solid rgba(39,174,96,0.3);
+        }
+        
+        .action-badge.moderate { 
+            background: rgba(243,156,18,0.2); 
+            color: var(--color-warning);
+            border: 1px solid rgba(243,156,18,0.3);
+        }
+        
+        .action-badge.skip { 
+            background: rgba(231,76,60,0.2); 
+            color: var(--color-danger);
+            border: 1px solid rgba(231,76,60,0.3);
+        }
+        
+        
+        
+        .stat-box {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            padding: 12px;
+            transition: all 0.2s ease;
+        }
+        
+        .stat-box:hover {
+            background: rgba(255,255,255,0.05);
+            border-color: rgba(26,188,156,0.3);
+        }
+        
+        .stat-box.full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .stat-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        /* Color-coded stat values */
+        .stat-value.high { color: var(--color-danger); }
+        .stat-value.medium { color: var(--color-warning); }
+        .stat-value.low { color: var(--color-success); }
+        .stat-value.success { color: var(--color-success); }
+        
+        /* Confidence Bar */
+        .confidence-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
+        
+        .confidence-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .confidence-value {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .confidence-bar {
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--color-accent), var(--color-success));
+            width: 65%; /* Example value */
+            transition: width 0.5s ease;
+            border-radius: 4px;
+        }
+        
+        /* Analysis Message */
+        .analysis-message {
+            margin-top: 16px;
+            padding: 12px;
+            background: rgba(26,188,156,0.1);
+            border-left: 3px solid var(--color-accent);
+            border-radius: 6px;
+            font-size: 13px;
+            line-height: 1.5;
+            color: var(--text-primary);
+        }
+        
+        /* Alert Boxes */
+        .alert-box {
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .alert-box.warning {
+            background: rgba(231,76,60,0.15);
+            border: 1px solid rgba(231,76,60,0.3);
+            color: var(--color-danger);
+        }
+        
+        .alert-box.info {
+            background: rgba(26,188,156,0.15);
+            border: 1px solid rgba(26,188,156,0.3);
+            color: var(--color-accent);
+        }
+        
+        /* Predict Button */
+        .predict-button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--color-accent), var(--color-success));
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 20px;
+        }
+        
+        .predict-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(26,188,156,0.4);
+        }
+        
+        .predict-button:active {
+            transform: translateY(0);
+        }

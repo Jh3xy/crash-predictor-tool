@@ -2,6 +2,12 @@
    5. RESPONSIVENESS & MEDIA QUERIES (DESKTOP OVERRIDES)
    ========================================================================= */
 
+@media (max-width: 500px) {
+    .stats-grid {
+        max-width: max-content;
+    }
+}
+
 /* --- A. TABLET / Desktop (min-width: 769px) --- */
 @media (min-width: 961px) {
     
@@ -77,11 +83,12 @@
     .stats-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); 
-        grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+        /* grid-template-columns: 2fr 1fr 1fr 1fr 1fr; */
+        width: 700px;
         gap: var(--spacing-small);
     }
     .stat-item.full-column-width {
-        grid-column: span 3;
+        grid-column: 1 / -1;
     }
 
     /* 7. HISTORY TABLE: Re-introduce all 5 columns */
