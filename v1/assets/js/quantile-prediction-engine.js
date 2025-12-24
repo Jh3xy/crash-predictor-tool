@@ -185,17 +185,40 @@ export class QuantilePredictionEngine {
     const recentStats = this._calculateStats(recent50);
     
     // ===== BASE PREDICTION =====
-    const empirical = this._calculateQuantile(cleanHistory, this.targetQuantile);
-    const theoretical = (1 - this.houseEdge) / this.targetWinRate;
+    // const empirical = this._calculateQuantile(cleanHistory, this.targetQuantile);
+    // const theoretical = (1 - this.houseEdge) / this.targetWinRate;
+
+    // let target;
+    // if (this.features.houseEdgeBlend && cleanHistory.length < 500) {
+    //   const blend = 0.5;
+    //   target = blend * empirical + (1 - blend) * theoretical;
+    // } else {
+    //   target = empirical;
+    // }
+    
+    // ===== BASE PREDICTION (The J-Method: Dual Timeframe) =====
+    
+    // 1. Long-term (Stable/Safe) - The last 500 rounds
+    const longTermTarget = this._calculateQuantile(cleanHistory, this.targetQuantile);
+    
+    // 2. Short-term (Responsive/Aggressive) - The last 25 rounds
+    const shortTermHistory = cleanHistory.slice(0, 25);
+    const shortTermTarget = this._calculateQuantile(shortTermHistory, this.targetQuantile);
 
     let target;
-    if (this.features.houseEdgeBlend && cleanHistory.length < 500) {
-      const blend = 0.5;
-      target = blend * empirical + (1 - blend) * theoretical;
-    } else {
-      target = empirical;
-    }
     
+    // THE BALANCE: Weighted Blend
+    // We give the long-term history 70% of the "vote" and the recent history 30%.
+    // This allows the target to move (responsive) but keeps it anchored to reality (accuracy).
+    target = (longTermTarget * 0.70) + (shortTermTarget * 0.30);
+
+    // If volatility is crazy high, we automatically lean more on safety (the theoretical value)
+    if (this.features.houseEdgeBlend) {
+      const theoretical = (1 - this.houseEdge) / this.targetWinRate;
+      const blendFactor = 0.5; 
+      target = (target * (1 - blendFactor)) + (theoretical * blendFactor);
+    }
+
     // ===== KAPLAN-MEIER (if enabled) =====
     if (this.features.kaplanMeier) {
       const kmResult = this._kaplanMeierPredict(cleanHistory, this.targetQuantile);
@@ -239,6 +262,13 @@ export class QuantilePredictionEngine {
     const lowerBound = this._bootstrapQuantile(cleanHistory, this.targetQuantile * 0.75, 100);
     target = Math.max(target, lowerBound);
     
+    // 🔥 THE JHEY SAFETY PAD
+    // If we predict 1.42x, the game loves to crash at 1.41x.
+    // Let's shave off 0.03x just to be safe.
+    if (target < 2.0) {
+        target = target - 0.03; 
+    }
+
     // Cap extremes
     target = Math.max(1.1, Math.min(target, 8.0));
     
