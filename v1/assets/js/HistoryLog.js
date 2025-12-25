@@ -14,7 +14,7 @@ export class HistoryLog {
         this.elements = domElements;
         this.eventBus = eventBus;
         this.log = this.loadLog();
-        
+        this.cleanStaleEntries();  // 🔥 NEW: Clean up stale entries on load
         this.renderStats();
         
         // Event listeners
@@ -46,6 +46,32 @@ export class HistoryLog {
         }
     }
 
+    // Add this NEW method after loadLog()
+    cleanStaleEntries() {
+        const STALE_THRESHOLD = 5 * 60 * 1000; // 5 minutes
+        const now = Date.now();
+        
+        const originalLength = this.log.length;
+        
+        // Remove PENDING entries older than 5 minutes
+        this.log = this.log.filter(entry => {
+            if (entry.roundStatus === 'PENDING') {
+                const age = now - new Date(entry.timestamp).getTime();
+                if (age > STALE_THRESHOLD) {
+                    console.log(`🧹 Removing stale PENDING entry: Round ${entry.id} (${(age/1000).toFixed(0)}s old)`);
+                    return false;
+                }
+            }
+            return true;
+        });
+        
+        const removed = originalLength - this.log.length;
+        if (removed > 0) {
+            console.log(`🧹 Cleaned ${removed} stale PENDING entries`);
+            this.saveLog(); // Save the cleaned log
+        }
+    }
+
     saveLog() {
         try {
             const limitedLog = this.log.slice(0, HistoryLog.MAX_ENTRIES);
@@ -62,6 +88,9 @@ export class HistoryLog {
         this.log = [];
         this.renderLog();
         this.renderStats();
+        // 🔥 NEW: Tell ChartManager to update
+        this.eventBus.emit('historyCleared');
+
         console.log("📋 History log cleared via modal confirmation.");
     }
 

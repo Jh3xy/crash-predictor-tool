@@ -9,10 +9,11 @@ import { EventEmitter } from './js/EventEmitter.js';
 import { BacktestingSystem } from './js/BacktestingSystem.js';
 import { HistoryLog } from './js/HistoryLog.js'; 
 import { FeatureTester } from './js/FeatureTester.js';
+
+// Utilities
+import { ChartManager } from './js/utils/ChartManager.js';
 import { populateAndShowModal } from './js/utils/modalManager.js'; 
 import { listenForTabs } from './js/utils/tabs.js';
-
-// New Features
 import { FeatureDiagnostic } from './js/utils/FeatureDiagnostic.js';
 import { TimeAwareAnalyzer } from './js/utils/TimeAwareAnalyzer.js';
 
@@ -192,26 +193,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const eventBus = new EventEmitter();
     const domElements = getDOMElements();
     const dataStore = new DataStore();
-    
     const verifier = new Verifier(dataStore, eventBus); 
     const predictor = new CrashPredictor(); 
     const uiController = new UIController(domElements); 
     const historyLog = new HistoryLog(domElements, eventBus); 
     const liveSync = new LiveSync(dataStore, verifier, eventBus, uiController, predictor); 
-
-
     const diagnostic = new FeatureDiagnostic(predictor, dataStore);
     const timeAnalyzer = new TimeAwareAnalyzer();
+    const chartManager = new ChartManager(historyLog, eventBus);
+
 
     // Expose for console access and debugging
     window.tester = new FeatureTester(predictor, dataStore);
     window.backtester = new BacktestingSystem(predictor, dataStore);
-    window.diagnostic = new FeatureDiagnostic(predictor, dataStore);
+    window.diagnostic = diagnostic;
     window.timeAnalyzer = new TimeAwareAnalyzer()
     window.predictor = predictor;
     window.dataStore = dataStore;
     window.eventBus = eventBus;
     window.liveSync = liveSync;
+    window.chartManager = chartManager
     
     const history = dataStore.getMultipliers(500);
     timeAnalyzer.autoConfigureEngine(predictor.engine, history);

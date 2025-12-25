@@ -77,7 +77,7 @@ body.cool-metric {
   
   /* Update card styles for light theme */
   --card-radius: 8px;
-  --card-shadow: 0 2px 10px rgba(42, 58, 74, 0.4);
+  --card-shadow: 0 2px 6px rgba(42, 58, 74, 0.2);
   --border-subtle: hsla(215, 27%, 22%, 0.4); 
   --card-border: 1px solid var(--border-subtle);
 

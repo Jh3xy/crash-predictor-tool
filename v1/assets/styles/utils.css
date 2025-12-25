@@ -50,3 +50,37 @@
     color:  var(--color-accent-primary);
 }
 
+.under-construction:disabled {
+    opacity: 0.5;                /* Dims the button */
+    cursor: not-allowed;         /* Shows the stop sign */
+    pointer-events: none;        /* Blocks all mouse clicks */
+}
+
+
+/* Theme color indicators */
+.theme-indicator[data-theme="default"] { background: hsla(120, 71%, 50%, 1); }
+.theme-indicator[data-theme="cool-metric"] { background: hsla(211, 100%, 48%, 1); }
+.theme-indicator[data-theme="vapor-wave"] { background: hsla(325, 100%, 54%, 1); }
+.theme-indicator[data-theme="theme-violet"] { background: hsla(260, 60%, 55%, 1); }
+.theme-indicator[data-theme="theme-mint"] { background: hsla(178, 100%, 40%, 1); }
+.theme-indicator[data-theme="theme-sunset"] { background: hsla(15, 90%, 60%, 1); }
+.theme-indicator[data-theme="theme-forest"] { background: hsla(85, 60%, 55%, 1); }
+.theme-indicator[data-theme="theme-amber"] { background: hsla(45, 100%, 50%, 1); }
+.theme-indicator[data-theme="theme-latte"] { background: hsla(25, 60%, 45%, 1); }
+.theme-indicator[data-theme="theme-matrix"] { background: hsla(120, 100%, 50%, 1); }
+.theme-indicator[data-theme="theme-royal"] { background: hsla(45, 80%, 60%, 1); }
+.theme-indicator[data-theme="theme-ice"] { background: hsla(190, 90%, 70%, 1); }
+.theme-indicator[data-theme="theme-hazard"] { background: hsla(25, 100%, 55%, 1); }
+.theme-indicator[data-theme="theme-twilight"] { background: hsla(280, 50%, 75%, 1); }
+.theme-indicator[data-theme="theme-monokai"] { background: hsla(330, 100%, 70%, 1); }
+.theme-indicator[data-theme="theme-halcyon"] { background: hsla(190, 80%, 65%, 1); }
+.theme-indicator[data-theme="theme-atom"] { background: hsla(207, 82%, 66%, 1); }
+.theme-indicator[data-theme="theme-dracula"] { background: hsla(265, 89%, 78%, 1); }
+.theme-indicator[data-theme="theme-dream"] { background: hsla(315, 90%, 75%, 1); }
+
+
+/* Color-coded stat values */
+.stat-value.high { color: var(--color-danger); }
+.stat-value.medium { color: var(--color-warning); }
+.stat-value.low { color: var(--color-success); }
+.stat-value.success { color: var(--color-success); }

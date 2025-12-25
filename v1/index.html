@@ -16,7 +16,11 @@
     <link rel="stylesheet" href="./assets/styles/queries.css"> 
 
     <!-- Scripts -->
+     <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <!-- Web Socket -->
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <!-- Project files -->
     <script  src="./assets/js/utils/info.js"></script>
     <script type="module" src="./assets/script.js" defer></script>
 </head>
@@ -123,7 +127,7 @@
                         </div>
                         <div class="multipliers">
                             <span>
-                                Last Crash Multipliers
+                                Last Crash Multiplier
                                 <span class="round-id" style="display: block;"></span>
                             </span>
                             <p class="multiple" id="current-multiplier">
@@ -254,7 +258,7 @@
                             </div>
                             <div class="accuracy-output"></div>
                             <div class="btn-wrap">
-                                <button type="submit" class="crash-btn" id="btn">Verify Crash Result</button>
+                                <button type="submit" disabled class="crash-btn under-construction" id="btn">Verify Feature Soon...</button>
                             </div>
                         </form>
                     </div>
@@ -293,6 +297,27 @@
                         </div>
                     </div>
                     </div>
+                    
+                    <div class="card glass performance-section">
+                        <div class="tag">
+                            <h3>📈 Performance Index</h3>
+                            <i class="fa-solid fa-circle-info stats-info" data-modal-id="chart-info"></i>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="performanceChart"></canvas>
+                        </div>
+                        <div class="chart-footer-stats">
+                            <div class="mini-stat">
+                                <span class="label">Net Growth</span>
+                                <span id="chart-net-growth" class="value">0.00%</span>
+                            </div>
+                            <div class="mini-stat">
+                                <span class="label">Avg. Return</span>
+                                <span id="chart-avg-return" class="value">0.00%</span>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="card glass full-width history p-l" id="history">
                         <div class="tag">
                             <span>
@@ -327,12 +352,12 @@
                                     </div>
                                 </div>
                                 <div class="stat-summary flex">
-                                    <p>Success %: <span class="up" id="overall-accuracy">--%</span>
+                                    <p>Success (%) : <span class="up" id="overall-accuracy">--%</span>
                                     </p>
                                     <button id="clear-history-btn" >
                                         <i class="fa-solid fa-trash"></i>
                                     </button>
-                                    <p>Total: <span id="total-predictions-footer">0</span></p>
+                                    <p>Total : <span id="total-predictions-footer">0</span></p>
                                 </div>
                             </div>
                         </div>
