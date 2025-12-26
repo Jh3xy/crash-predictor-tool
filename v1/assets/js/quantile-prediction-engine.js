@@ -18,7 +18,7 @@ export class QuantilePredictionEngine {
   constructor() {
     this.name = "Quantile Engine v2.0 - Fixed & Optimized";
     
-    // YOUR PROVEN BASELINE
+
     this.features = {
       cusumDetection: false,
       weibullHazard: false,
@@ -28,7 +28,8 @@ export class QuantilePredictionEngine {
       dynamicConfidence: false,
       volumeDetection: false,
       kellyBetting: false,
-      // NEW FEATURES (test with diagnostic tool)
+      // 🔥 PHASE 1.1: Post-Moon Caution (Reduces prediction after high spikes)
+      postMoonCaution: true,  // ✅ NEW FEATURE TOGGLE
     };
 
     this.houseEdge = 0.01;
@@ -243,6 +244,19 @@ export class QuantilePredictionEngine {
       cusumWarning = 'BUST CLUSTER ACTIVE';
     }
     
+    // ===== POST-MOON CAUTION (if enabled) - PHASE 1.1 =====
+    let postMoonMultiplier = 1.0;
+    let postMoonWarning = null;
+    let postMoonData = null;
+    if (this.features.postMoonCaution) {
+      postMoonData = this._detectPostMoonCondition(recent50);
+      postMoonMultiplier = postMoonData.multiplier;
+      
+      if (postMoonData.detected) {
+        postMoonWarning = postMoonData.reasoning;
+        console.log(`⚠️ ${postMoonWarning}`);
+      }
+    }
     // ===== VOLUME DETECTION (if enabled) =====
     let volumeMultiplier = 1.0;
     if (this.features.volumeDetection) {
@@ -255,8 +269,8 @@ export class QuantilePredictionEngine {
       volatilityMultiplier = this._getVolatilityAdjustment(recentStats.volatility, stats.volatility);
     }
     
-    // Apply all adjustments
-    target *= hazardMultiplier * cusumMultiplier * volumeMultiplier * volatilityMultiplier;
+    // Apply all adjustments (including Phase 1.1 Post-Moon)
+    target *= hazardMultiplier * cusumMultiplier * volumeMultiplier * volatilityMultiplier * postMoonMultiplier;
     
     // Bootstrap confidence
     const lowerBound = this._bootstrapQuantile(cleanHistory, this.targetQuantile * 0.75, 100);
@@ -280,6 +294,12 @@ export class QuantilePredictionEngine {
       confidence *= 0.80;
     }
     
+    // 🔥 PHASE 1.1: Reduce confidence if Post-Moon detected
+    if (this.features.postMoonCaution && postMoonData && postMoonData.detected) {
+      confidence *= 0.80;  // 20% confidence reduction
+      console.log(`📉 Confidence reduced by 20% due to post-moon caution`);
+    }
+
     // Determine action
     const action = this._determineAction(confidence, target, recentStats.volatility, this.cusum.alertActive);
     
@@ -318,6 +338,10 @@ export class QuantilePredictionEngine {
       survivalProbability: this.features.kaplanMeier 
         ? this._kaplanMeierSurvival(cleanHistory, target).toFixed(3)
         : null,
+      // 🔥 PHASE 1.1: NEW FIELDS
+      postMoonAlert: this.features.postMoonCaution ? (postMoonData ? postMoonData.detected : false) : null,
+      postMoonWarning: postMoonWarning,
+      postMoonThreshold: postMoonData ? postMoonData.threshold?.toFixed(2) : null,
       
       marketMedian: stats.median.toFixed(2),
       recentMedian: recentStats.median.toFixed(2),
@@ -422,6 +446,54 @@ export class QuantilePredictionEngine {
     return 1.0;
   }
 
+    /**
+   * 🌙 PHASE 1.1: POST-MOON CAUTION DETECTION
+   * Detects if a "moon shot" (exceptionally high multiplier) occurred recently.
+   * 
+   * Logic:
+   * - Calculates 90th percentile of last 50 rounds (dynamic threshold)
+   * - Checks if ANY of the last 50 rounds exceeded this threshold
+   * - Returns multiplier to apply (0.85 = 15% reduction, 1.0 = no change)
+   * 
+   * @param {number[]} recent50 - Array of last 50 multipliers
+   * @returns {object} { multiplier, detected, threshold, reasoning }
+   */
+  _detectPostMoonCondition(recent50) {
+    if (!recent50 || recent50.length < 10) {
+      // Not enough data - skip this feature
+      return { 
+        multiplier: 1.0, 
+        detected: false, 
+        threshold: null,
+        reasoning: 'Insufficient data for moon detection'
+      };
+    }
+
+    // Calculate dynamic moon threshold (90th percentile of recent 50)
+    const moonThreshold = this._calculateQuantile(recent50, 0.90);
+    
+    // Check if ANY recent round was a moon shot
+    const recentMoonShot = recent50.find(m => m >= moonThreshold);
+    
+    if (recentMoonShot) {
+      console.log(`🌙 POST-MOON DETECTED: ${recentMoonShot.toFixed(2)}x exceeded threshold ${moonThreshold.toFixed(2)}x`);
+      return {
+        multiplier: 0.85,  // 15% reduction
+        detected: true,
+        threshold: moonThreshold,
+        moonValue: recentMoonShot,
+        reasoning: `Moon shot detected (${recentMoonShot.toFixed(2)}x) - Applying 15% caution`
+      };
+    }
+    
+    // No moon shot detected
+    return {
+      multiplier: 1.0,
+      detected: false,
+      threshold: moonThreshold,
+      reasoning: 'No recent moon shots detected'
+    };
+  }
   _calculateQuantile(data, quantile) {
     if (!data || data.length === 0) return 1.5;
     const sorted = [...data].sort((a, b) => a - b);
