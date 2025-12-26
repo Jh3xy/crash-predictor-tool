@@ -656,6 +656,39 @@ const modalContents = {
         </div>
     `
 },
+'chart-info': {
+    title: 'Performance Index',
+    contentHTML: `
+        <h3 class="section-title">Performance Index</h3>
+        <p class="section-desc">
+            This chart tracks how accurate and profitable your predictions have been over time.
+        </p>
+
+        <dl class="element-definitions">
+            <dt class="element-name">The Chart</dt>
+            <dd class="element-description">
+                A line graph showing your cumulative % growth from following the AI predictions.  
+                Up/green = winning more than losing. Down/red = more losses recently.
+            </dd>
+
+            <dt class="element-name">Net Growth</dt>
+            <dd class="element-description">
+                Your total % change overall (e.g., +12.50% means you're up 12.50% if you cashed out at every predicted value).  
+                This is your big-picture result.
+            </dd>
+
+            <dt class="element-name">Avg. Return</dt>
+            <dd class="element-description">
+                Average % gain/loss per prediction (Net Growth ÷ number of results).  
+                Example: +0.25% means each prediction added 0.25% on average.
+            </dd>
+        </dl>
+
+        <p class="action-note text-secondary">
+            Tip: Aim for steady positive growth over 50+ predictions. If it goes negative, try resetting history or testing new engine features.
+        </p>
+    `
+}
 };
 
 

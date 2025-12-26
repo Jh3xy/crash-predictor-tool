@@ -9,26 +9,18 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@6..144,400;6..144,500;6..144,600;6..144,700&display=swap" rel="stylesheet">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Code:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
     <!-- Stylesheets -->
     <link rel="stylesheet" href="./assets/styles/variables.css">
-    <link rel="stylesheet" href="./assets/styles/utils.css">
     <link rel="stylesheet" href="./assets/styles/styles.css"> 
-    <link rel="stylesheet" href="./assets/styles/queries.css"> 
 
     <!-- Scripts -->
-     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
-    <!-- Web Socket -->
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <!-- Project files -->
-    <script  src="./assets/js/utils/info.js"></script>
+    <script src="./assets/js/utils/info.js"></script>
     <script type="module" src="./assets/script.js" defer></script>
 </head>
 <body class="">
-    <!-- Set theme immediately DOM loads -->
     <script>
         (function() {
             const savedTheme = localStorage.getItem('selectedTheme') || 'default';
@@ -52,15 +44,9 @@
                 <div class="icon glass ui-icon-secondary" data-modal-id="roadmap">
                     <i class="fa-solid fa-bell"></i>
                 </div>
-                <div class="icon glass ui-icon-secondary" id="menu-toggle" >
+                <div class="icon glass ui-icon-secondary" id="menu-toggle">
                     <i class="fa-solid fa-list"></i>
                 </div>
-                <!-- <div class="icon ui-icon last-child">
-                   <i class="fa-regular fa-circle-check"></i>
-                </div> -->
-                <!-- <div class="icon ui-icon integrity last-child" data-modal-id="integrity">
-                    <i class="fa-regular fa-user"></i>
-                </div> -->
             </div>
         </header>
         <aside class="sidebar">
@@ -68,52 +54,59 @@
                 <span class="ui-icon">
                     <i class="fa-solid fa-arrow-trend-up"></i>
                 </span>
-                <span class="logo-name">Oracle</span>
+                <span class="logo-name beta-logo">Oracle</span>
             </div>
             <nav>
                 <ul class="tabs">
                     <li class="tab active">
-                        <i class="fa-regular fa-house"></i>
-                        Home
+                        <a href="#home" class="flex">
+                            <i class="fa-regular fa-house"></i>
+                            <span>Home</span>
+                        </a>
                     </li>
-                    <li class="tab">
-                        <i class="fa-solid fa-arrow-trend-up"></i>
-                        Analyzer
-                    </li>
-                    <li class="tab">
-                        <i class="fa-solid fa-tower-broadcast"></i>
-                        Live Sync
-                    </li>
-                    <li class="tab">
-                        <i class="fa-solid fa-shield"></i>
-                        Crash Verifier
-                    </li>
-                    <!-- <li class="tab">
-                        <i class="fa-solid fa-clock-rotate-left"></i>
-                        Integrity
-                    </li> -->
                     <li class="tab" id="user-guide" data-modal-id="user-guide">
                         <i class="fa-solid fa-rocket"></i> 
                         User Guide
                     </li>
                     <li class="tab">
-                        <i class="fa-solid fa-clock-rotate-left"></i>
-                        History
+                        <a href="#live-sync" class="flex">
+                            <i class="fa-solid fa-tower-broadcast"></i>
+                            <span>Live Sync</span>
+                        </a>                       
                     </li>
                     <li class="tab">
-                        <i class="fa-solid fa-gear"></i>
-                        Settings
+                        <a href="#ai-predictor" class="flex">
+                            <i class="fa-solid fa-arrow-trend-up"></i>
+                            <span>Analyzer</span>
+                        </a>
+                    </li>
+                    <li class="tab">
+                        <a href="#crash-verfier" class="flex">
+                            <i class="fa-solid fa-shield"></i>
+                            <span>Crash Verifier</span>
+                        </a>
+                    </li>
+                    <li class="tab">
+                        <a href="#performance-chart" class="flex">
+                            <i class="fa-solid fa-chart-simple"></i>
+                            <span>Performance</span>
+                        </a>                        
+                    </li>
+                    <li class="tab">
+                        <a href="#history" class="flex">
+                            <i class="fa-solid fa-clock-rotate-left"></i>
+                            <span>History</span>
+                        </a>                        
                     </li>
                 </ul>
             </nav>
             <div class="sidebar-footer center">
-                <p class="text-secondary opacity-60 font-sm">v1.0.0 • Premium</p>
+                <p class="text-secondary opacity-60 font-sm">v1.0.0 • Beta</p>
             </div>
         </aside> 
         <main class="dashboard-overview">
-            
             <div class="wrap">
-                <h2>Overview</h2>
+                <h2 id="home">Overview</h2>
                 <p class="text-secondary font-md">Real-time crash analytics and AI-powered predictions</p>
                 <div class="cards mt-xl">
                     <div class="card glass full-width p-l" id="live-sync">
@@ -125,7 +118,6 @@
                                 </span>
                                 <h3>Live Sync</h3>
                             </div>
-                            <!-- Status Bar -->
                             <div id="status-bar">
                                 <span id="status-dot"></span>
                                 <span id="status-message">Connecting...</span>
@@ -136,14 +128,10 @@
                                 Last Crash Multiplier
                                 <span class="round-id" style="display: block;"></span>
                             </span>
-                            <p class="multiple" id="current-multiplier">
-                                --x
-                            </p> 
+                            <p class="multiple" id="current-multiplier">--x</p> 
                             <div class="recents">
                                 <span>Recent Multipliers (10)</span>
-                                <div class="multiples-grid" id="recent-grid">
-                                    <!-- Recent Grid Placed here -->
-                                </div>
+                                <div class="multiples-grid" id="recent-grid"></div>
                             </div>
                         </div>
                     </div>
@@ -155,33 +143,21 @@
                             <h3>Analyzer
                                 <span><i class="fa-solid fa-circle-info modal-icon" data-modal-id="prediction-details"></i></span>
                             </h3>
-                            <!-- <i class="fa-solid fa-circle-info circle-info"></i> -->
                         </div> 
-                        <!-- 1. INITIAL STATE: Click to Analyze (Default View) -->
-            <!-- The prediction-section class manages the min-height -->
-            <div id="initial-state-content" class="prediction-section">
-                <div class="analyze-icon">
-                    <i class="fa-solid fa-chart-line"></i>
-                </div>
-                <p>Click predict to analyze</p>
-            </div>
-
-                <!-- 2. LOADING STATE: Spinner (Hidden by default) -->
-                <div id="loading-overlay" class="prediction-section" style="display: none;">
-                    <div class="spinner"></div>
-                    <p>Analyzing history...</p>
-                </div>
-
-                         <!-- 3. PREDICTION RESULT STATE (Hidden by default) -->
+                        <div id="initial-state-content" class="prediction-section">
+                            <div class="analyze-icon">
+                                <i class="fa-solid fa-chart-line"></i>
+                            </div>
+                            <p>Click predict to analyze</p>
+                        </div>
+                        <div id="loading-overlay" class="prediction-section" style="display: none;">
+                            <div class="spinner"></div>
+                            <p>Analyzing history...</p>
+                        </div>
                         <div id="prediction-output-details">
-                            <!-- Label -->
-                            <p class="label">Predicted Multiplier
-                            </p>
-                            
-                            <!-- Large Predicted Value (Targeted by JS) -->
+                            <p class="label">Predicted Multiplier</p>
                             <h3 id="predicted-value">7.94x</h3>
                             <div class="predicted-round-id text-secondary font-md font-bold" id="predicted-round-id">Round: --</div>
-                            <!-- STATS GRID for Avg. Target, Risk, Volatility -->
                             <div class="stats-grid">
                                 <div class="stat-item">
                                     <div class="stat-label">Risk Zone</div>
@@ -200,12 +176,9 @@
                                     <div class="stat-value" id="analysis-message">Ready for analysis.</div>
                                 </div>
                             </div>
-                                
-                            <!-- Confidence Bar Section -->
                             <div class="confidence-bar-container">
                                 <p class="label">Confidence Level</p>
-                                <div class="progress-bar-wrapper confidence-bar">
-                                </div>
+                                <div class="progress-bar-wrapper confidence-bar"></div>
                                 <div class="confidence-footer">
                                     <span>Low</span>
                                     <span id="confidence-percentage">50%</span>
@@ -213,27 +186,7 @@
                                 </div>
                             </div>  
                         </div>
-                        <!-- <div class="model-stats-section">
-                            <h4>Prediction Engine Statistics</h4>
-                            <div class="stats-grid">
-                                <div class="stat-item">
-                                    <div class="stat-label">Total Predictions</div>
-                                    <div class="stat-value" id="model-total-predictions">0</div>
-                                </div>
-                                <div class="stat-item">
-                                    <div class="stat-label">Success Rate</div>
-                                    <div class="stat-value" id="model-success-rate">0%</div>
-                                </div>
-                                <div class="stat-item">
-                                    <div class="stat-label">Bayesian Win Rate</div>
-                                    <div class="stat-value" id="model-bayesian-rate">65.0%</div>
-                                </div>
-                            </div>
-                        </div> -->
-
-                        <!-- Global Predict Button (Always visible) -->
-                        <button id="predict-btn" class ="btn">Analyze</button>
-                   
+                        <button id="predict-btn" class="btn">Analyze</button>
                     </div>
                     <div class="card glass verifier p-l" id="crash-verfier">
                         <i class="fa-solid fa-circle-info modal-icon" data-modal-id="verifier-status"></i>
@@ -258,7 +211,7 @@
                             </div>
                             <div class="mb-4">
                                 <label for="Nonce">Nonce</label>
-                                <div class="input-wrap ">
+                                <div class="input-wrap">
                                     <input type="text" id="nonce" name="nonce" placeholder="Enter Nonce">
                                 </div>
                             </div>
@@ -277,34 +230,32 @@
                                 <span class="stat-summary" id="total-predictions-daily-change">+0 today</span>
                             </p>
                         </div>
-                        
                         <div class="card glass p-l">
                             <i class="fa-solid fa-circle-info circle-info" data-modal-id="card-info-avg-accuracy"></i>
                             <div class="tag"><h3>Avg. Accuracy</h3></div>
                             <p class="stat">
-                                <span id="avg-accuracy-value">0.0%</span> <span class="stat-summary" id="avg-accuracy-weekly-change">+0.0% this week</span>
+                                <span id="avg-accuracy-value">0.0%</span> 
+                                <span class="stat-summary" id="avg-accuracy-weekly-change">+0.0% this week</span>
                             </p>
                         </div>
-
                         <div class="card glass p-l">
                             <i class="fa-solid fa-circle-info circle-info" data-modal-id="card-info-win-rate"></i>
                             <div class="tag"><h3>Win Rate</h3></div>
                             <p class="stat">
-                                <span id="win-rate-value">0.0%</span> <span class="stat-summary">Last 24h</span>
+                                <span id="win-rate-value">0.0%</span> 
+                                <span class="stat-summary">Last 24h</span>
                             </p>
                         </div>
-
                         <div class="card glass p-l">
                             <i class="fa-solid fa-circle-info circle-info" data-modal-id="card-info-active-sessions"></i>
                             <div class="tag"><h3>Active Sessions</h3></div>
                             <p class="stat">
-                                <span id="active-sessions-value">0</span> <span class="stat-summary">Live now</span>
+                                <span id="active-sessions-value">0</span> 
+                                <span class="stat-summary">Live now</span>
                             </p>
                         </div>
                     </div>
-                    </div>
-                    
-                    <div class="card glass performance-section">
+                    <div class="card glass performance-section p-l" id="performance-chart">
                         <div class="tag">
                             <h3>📈 Performance Index</h3>
                             <i class="fa-solid fa-circle-info stats-info" data-modal-id="chart-info"></i>
@@ -323,7 +274,6 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="card glass full-width history p-l" id="history">
                         <div class="tag">
                             <span>
@@ -342,25 +292,24 @@
                                 </div>
                                 <div class="table-content history-log-body" id="history-log-body">
                                     <div class="time">
-                                        <span>------------------</span>
+                                        <span></span>
                                     </div>
                                     <div class="predicted">
-                                        <span>---x</span>
+                                        <span></span>
                                     </div>
                                     <div class="actual">
-                                        <span>--x</span>		
+                                        <span></span>		
                                     </div>
                                     <div class="difference">
-                                        <span>&plusmn;--</span>
+                                        <span>±</span>
                                     </div>
                                     <div class="accuracy">
-                                        <span class="green">--%</span>
+                                        <span class="green"></span>
                                     </div>
                                 </div>
                                 <div class="stat-summary flex">
-                                    <p>Success (%) : <span class="up" id="overall-accuracy">--%</span>
-                                    </p>
-                                    <button id="clear-history-btn" >
+                                    <p>Success (%) : <span class="up" id="overall-accuracy">--%</span></p>
+                                    <button id="clear-history-btn">
                                         <i class="fa-solid fa-trash"></i>
                                     </button>
                                     <p>Total : <span id="total-predictions-footer">0</span></p>
@@ -372,12 +321,5 @@
             </div>
         </main>
     </div>
-    </div>
 </body>
 </html>
-
-
-
-
-
-

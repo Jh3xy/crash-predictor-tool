@@ -307,6 +307,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const liveSyncBtn = document.querySelector('[data-modal-id="live-sync-detail"]');
     const verifStatus = document.querySelector('[data-modal-id="verifier-status"]');
     const predictDetials = document.querySelector('[data-modal-id="prediction-details"]');
+    const chartInfo = document.querySelector('[data-modal-id="chart-info"]');
     const roadmapBell = document.querySelector('.icon.glass.ui-icon-secondary[data-modal-id="roadmap"]');
     const statsInfoIcons = document.querySelectorAll(
         '[data-modal-id="card-info-total-predictions"],' +
@@ -331,6 +332,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (predictDetials) {
         predictDetials.addEventListener('click', () => {
             populateAndShowModal(predictDetials.getAttribute('data-modal-id'));
+        });
+    }
+    if (chartInfo) {
+        chartInfo.addEventListener('click', () => {
+            populateAndShowModal(chartInfo.getAttribute('data-modal-id'));
         });
     }
 
@@ -368,6 +374,8 @@ document.addEventListener('DOMContentLoaded', () => {
             populateAndShowModal('roadmap');
         });
     }
+
+    
 
     // 🔥 DEBUG: Log when predictions are made
     eventBus.on('newPredictionMade', (data) => {
