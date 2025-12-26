@@ -32,8 +32,8 @@ export class ChartManager {
                     fill: true,
                     tension: 0.4,
                     pointRadius: 4,
-                    pointHoverRadius: 6,
-                    pointBorderWidth: 2,
+                    pointHoverRadius: 5,
+                    pointBorderWidth: 1,
                     segment: {
                         borderColor: ctx => {
                             const val = ctx.p0.parsed.y;
@@ -60,8 +60,8 @@ export class ChartManager {
                         bodyColor: 'var(--text-primary)',
                         borderColor: 'var(--color-accent-primary)',
                         borderWidth: 1,
-                        padding: 12,
-                        cornerRadius: 8,
+                        padding: 10,
+                        cornerRadius: 6,
                         displayColors: false
                     }
                 }
@@ -96,49 +96,6 @@ export class ChartManager {
         });
     }
 
-    // createDynamicFill(ctx, chartArea, chart) {
-    //     const {top, bottom} = chartArea;
-    //     const yScale = chart.scales.y;
-        
-    //     // Find where y=0 is on the canvas
-    //     const zeroPixel = yScale.getPixelForValue(0);
-        
-    //     // Get theme colors
-    //     const bodyStyles = getComputedStyle(document.body);
-    //     const successColor = bodyStyles.getPropertyValue('--color-status-success').trim();
-    //     const dangerColor = bodyStyles.getPropertyValue('--color-status-danger').trim();
-        
-    //     // Helper to convert to rgba with alpha
-    //     const addAlpha = (color) => {
-    //         if (color.startsWith('hsla')) {
-    //             // Replace existing alpha: hsla(150, 60%, 50%, 1) -> hsla(150, 60%, 50%, 0.3)
-    //             return color.replace(/,\s*[\d.]+\)$/, ', 0.3)');
-    //         } else if (color.startsWith('hsl')) {
-    //             // Convert hsl to hsla: hsl(150, 60%, 50%) -> hsla(150, 60%, 50%, 0.3)
-    //             return color.replace('hsl(', 'hsla(').replace(')', ', 0.3)');
-    //         }
-    //         return color;
-    //     };
-        
-    //     const gradient = ctx.createLinearGradient(0, top, 0, bottom);
-        
-    //     // Calculate where 0 is as a percentage
-    //     const zeroPercent = (zeroPixel - top) / (bottom - top);
-        
-    //     // Above zero = success color
-    //     if (zeroPercent > 0) {
-    //         gradient.addColorStop(0, addAlpha(successColor));
-    //         gradient.addColorStop(Math.max(0, zeroPercent - 0.01), addAlpha(successColor));
-    //     }
-
-    //     // Below zero = danger color
-    //     if (zeroPercent < 1) {
-    //         gradient.addColorStop(Math.min(1, zeroPercent + 0.01), addAlpha(dangerColor));
-    //         gradient.addColorStop(1, addAlpha(dangerColor));
-    //     }
-
-    //     return gradient;
-    // }
 
     createDynamicFill(ctx, chartArea, chart) {
         const {top, bottom} = chartArea;

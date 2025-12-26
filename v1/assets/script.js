@@ -17,7 +17,7 @@ import { listenForTabs } from './js/utils/tabs.js';
 import { FeatureDiagnostic } from './js/utils/FeatureDiagnostic.js';
 import { TimeAwareAnalyzer } from './js/utils/TimeAwareAnalyzer.js';
 
-// 🔥 Apply saved theme immediately on page load
+//  Apply saved theme immediately on page load
 function applySavedTheme() {
     const savedTheme = localStorage.getItem('selectedTheme') || 'default';
     const body = document.body;
@@ -34,7 +34,7 @@ function applySavedTheme() {
 }
 
 const tabs = document.querySelectorAll('.tab');
-listenForTabs(tabs);
+listenForTabs(tabs); //Function from ./js/utils/tabs.js';
 
 function setupSidebar() {
     const menuToggle = document.getElementById('menu-toggle');
@@ -215,7 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.chartManager = chartManager
     
     const history = dataStore.getMultipliers(500);
-    timeAnalyzer.autoConfigureEngine(predictor.engine, history);
+    // timeAnalyzer.autoConfigureEngine(predictor.engine, history);
 
     console.log('🤖 Backtesting system ready! Use: backtester.runBacktest(100)');
     console.log('🔧 Debug: tester, backtester, predictor, dataStore, LiveSync and eventBus exposed to window');
@@ -307,6 +307,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const liveSyncBtn = document.querySelector('[data-modal-id="live-sync-detail"]');
     const verifStatus = document.querySelector('[data-modal-id="verifier-status"]');
     const predictDetials = document.querySelector('[data-modal-id="prediction-details"]');
+    const roadmapBell = document.querySelector('.icon.glass.ui-icon-secondary[data-modal-id="roadmap"]');
     const statsInfoIcons = document.querySelectorAll(
         '[data-modal-id="card-info-total-predictions"],' +
         '[data-modal-id="card-info-avg-accuracy"],' +
@@ -359,6 +360,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (userGuide) {
         userGuide.addEventListener('click', () => {
             populateAndShowModal(userGuide.getAttribute('data-modal-id'));
+        });
+    }
+
+    if (roadmapBell) {
+        roadmapBell.addEventListener('click', () => {
+            populateAndShowModal('roadmap');
         });
     }
 

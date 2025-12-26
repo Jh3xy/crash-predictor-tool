@@ -20,17 +20,17 @@ export class QuantilePredictionEngine {
     
     // YOUR PROVEN BASELINE
     this.features = {
-      cusumDetection: true,
-      houseEdgeBlend: true,  
+      cusumDetection: false,
+      weibullHazard: false,
       kaplanMeier: true,
+      houseEdgeBlend: true,  
       winsorization: false,
       dynamicConfidence: false,
       volumeDetection: false,
       kellyBetting: false,
       // NEW FEATURES (test with diagnostic tool)
-      weibullHazard: false,
     };
-    
+
     this.houseEdge = 0.01;
     this.rawHistory = [];
     this.MAX_HISTORY = 2000;

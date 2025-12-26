@@ -498,6 +498,164 @@ const modalContents = {
         </div>
     `
 },
+'roadmap': {
+    title: 'Oracle AI Roadmap v3.1 - Aggressive Caution Edits',
+    contentHTML: `
+        <div class="user-guide-content modal-scroll-content">
+         <h3 class="section-title">ORACLE AI ROADMAP v3.0</h3>
+         </br>
+            <section class="guide-section">
+                <h4>Summary</h4>
+                <ul class="">
+                    <li><a href="#phase-1" style="font-size: .8rem; text-decoration: underline; text-decoration-color: var(--color-accent-primary); cursor: pointer; color: var(--text-primary); display: block;">Phase 1</a></li>
+                    <li><a href="#phase-2" style="font-size: .8rem; text-decoration: underline; text-decoration-color: var(--color-accent-primary); cursor: pointer; color: var(--text-primary); display: block;">Phase 2</a></li>
+                    <li><a href="#phase-3" style="font-size: .8rem; text-decoration: underline; text-decoration-color: var(--color-accent-primary); cursor: pointer; color: var(--text-primary); display: block;">Phase 3</a></li>
+                    <li><a href="#phase-4" style="font-size: .8rem; text-decoration: underline; text-decoration-color: var(--color-accent-primary); cursor: pointer; color: var(--text-primary); display: block;">Phase 4</a></li>
+                    <li><a href="#phase-5" style="font-size: .8rem; text-decoration: underline; text-decoration-color: var(--color-accent-primary); cursor: pointer; color: var(--text-primary); display: block;">Phase 5</a></li>
+                </ul>
+            </section>
+            </br>
+            </br>
+            <section class="guide-section">
+                <p class="section-desc"><strong>Final Oracle Prediction Engine Roadmap (v3.0 - Refined & Actionable)</strong> </br> Check off phases with ✅ as you complete them!</p>
+                <p class="section-desc">Hey! First off, solid draft—it's well-structured with phases, code pseudos, tests, and toggles, which makes it practical. I've combined/contrasted it with my preliminary outline: Kept your quick wins (Phase 1) and pattern smarts (Phase 2), trimmed potential over-engineering (e.g., emotional analogs → simplified to streak-based tilt avoidance; skipped volume if no API data proves correlation), added my suggestions for bolder preds (e.g., min 1.3x floor, ARIMA for trends), and emphasized ROI alongside accuracy (via Kelly integration in tests). Phases are shorter/tighter, with strict decision gates to avoid bloat. Total timeline: 2-3 weeks max.</p>
+                <p class="section-desc">On the "impossible" 90%: You're spot on—true RNG makes >80% unrealistic without leaving edge (e.g., bolder >2x preds drop accuracy but boost ROI via fewer bets/higher payouts). We'll aim for 80-85% accuracy with avg targets 1.5-3x (realistic lift: +5-10% from baseline), prioritizing ROI >50% in backtests. If it plateaus, pivot to live A/B.</p>
+            </section>
+
+            <hr class="guide-separator">
+
+            <section class="guide-section">
+                <h3 class="section-title">Handling TF.js Heaviness & Data Needs (Before LSTM Phase)</h3>
+                <p class="section-desc">TensorFlow.js is browser-friendly but can be heavy (100-500ms inference, 5-20min training on CPU). Here's tailored advice to make it viable without killing perf:</p>
+
+                <h4>For Heaviness/Performance:</h4>
+                </br>
+                <ul>
+                    <li><strong>Lazy Load TF.js</strong>: Only import on "AI Mode" toggle.</li>
+                    <pre><code class="language-javascript">// In predictor.js or script.js
+    async function enableLSTM() {
+    if (!window.tf) {
+        await new Promise(resolve => {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.15.0/dist/tf.min.js';
+        script.onload = resolve;
+        document.head.appendChild(script);
+        });
+    }
+    // Then init model
+    }</code></pre>
+                        </br>
+                    <li><strong>Web Workers for Background</strong>: Run training/inference off main thread.</li>
+    <pre><code class="language-javascript">// ml-worker.js
+        importScripts('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.15.0/dist/tf.min.js');
+        self.onmessage = async (e) => {
+        const { action, data } = e.data;
+        if (action === 'train') {
+            // Train logic here
+            self.postMessage({ result: trainedModel });
+        } else if (action === 'predict') {
+            const model = await tf.loadLayersModel('indexeddb://crash-lstm');
+            const pred = model.predict(tf.tensor2d([data.history], [1, 50, 1]));
+            self.postMessage({ pred: pred.dataSync()[0] });
+        }
+        };</code></pre>
+                        </br>
+                    <li><strong>Model Optimization</strong>: Smaller LSTM (32/16 units) + quantization (2-byte weights).</li>
+                    <li><strong>Batching & Early Stopping</strong>: Batches of 32; stop if val_loss no improvement for 3 epochs.</li>
+                    <li><strong>Browser Compat</strong>: Chrome/Edge/Firefox; reduce layers on mobile.</li>
+                    <li><strong>Fallback</strong>: Disable via toggle, fall back to quantile.</li>
+                </ul>
+    </br>
+                <h4>For 1000+ Rounds Data Needed:</h4>
+                <ul>
+                    <li><strong>Accumulate Gradually</strong>: Use DataStore.rounds (caps at 500-2000).</li>
+                    <li><strong>Bulk Fetch</strong>: Extend crash-oracle-do.js to pull 5000+ via API.</li>
+                    <li><strong>Downsample/Preprocess</strong>: Normalize (log-scale), use every 2nd round if >10k.</li>
+                    <li><strong>Offline Train Option</strong>: Train in Node.js, convert to TF.js format.</li>
+                    <pre><code class="language-bash"># In terminal: npm init -y; npm i @tensorflow/tfjs-node
+# Then script similar to your pseudocode, save as tfjs_model.save('file:///path/to/model');
+# Convert: tensorflowjs_converter --input_format=tf_saved_model /path/to/model /path/to/tfjs_model</code></pre>
+                    <li><strong>Progressive Training</strong>: Train on 500 first, fine-tune with new batches.</li>
+                </ul>
+                <p class="section-desc">This keeps it lightweight—expect <200ms preds, 2-5min trains on 1000 rounds.</p>
+            </section>
+
+            <hr class="guide-separator">
+
+            <section class="guide-section">
+                <h3 class="section-title">Unified Implementation Roadmap</h3>
+                <p class="section-desc"><strong>Target Metrics</strong>: 80-85% accuracy, ROI >60%, avg target 1.5-3x.</p>
+                <p class="section-desc"><strong>Testing Protocol (Per Feature/Phase)</strong>:</p>
+                <ol>
+                    <li>Isolated: tester.runIncrementalTest(100) – >2% accuracy + >5% ROI lift.</li>
+                    <li>Full: backtester.runBacktest(200) – Check distribution, edge cases.</li>
+                    <li>Diagnostic: diagnostic.runDiagnostics() – Verify "working: true".</li>
+                    <li>A/B: backtester.compareFeatures({baseline}, {new}) – No regression.</li>
+                    <li>Live: 50 manual preds; track in HistoryLog.</li>
+                </ol>
+            </section>
+
+            <hr class="guide-separator">
+
+            <section class="guide-section" id="phase-1">
+                <h3 class="section-title">Phase 1: Quick Wins (1-2 Days) ✅</h3>
+                <p class="section-desc">Focus: Address conservatism with boosts/reductions. Estimated: 76-80% accuracy.</p>
+                <ul>
+                    <li>1.1 <strong>Post-Moon Caution</strong> (High Priority)</li>
+                    <li>1.2 <strong>Enhanced Streak Analyzer</strong> (Boosts for rebound, min 1.3x floor)</li>
+                    <li>1.3 <strong>Real-Time Confidence UI Scaling</strong></li>
+                </ul>
+                <p class="section-desc"><strong>Gate</strong>: If <3% combined lift, stop & debug data.</p>
+            </section>
+
+            <section class="guide-section" id="phase-2">
+                <h3 class="section-title">Phase 2: Pattern Intelligence (3-5 Days)</h3>
+                <p class="section-desc">Add context for bolder, fluid preds. Estimated: 80-83%.</p>
+                <ul>
+                    <li>2.1 <strong>Cycle Detection</strong></li>
+                    <li>2.2 <strong>Dynamic Threshold Tuning</strong></li>
+                    <li>2.3 <strong>Simple ARIMA Blend</strong></li>
+                </ul>
+                <p class="section-desc"><strong>Gate</strong>: If <80%, skip Phase 3; refine Phase 1-2.</p>
+            </section>
+
+            <section class="guide-section" id="phase-3">
+                <h3 class="section-title">Phase 3: Advanced Enhancements (4-6 Days)</h3>
+                <p class="section-desc">Hybrid rules + auto-tune. Estimated: 83-85%.</p>
+                <ul>
+                    <li>3.1 <strong>Hybrid Weighting</strong></li>
+                    <li>3.2 <strong>Auto-Calibration</strong></li>
+                </ul>
+                <p class="section-desc"><strong>Gate</strong>: If ROI <60%, pivot to live data collection.</p>
+            </section>
+
+            <section class="guide-section" id="phase-4">
+                <h3 class="section-title">Phase 4: Polish & Optimization (Ongoing)</h3>
+                <ul>
+                    <li>Overfit Prevention</li>
+                    <li>Kelly ROI Focus</li>
+                    <li>Toggles</li>
+                    <li>Metrics</li>
+                </ul>
+                <p class="section-desc"><strong>Gate</strong>: At 85%, decide on LSTM (skip if perf concerns).</p>
+            </section>
+
+            <section class="guide-section" id="phase-5">
+                <h3 class="section-title">Phase 5: Deep Learning (LSTM with TF.js) (5-8 Days)</h3>
+                <p class="section-desc">"God Mode" for non-linear patterns. Estimated: 85-88% (if data/perf allow). Only if prior phases hit 80%.</p>
+                <ul>
+                    <li>5.1 <strong>LSTM Setup</strong></li>
+                </ul>
+            </section>
+
+            <hr class="guide-separator">
+
+            <div class="modal-footer-note">
+                <small class="text-secondary">Update this file with ✅ for completed steps! Next action: Implement Phase 1 in VS Code; run tests.</small>
+            </div>
+        </div>
+    `
+},
 };
 
 

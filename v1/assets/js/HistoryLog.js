@@ -48,7 +48,7 @@ export class HistoryLog {
 
     // Add this NEW method after loadLog()
     cleanStaleEntries() {
-        const STALE_THRESHOLD = 5 * 60 * 1000; // 5 minutes
+        const STALE_THRESHOLD = 3 * 60 * 1000; // 3 minutes
         const now = Date.now();
         
         const originalLength = this.log.length;

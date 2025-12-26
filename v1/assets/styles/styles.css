@@ -184,6 +184,19 @@ header {
     padding: .5rem .7rem;
     border-radius: 10px;
 }
+.ui-icon-secondary[data-modal-id="roadmap"]{
+    position: relative;
+}
+.ui-icon-secondary[data-modal-id="roadmap"]::after{
+    content: '';
+    position: absolute;
+    width:10px;
+    height: 10px;
+    top: -2px;
+    right: -3px;
+    border-radius: 50%;
+    background-color: var(--color-status-warning);  
+}
 .glass, .card {
     border: var(--card-border);
     background-color: var(--color-surface-glass);
@@ -908,6 +921,93 @@ p.desc{
   position: relative; 
   display: inline-block; 
   margin-top: .3rem; /* Keep your margin here */
+}
+
+pre {
+  margin: 1rem 0;
+  padding: 0;
+  overflow-x: auto;
+  background: var(--code-bg, rgba(0,0,0,0.35));
+  border-radius: 8px;
+  border: 1px solid var(--code-border, rgba(255,255,255,0.1));
+}
+
+pre code {
+  display: block;
+  padding: 1rem 1.25rem;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: var(--code-text, #e6e6e6);
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  white-space: pre;
+  tab-size: 2;
+}
+pre {
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary) rgba(255,255,255,0.1);
+}
+
+pre::-webkit-scrollbar {
+  height: 6px;
+}
+
+pre::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.05);
+}
+
+pre::-webkit-scrollbar-thumb {
+  background: var(--primary, #6366f1);
+  border-radius: 3px;
+}
+pre {
+  margin: 1rem 0;
+  padding: 0;
+  overflow-x: auto;
+  background: var(--color-background-base); 
+  border-radius: var(--card-radius);
+  border: 1px solid var(--border-subtle);
+}
+
+pre code {
+  display: block;
+  padding: 1rem 1.25rem;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: var(--text-primary);
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  white-space: pre;
+  tab-size: 2;
+}
+
+/* Horizontal scroll for very long code lines */
+pre {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-accent-primary) transparent;
+}
+
+pre::-webkit-scrollbar {
+  height: 6px;
+}
+
+pre::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+pre::-webkit-scrollbar-thumb {
+  background: var(--color-accent-primary);
+  border-radius: 3px;
+}
+
+/* Add a hover effect to the scrollbar using your accent-hover variable */
+pre::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent-hover);
+}
+/* Fix for very long unbroken content (urls, hashes, etc) */
+.modal-scroll-content .hash-value,
+.modal-scroll-content .data-value {
+  word-break: break-all;
+  font-size: 0.85rem;
+  opacity: 0.9;
 }
 
 #theme-switch {
