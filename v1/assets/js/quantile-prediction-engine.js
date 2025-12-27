@@ -338,11 +338,12 @@ export class QuantilePredictionEngine {
       survivalProbability: this.features.kaplanMeier 
         ? this._kaplanMeierSurvival(cleanHistory, target).toFixed(3)
         : null,
-      // 🔥 PHASE 1.1: NEW FIELDS
-      postMoonAlert: this.features.postMoonCaution ? (postMoonData ? postMoonData.detected : false) : null,
-      postMoonWarning: postMoonWarning,
-      postMoonThreshold: postMoonData ? postMoonData.threshold?.toFixed(2) : null,
-      
+
+     // 🔥 FIXED MAPPING (Lines 343-345)
+      postMoonAlert: this.features.postMoonCaution ? (postMoonData?.detected || false) : false,
+      postMoonWarning: this.features.postMoonCaution ? (postMoonData?.reasoning || null) : null,
+      postMoonThreshold: (this.features.postMoonCaution && postMoonData?.threshold) ? postMoonData.threshold.toFixed(2) : null,
+
       marketMedian: stats.median.toFixed(2),
       recentMedian: recentStats.median.toFixed(2),
       targetQuantile: (this.targetQuantile * 100).toFixed(0) + 'th percentile',

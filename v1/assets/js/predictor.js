@@ -154,6 +154,11 @@ export class CrashPredictor {
             predictionWinRate: engineResult.predictionWinRate,
             historyAnalyzed: engineResult.historyAnalyzed,
             
+            // 🔥 ADD THESE THREE LINES HERE:
+            postMoonAlert: engineResult.postMoonAlert,
+            postMoonWarning: engineResult.postMoonWarning,
+            postMoonThreshold: engineResult.postMoonThreshold,
+
             error: false
         };
     }
