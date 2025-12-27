@@ -601,8 +601,8 @@ const modalContents = {
                 <h3 class="section-title">Phase 1: Quick Wins (1-2 Days) ✅</h3>
                 <p class="section-desc">Focus: Address conservatism with boosts/reductions. Estimated: 76-80% accuracy.</p>
                 <ul>
-                    <li>1.1 <strong>Post-Moon Caution</strong> (High Priority)</li>
-                    <li>1.2 <strong>Enhanced Streak Analyzer</strong> (Boosts for rebound, min 1.3x floor)</li>
+                    <li>1.1 <strong>✅Post-Moon Caution</strong> (High Priority)</li>
+                    <li>1.2 <strong>✅Enhanced Streak Analyzer</strong> (Boosts for rebound, min 1.3x floor)</li>
                     <li>1.3 <strong>Real-Time Confidence UI Scaling</strong></li>
                 </ul>
                 <p class="section-desc"><strong>Gate</strong>: If <3% combined lift, stop & debug data.</p>
