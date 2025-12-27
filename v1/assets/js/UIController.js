@@ -82,7 +82,7 @@ export class UIController {
 
     updateStatus(status, message) {
         if (this.elements.statusMessage) this.elements.statusMessage.textContent = message;
-    }
+    } 
 
     /**
      * 🔥 FIXED: Display prediction and LOCK values
