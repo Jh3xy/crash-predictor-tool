@@ -28,8 +28,10 @@ export class QuantilePredictionEngine {
       dynamicConfidence: false,
       volumeDetection: false,
       kellyBetting: false,
-      // 🔥 PHASE 1.1: Post-Moon Caution (Reduces prediction after high spikes)
-      postMoonCaution: true,  // ✅ NEW FEATURE TOGGLE
+
+      postMoonCaution: true, 
+      // 🔥 PHASE 1.2: Enhanced Streak Analyzer (Bust rebound boosts)
+      enhancedStreaks: true,  // ✅ NEW FEATURE TOGGLE
     };
 
     this.houseEdge = 0.01;
@@ -257,6 +259,29 @@ export class QuantilePredictionEngine {
         console.log(`⚠️ ${postMoonWarning}`);
       }
     }
+
+    // ===== ENHANCED STREAK ANALYZER (if enabled) - PHASE 1.2 =====
+    let streakBoostMultiplier = 1.0;
+    let streakBoostActive = false;
+    let streakCount = 0;
+    let streakReasoning = null;
+
+    if (this.features.enhancedStreaks) {
+      // Count recent busts in last 10 rounds
+      streakCount = this._countRecentBusts(cleanHistory, 10, 1.7);
+      
+      if (streakCount >= 2) {
+        // Base boost: +10% minimum
+        // Scaling: +5% per bust (e.g., 3 busts = 15%, 5 busts = 25%, 6+ busts = 30%)
+        const boostPercent = 0.15 + Math.min(streakCount * 0.05, 0.50);
+        streakBoostMultiplier = 1.0 + boostPercent;
+        streakBoostActive = true;
+        
+        streakReasoning = `${streakCount} consecutive busts detected - Rebound boost: +${(boostPercent * 100).toFixed(0)}%`;
+        console.log(`🔥 STREAK BOOST: ${streakReasoning}`);
+      }
+    }
+
     // ===== VOLUME DETECTION (if enabled) =====
     let volumeMultiplier = 1.0;
     if (this.features.volumeDetection) {
@@ -269,22 +294,26 @@ export class QuantilePredictionEngine {
       volatilityMultiplier = this._getVolatilityAdjustment(recentStats.volatility, stats.volatility);
     }
     
-    // Apply all adjustments (including Phase 1.1 Post-Moon)
-    target *= hazardMultiplier * cusumMultiplier * volumeMultiplier * volatilityMultiplier * postMoonMultiplier;
+    // Apply all adjustments (including Phase 1.1 Post-Moon + Phase 1.2 Streak Boost)
+    target *= hazardMultiplier * cusumMultiplier * volumeMultiplier * volatilityMultiplier * postMoonMultiplier * streakBoostMultiplier;
     
     // Bootstrap confidence
     const lowerBound = this._bootstrapQuantile(cleanHistory, this.targetQuantile * 0.75, 100);
     target = Math.max(target, lowerBound);
-    
-    // 🔥 THE JHEY SAFETY PAD
-    // If we predict 1.42x, the game loves to crash at 1.41x.
-    // Let's shave off 0.03x just to be safe.
-    if (target < 2.0) {
+
+    // 🔥 PHASE 1.2: Apply 1.3x floor BEFORE safety pad (higher priority)
+    if (this.features.enhancedStreaks && streakBoostActive) {
+      target = Math.max(target, 1.3);
+      console.log(`📊 Streak floor applied: Minimum 1.3x enforced`);
+    }
+
+    // 🔥 THE JHEY SAFETY PAD (only if no streak boost)
+    if (!streakBoostActive && target < 2.0) {
         target = target - 0.03; 
     }
 
-    // Cap extremes
-    target = Math.max(1.1, Math.min(target, 8.0));
+    // Cap extremes (raised max from 8.0 to 10.0 for boldness)
+    target = Math.max(1.1, Math.min(target, 10.0));
     
     // Calculate confidence
     let confidence = this._calculateConfidence(cleanHistory, target, stats);
@@ -298,6 +327,11 @@ export class QuantilePredictionEngine {
     if (this.features.postMoonCaution && postMoonData && postMoonData.detected) {
       confidence *= 0.80;  // 20% confidence reduction
       console.log(`📉 Confidence reduced by 20% due to post-moon caution`);
+    }
+    // 🔥 PHASE 1.2: Boost confidence during rebound streaks
+    if (this.features.enhancedStreaks && streakBoostActive) {
+      confidence *= 1.15;  // +15% confidence boost (increased from roadmap's 10%)
+      console.log(`📈 Confidence boosted by 15% due to rebound signal`);
     }
 
     // Determine action
@@ -325,7 +359,7 @@ export class QuantilePredictionEngine {
       reasoning: action.reasoning,
       
       predictedRange: [target * 0.85, target * 1.25],
-      safetyZone: Math.max(1.1, safetyExit),
+      safetyZone: Math.max(1.2, safetyExit),
       
       riskLevel: recentStats.volatility > 2.5 ? 'HIGH' : recentStats.volatility > 1.8 ? 'MEDIUM' : 'LOW',
       volatility: recentStats.volatility.toFixed(2),
@@ -339,10 +373,16 @@ export class QuantilePredictionEngine {
         ? this._kaplanMeierSurvival(cleanHistory, target).toFixed(3)
         : null,
 
-     // 🔥 FIXED MAPPING (Lines 343-345)
+     // 🔥 Phase 1.2 Post Moon Fields
       postMoonAlert: this.features.postMoonCaution ? (postMoonData?.detected || false) : false,
       postMoonWarning: this.features.postMoonCaution ? (postMoonData?.reasoning || null) : null,
       postMoonThreshold: (this.features.postMoonCaution && postMoonData?.threshold) ? postMoonData.threshold.toFixed(2) : null,
+
+      // 🔥 PHASE 1.2: Streak Boost Fields
+      streakBoostActive: this.features.enhancedStreaks ? streakBoostActive : null,
+      streakCount: this.features.enhancedStreaks ? streakCount : null,
+      streakBoostMultiplier: this.features.enhancedStreaks && streakBoostActive ? streakBoostMultiplier.toFixed(2) : null,
+      streakReasoning: this.features.enhancedStreaks ? streakReasoning : null,
 
       marketMedian: stats.median.toFixed(2),
       recentMedian: recentStats.median.toFixed(2),
@@ -495,6 +535,40 @@ export class QuantilePredictionEngine {
       reasoning: 'No recent moon shots detected'
     };
   }
+  
+  /**
+ * 🔥 PHASE 1.2: BUST STREAK COUNTER
+ * Counts consecutive crashes below threshold in recent history
+ * 
+ * Logic:
+ * - Scans last N rounds from most recent
+ * - Stops counting when hit a round >= threshold
+ * - Used to detect "bust clusters" that signal rebound
+ * 
+ * @param {number[]} history - Recent crash history (newest first)
+ * @param {number} window - How many rounds to check (e.g., 10)
+ * @param {number} threshold - Bust definition (e.g., 1.5x)
+ * @returns {number} Count of consecutive busts (0-10)
+ */
+_countRecentBusts(history, window = 10, threshold = 1.5) {
+  if (!history || history.length === 0) return 0;
+    
+    let bustCount = 0;
+    const recentRounds = history.slice(0, window);
+    
+    // Count consecutive busts from most recent
+    for (const multiplier of recentRounds) {
+      if (multiplier < threshold) {
+        bustCount++;
+      } else {
+        // Streak broken by non-bust
+        break;
+      }
+    }
+    
+    return bustCount;
+  }
+
   _calculateQuantile(data, quantile) {
     if (!data || data.length === 0) return 1.5;
     const sorted = [...data].sort((a, b) => a - b);

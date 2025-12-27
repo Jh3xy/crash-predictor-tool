@@ -154,10 +154,16 @@ export class CrashPredictor {
             predictionWinRate: engineResult.predictionWinRate,
             historyAnalyzed: engineResult.historyAnalyzed,
             
-            // 🔥 ADD THESE THREE LINES HERE:
+            // Phase 1.1 Moon Detection Fields
             postMoonAlert: engineResult.postMoonAlert,
             postMoonWarning: engineResult.postMoonWarning,
             postMoonThreshold: engineResult.postMoonThreshold,
+
+            // Phase 1.2: Streak Boost Fields
+            streakBoostActive: engineResult.streakBoostActive,
+            streakCount: engineResult.streakCount,
+            streakBoostMultiplier: engineResult.streakBoostMultiplier,
+            streakReasoning: engineResult.streakReasoning,
 
             error: false
         };
