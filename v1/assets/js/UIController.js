@@ -92,6 +92,23 @@ export class UIController {
             this.elements.loadingOverlay.style.display = 'none';
         }
         
+        // 🔥 PHASE 1.3: Update predictor card visual state
+        if (this.predictorCard) {
+            // Remove old state classes
+            this.predictorCard.classList.remove('confidence-high', 'confidence-medium', 'confidence-low', 'confidence-skip');
+            
+            // Add new state class based on confidence
+            if (result.confidence >= 70) {
+                this.predictorCard.classList.add('confidence-high');
+            } else if (result.confidence >= 55) {
+                this.predictorCard.classList.add('confidence-medium');
+            } else if (result.confidence >= 40) {
+                this.predictorCard.classList.add('confidence-low');
+            } else {
+                this.predictorCard.classList.add('confidence-skip');
+            }
+        }
+
         if (result.error) {
             this.showInitialState();
             if (this.elements.analysisMessage) {
@@ -109,19 +126,35 @@ export class UIController {
             this.elements.predictionOutputDetails.style.display = 'block';
         }
 
-        // === 1. MAIN PREDICTED VALUE ===
+        // === 1. MAIN PREDICTED VALUE (PHASE 1.3: Enhanced Visual Feedback) ===
         if (this.elements.predictedValue) {
             this.elements.predictedValue.textContent = result.predictedValue.toFixed(2) + 'x';
-            
+
+            // 🔥 PHASE 1.3: Remove old classes first
+            this.elements.predictedValue.classList.remove('strong-bet', 'moderate-bet', 'cautious-bet', 'skip-bet');
+
+            // 🔥 PHASE 1.3: Apply confidence-based styling
+            let confidenceClass = '';
             let color;
-            if (result.action === 'STRONG BET' || result.action === 'MODERATE BET') {
+
+            if (result.confidence >= 70) {
+                confidenceClass = 'strong-bet';
                 color = 'var(--color-status-success)';
-            } else if (result.action === 'SKIP ROUND') {
-                color = 'var(--color-status-danger)';
-            } else {
+            } else if (result.confidence >= 55) {
+                confidenceClass = 'moderate-bet';
+                color = 'var(--color-status-success)';
+            } else if (result.confidence >= 40) {
+                confidenceClass = 'cautious-bet';
                 color = 'var(--color-status-warning)';
+            } else {
+                confidenceClass = 'skip-bet';
+                color = 'var(--color-status-danger)';
             }
+
+            this.elements.predictedValue.classList.add(confidenceClass);
             this.elements.predictedValue.style.color = color;
+
+            console.log(`🎨 UI: Applied ${confidenceClass} styling (${result.confidence.toFixed(0)}% confidence)`);
         }
 
         // === 2. ROUND ID ===
@@ -256,6 +289,14 @@ export class UIController {
                 messageColor = 'var(--color-status-success)';
             }
             this.elements.analysisMessage.style.color = messageColor;
+        }
+
+        // 🔥 PHASE 1.3: Add pulsing animation for skip rounds
+        if (this.elements.analysisMessage) {
+            this.elements.analysisMessage.classList.remove('pulse-warning');
+            if (result.action === 'SKIP ROUND' || result.confidence < 40) {
+                this.elements.analysisMessage.classList.add('pulse-warning');
+            }
         }
 
         this.setPredictButtonState('ready');
