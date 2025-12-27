@@ -15,7 +15,7 @@ import { ChartManager } from './js/utils/ChartManager.js';
 import { populateAndShowModal } from './js/utils/modalManager.js'; 
 import { listenForTabs } from './js/utils/tabs.js';
 import { FeatureDiagnostic } from './js/utils/FeatureDiagnostic.js';
-import { TimeAwareAnalyzer } from './js/utils/TimeAwareAnalyzer.js';
+// import { TimeAwareAnalyzer } from './js/utils/TimeAwareAnalyzer.js';
 
 //  Apply saved theme immediately on page load
 function applySavedTheme() {
@@ -199,7 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const historyLog = new HistoryLog(domElements, eventBus); 
     const liveSync = new LiveSync(dataStore, verifier, eventBus, uiController, predictor); 
     const diagnostic = new FeatureDiagnostic(predictor, dataStore);
-    const timeAnalyzer = new TimeAwareAnalyzer();
+    // const timeAnalyzer = new TimeAwareAnalyzer();
     const chartManager = new ChartManager(historyLog, eventBus);
 
 
@@ -207,7 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.tester = new FeatureTester(predictor, dataStore);
     window.backtester = new BacktestingSystem(predictor, dataStore);
     window.diagnostic = diagnostic;
-    window.timeAnalyzer = new TimeAwareAnalyzer()
+    // window.timeAnalyzer = new TimeAwareAnalyzer()
     window.predictor = predictor;
     window.dataStore = dataStore;
     window.eventBus = eventBus;
@@ -246,7 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
             // 🆕 AUTO-CONFIGURE BASED ON TIME (optional)
             const history = dataStore.getMultipliers(500);
-            timeAnalyzer.autoConfigureEngine(predictor.engine, history);
+            // timeAnalyzer.autoConfigureEngine(predictor.engine, history);
 
                 await liveSync.triggerManualPrediction();
                 console.log('✅ Prediction completed successfully');
