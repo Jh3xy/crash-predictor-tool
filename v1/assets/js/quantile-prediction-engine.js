@@ -29,10 +29,9 @@ export class QuantilePredictionEngine {
       volumeDetection: false,
       kellyBetting: false,
 
-      postMoonCaution: true,      // Phase 1.1
-      enhancedStreaks: true,       // Phase 1.2
-      // 🔥 PHASE 2.1: Cycle Detection (Pattern recognition)
-      cycleDetection: true,  // ✅ NEW FEATURE TOGGLE
+      postMoonCaution: true, // Phase 1.1
+      enhancedStreaks: true, // Phase 1.2
+      cycleDetection: false,  // Phase 2.1
     };
 
     this.houseEdge = 0.01;
