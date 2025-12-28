@@ -29,9 +29,10 @@ export class QuantilePredictionEngine {
       volumeDetection: false,
       kellyBetting: false,
 
-      postMoonCaution: true, 
-      // 🔥 PHASE 1.2: Enhanced Streak Analyzer (Bust rebound boosts)
-      enhancedStreaks: true,  // ✅ NEW FEATURE TOGGLE
+      postMoonCaution: true,      // Phase 1.1
+      enhancedStreaks: true,       // Phase 1.2
+      // 🔥 PHASE 2.1: Cycle Detection (Pattern recognition)
+      cycleDetection: true,  // ✅ NEW FEATURE TOGGLE
     };
 
     this.houseEdge = 0.01;
@@ -282,6 +283,23 @@ export class QuantilePredictionEngine {
       }
     }
 
+    // ===== CYCLE DETECTION (if enabled) - PHASE 2.1 =====
+    let cycleMultiplier = 1.0;
+    let cycleData = null;
+
+    if (this.features.cycleDetection) {
+      cycleData = this._detectCyclePattern(cleanHistory.slice(0, 10));
+      cycleMultiplier = cycleData.adjustment;
+      
+      if (cycleData.pattern !== 'NEUTRAL' && cycleData.pattern !== 'INSUFFICIENT_DATA') {
+        console.log(`🔄 CYCLE DETECTED: ${cycleData.pattern}`);
+        console.log(`   Last 3: ${cycleData.last3}`);
+        console.log(`   Classification: ${cycleData.classification.slice(0, 5).join(', ')}...`);
+        console.log(`   Adjustment: ${((cycleMultiplier - 1) * 100).toFixed(0)}%`);
+        console.log(`   Reasoning: ${cycleData.reasoning}`);
+      }
+    }
+
     // ===== VOLUME DETECTION (if enabled) =====
     let volumeMultiplier = 1.0;
     if (this.features.volumeDetection) {
@@ -293,9 +311,9 @@ export class QuantilePredictionEngine {
     if (this.features.dynamicConfidence) {
       volatilityMultiplier = this._getVolatilityAdjustment(recentStats.volatility, stats.volatility);
     }
-    
-    // Apply all adjustments (including Phase 1.1 Post-Moon + Phase 1.2 Streak Boost)
-    target *= hazardMultiplier * cusumMultiplier * volumeMultiplier * volatilityMultiplier * postMoonMultiplier * streakBoostMultiplier;
+
+    // Apply all adjustments (Phase 1.1, 1.2 + Phase 2.1 Cycle)
+  target *= hazardMultiplier * cusumMultiplier * volumeMultiplier * volatilityMultiplier * postMoonMultiplier * streakBoostMultiplier * cycleMultiplier;
     
     // Bootstrap confidence
     const lowerBound = this._bootstrapQuantile(cleanHistory, this.targetQuantile * 0.75, 100);
@@ -383,6 +401,12 @@ export class QuantilePredictionEngine {
       streakCount: this.features.enhancedStreaks ? streakCount : null,
       streakBoostMultiplier: this.features.enhancedStreaks && streakBoostActive ? streakBoostMultiplier.toFixed(2) : null,
       streakReasoning: this.features.enhancedStreaks ? streakReasoning : null,
+
+      // 🔥 PHASE 2.1: Cycle Detection Fields
+      cyclePattern: this.features.cycleDetection && cycleData ? cycleData.pattern : null,
+      cycleAdjustment: this.features.cycleDetection && cycleData && cycleData.adjustment !== 1.0 ? cycleData.adjustment.toFixed(2) : null,
+      cycleReasoning: this.features.cycleDetection && cycleData ? cycleData.reasoning : null,
+      cycleClassification: this.features.cycleDetection && cycleData ? cycleData.last3 : null,
 
       marketMedian: stats.median.toFixed(2),
       recentMedian: recentStats.median.toFixed(2),
@@ -568,6 +592,106 @@ _countRecentBusts(history, window = 10, threshold = 1.5) {
     
     return bustCount;
   }
+
+  /**
+ * 🔄 PHASE 2.1: CYCLE PATTERN CLASSIFIER
+ * Classifies recent rounds into Low/Med/High and detects repeating patterns
+ * 
+ * Logic:
+ * - Low: <2.0x (busts/conservative)
+ * - Med: 2.0-5.0x (normal range)
+ * - High: >5.0x (moon shots)
+ * 
+ * Detects patterns like:
+ * - "low-low-high" (busts followed by spike)
+ * - "med-high-low" (regression to mean)
+ * - "high-high-med" (moon cluster cooldown)
+ * 
+ * @param {number[]} recent10 - Last 10 multipliers
+ * @returns {object} { pattern, adjustment, reasoning }
+ */
+_detectCyclePattern(recent10) {
+  if (!recent10 || recent10.length < 10) {
+    return { 
+      pattern: 'INSUFFICIENT_DATA',
+      adjustment: 1.0,
+      reasoning: 'Need 10 rounds for cycle detection'
+    };
+  }
+  
+  // Classify each multiplier into Low/Med/High
+  const classified = recent10.map(m => {
+    if (m < 1.8) return 'low';
+    if (m < 4.0) return 'med';
+    return 'high';
+  });
+  
+  // Get last 3 rounds pattern
+  const last3Pattern = classified.slice(0, 3).join('-');
+  
+  // Count occurrences of each class
+  const lowCount = classified.filter(c => c === 'low').length;
+  const medCount = classified.filter(c => c === 'med').length;
+  const highCount = classified.filter(c => c === 'high').length;
+  
+  // Pattern detection and adjustment logic
+  let adjustment = 1.0;
+  let reasoning = 'No clear pattern detected';
+  let detectedPattern = 'NEUTRAL';
+  
+  // Pattern 1: Low-Low-High cycle (common rebound pattern)
+  if (last3Pattern === 'low-low-med' || last3Pattern === 'low-low-low') {
+    // Two consecutive lows → expect rebound to medium
+    adjustment = 1.10;  // +15% boost
+    reasoning = 'Low-low pattern detected - Rebound likely';
+    detectedPattern = 'LOW_LOW_REBOUND';
+  }
+  
+  // Pattern 2: High-High-X (moon cluster → expect cooldown)
+  else if (last3Pattern.startsWith('high-high')) {
+    // Two consecutive highs → expect regression
+    adjustment = 0.90;  // -10% reduction
+    reasoning = 'High-high pattern detected - Cooldown expected';
+    detectedPattern = 'HIGH_HIGH_COOLDOWN';
+  }
+  
+  // Pattern 3: Med-High-Low (volatility swing → stabilization)
+  else if (last3Pattern === 'med-high-low' || last3Pattern === 'low-high-low') {
+    // Erratic swings → expect stabilization to medium
+    adjustment = 1.05;  // +5% boost toward normal
+    reasoning = 'Volatility swing pattern - Stabilization likely';
+    detectedPattern = 'VOLATILITY_STABILIZATION';
+  }
+  
+  // Pattern 4: Dominant class (>60% of last 10)
+  else if (lowCount >= 6) {
+    // Heavy bust cluster → strong rebound signal
+    adjustment = 1.20;  // +20% boost
+    reasoning = `${lowCount}/10 busts detected - Strong rebound signal`;
+    detectedPattern = 'BUST_CLUSTER';
+  }
+  else if (highCount >= 4) {
+    // Multiple moon shots → expect normalization
+    adjustment = 0.85;  // -15% reduction
+    reasoning = `${highCount}/10 moon shots - Normalization expected`;
+    detectedPattern = 'MOON_CLUSTER';
+  }
+  else if (medCount >= 7) {
+    // Stable normal range → slight confidence boost
+    adjustment = 1.08;  // +8% boost (stable market)
+    reasoning = `${medCount}/10 normal rounds - Stable market`;
+    detectedPattern = 'STABLE_MARKET';
+  }
+  
+  return {
+    pattern: detectedPattern,
+    last3: last3Pattern,
+    classification: classified,
+    adjustment: adjustment,
+    reasoning: reasoning,
+    counts: { low: lowCount, med: medCount, high: highCount }
+  };
+}
 
   _calculateQuantile(data, quantile) {
     if (!data || data.length === 0) return 1.5;

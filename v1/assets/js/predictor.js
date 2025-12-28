@@ -73,6 +73,7 @@ export class CrashPredictor {
      * 🎯 ACTIVE PREDICTION - Called when user clicks button
      */
     async predictNext(history) {
+        console.log(`DEBUG: Raw history received: ${history.length}`);
         try {
             console.log(`\n🎯 PREDICTION REQUEST`);
             console.log(`   Market data: ${this.engine.rawHistory.length} rounds`);
@@ -81,12 +82,18 @@ export class CrashPredictor {
             
             const result = this.engine.predict(history);
             
+            // 🔥 ADD THIS CHECK IMMEDIATELY
+            if (result.error) {
+                console.warn(`⚠️ Prediction blocked: ${result.message}`);
+                return this._transformForUI(result); 
+            }
             this.lastPrediction = {
                 target: result.predictedValue,
                 confidence: result.confidence,
                 timestamp: Date.now()
             };
             
+
             console.log(`✅ Prediction: ${result.predictedValue.toFixed(2)}x @ ${result.confidence.toFixed(1)}% confidence`);
             console.log(`   Action: ${result.action}`);
             console.log(`   Safety Exit: ${result.safetyZone.toFixed(2)}x\n`);
@@ -164,6 +171,12 @@ export class CrashPredictor {
             streakCount: engineResult.streakCount,
             streakBoostMultiplier: engineResult.streakBoostMultiplier,
             streakReasoning: engineResult.streakReasoning,
+
+            // Phase 2.1: Cycle Detection Fields
+            cyclePattern: engineResult.cyclePattern,
+            cycleAdjustment: engineResult.cycleAdjustment,
+            cycleReasoning: engineResult.cycleReasoning,
+            cycleClassification: engineResult.cycleClassification,
 
             error: false
         };
