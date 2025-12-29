@@ -3,7 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='12' fill='blue'/><rect x='6' y='11' width='3' height='7' rx='1' fill='white'/><rect x='10.5' y='12' width='3' height='6' rx='1' fill='white'/><rect x='10.5' y='8' width='3' height='3' rx='1' fill='white'/><rect x='15' y='6' width='3' height='12' rx='1' fill='white'/></svg>">
     <title>Oracle Beta</title>
+    <meta name="description" content="Oracle is an AI-powered tool for crash prediction analytics, providing accurate insights and real-time data for better decision-making in tarding, gaming and betting scenarios.">
+    <meta name="keywords" content="AI prediction, crash analytics, game prediction, betting tool, BC Crash predictor,Oracle AI">
+    <meta name="author" content="@Jh3xy">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="Oracle Beta - AI-Powered Crash Prediction Analytics">
+    <meta property="og:description" content="Experience advanced AI-driven crash predictions with real-time analytics and historical data verification. Join the beta today!">
+    <meta property="og:image" content="https://oracle-beta.netlify.app/src/images/dashboard-preview.png"> <meta property="og:url" content="https://oracle-beta.netlify.app"> <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Oracle - Beta">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Oracle - AI-Powered Crash Prediction Analytics">
+    <meta name="twitter:description" content="AI tool for crash game predictions with live syncing, verification, and performance tracking.">
+    <meta name="twitter:image" content="https://oracle-beta.netlify.app/src/images/dashboard-preview.png"> <meta name="twitter:site" content="@Jhh3xy"> <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="theme-color" content="#0b0e14"> <meta name="format-detection" content="telephone=no"> 
+    <meta name="mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="https://oracle-beta.netlify.app/src/images/dashboard-preview.png">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"> 
+    <link rel="apple-touch-icon" href="https://yourdomain.com/assets/images/apple-touch-icon.png"> 
+    <meta name="referrer" content="origin-when-cross-origin"> 
+    <meta name="color-scheme" content="dark light">
+
     <script src="https://kit.fontawesome.com/3b06dad15d.js" crossorigin="anonymous"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -47,18 +69,23 @@
                     <h2>Launch Countdown</h2>
                     <div class="countdown-wrap flex">
                         <div class="flex">
-                            <span class="day num">14</span>
+                            <span class="day num" id="days">00</span>
                             <span class="timer-tag">DAYS</span>
                         </div>
                         <span class="timer-colon"></span>
                         <div class="flex">
-                            <span class="hours num">08</span>
+                            <span class="hours num" id="hours">00</span>
                             <span class="timer-tag">HOURS</span>
                         </div>
                         <span class="timer-colon"></span>
                         <div class="flex">
-                            <span class="min num">14</span>
+                            <span class="min num" id="minutes">00</span>
                             <span class="timer-tag">MINS</span>
+                        </div>
+                        <span class="timer-colon"></span>
+                        <div class="flex">
+                            <span class="sec num" id="seconds">00</span>
+                            <span class="timer-tag">SEC</span>
                         </div>
                     </div>
                 </div>

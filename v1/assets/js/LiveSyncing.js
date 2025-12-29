@@ -155,7 +155,7 @@ export class LiveSync {
 
             // 2. Clear the "Disconnecting" message
             if (this.uiController?.dom?.statusMessage) {
-                this.uiController.dom.statusMessage.textContent = `${this.currentGameId + 1} Running`;
+                this.uiController.dom.statusMessage.innerHtML = `${this.currentGameId + 1} <span class="hide">Running</span>`;
                 this.uiController.dom.statusMessage.color = "";
                 this.uiController.dom.statusDot.style.backgroundColor = "var(--color-status-success)";
             }
@@ -338,7 +338,7 @@ export class LiveSync {
     }
 
     if (this.uiController?.dom?.statusMessage) {
-      this.uiController.dom.statusMessage.textContent = `${runningRoundId} running`;
+      this.uiController.dom.statusMessage.innerHTML = `${this.currentGameId + 1} <span class="hide">Running</span>`;
     }
   }
 

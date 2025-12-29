@@ -231,7 +231,9 @@ header {
     font-size: 0.98rem;
     transition: var(--transition-fast);
 }
-
+.ui-icon svg {
+    transform: translateY(-2px);
+}
 .ui-icon-secondary {
     padding: 0.5rem 0.7rem;
     border-radius: 10px;
@@ -295,7 +297,7 @@ nav { padding: 18px 0 2rem; }
 .beta-logo::after {
     content: 'BETA';
     position: absolute;
-    top: 7px;
+    top: 1.1vh;
     right: -32px;
     font-size: 0.5rem;
     background-color: var(--color-accent-primary);
@@ -476,7 +478,8 @@ nav { padding: 18px 0 2rem; }
     padding: 10px;
     border-radius: 8px;
     margin-bottom: 20px;
-    margin-right: 2.5rem;
+    margin-right: 1rem;
+    margin-top: 3px;
     justify-content: center;
     font-size: 0.9rem;
     color: var(--text-secondary);
@@ -1525,6 +1528,7 @@ span.pattern-name:nth-of-type(3) {
 /* Mobile Adjustments (max-width: 500px) */
 @media (max-width: 500px) {
     .stats-grid { max-width: max-content; }
+    .hide{display: none;}
 }
 
 /* Tablet Adjustments (max-width: 960px) */
