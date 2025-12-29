@@ -4,11 +4,69 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Oracle Beta</title>
+    <script src="https://kit.fontawesome.com/3b06dad15d.js" crossorigin="anonymous"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Code:ital,wght@0,300..800;1,300..800&family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./src/style.css">
     <script src="src/js/app.js" defer></script>
 </head>
-<body>
-    <p>
-        Dashboard is <a href="./v1/index.html">HERE!</a>
-    </p>
-</bod
+<body class="dark">
+    <main class="banner flex">
+        <header>
+            <div class="wrapper center">
+                <nav class="flex">
+                    <div class="logo">ORACLE</div>
+                    <div class="btn-wrap flex">
+                        <button class="theme-btn btn">
+                            <i class="fa-solid fa-circle-half-stroke"></i>
+                        </button>
+                        <button class="menu-btn btn">
+                            <i class="fa-solid fa-bars"></i>
+                        </button>
+                    </div>
+                </nav>
+            </div>
+        </header>
+        <div class="wrapper center">
+            <div class="text-wrap flex center">
+                <div class="icon flex float">
+                    <div class="svg-wrap">
+                        <svg width="28" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="5" y="14" width="3" height="8" rx="1" fill="currentColor"/>
+                            <rect x="10.5" y="15" width="3" height="7" rx="1" fill="currentColor"/> 
+                            <rect x="10.5" y="11" width="3" height="3" rx="1" fill="currentColor"/>
+                            <rect x="16" y="8" width="3" height="14" rx="1" fill="currentColor"/>
+                        </svg>
+                    </div>
+                </div>
+                <h1 class="fade-in">ORACLE</h1>
+                <p class="desc fade-in delay-1">AI-Powered Crash Prediction Analytics</p>
+
+                <div class="timer fade-in delay-2">
+                    <h2>Launch Countdown</h2>
+                    <div class="countdown-wrap flex">
+                        <div class="flex">
+                            <span class="day num">14</span>
+                            <span class="timer-tag">DAYS</span>
+                        </div>
+                        <span class="timer-colon"></span>
+                        <div class="flex">
+                            <span class="hours num">08</span>
+                            <span class="timer-tag">HOURS</span>
+                        </div>
+                        <span class="timer-colon"></span>
+                        <div class="flex">
+                            <span class="min num">14</span>
+                            <span class="timer-tag">MINS</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="tag fade-in delay-3">COMING SOON</div>
+                <a href="./v1/index.html" class="beta-btn btn fade-in delay-4">
+                    Join Beta
+                </a>
+            </div>
+        </div>
+    </main>
+</body>

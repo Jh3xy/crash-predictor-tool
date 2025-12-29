@@ -53,6 +53,13 @@ This document contains the design tokens and specifications for the **Oracle Com
 ### 🌑 Shadows
 * **Button Glow:** `0 0 15px hsla(169, 74%, 39%, 0.4)`
 * **Text Glow:** `0 0 5px hsla(169, 74%, 39%, 0.4)`
+### 🌑 Icons
+* **Chart Icon:** `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M4 12V20H6V12H4Z" fill="currentColor"/>
+    <path d="M10 8V20H12V8H10Z" fill="currentColor"/>
+    <path d="M16 4V20H18V4H16Z" fill="currentColor"/>
+</svg>`
+
 
 ---
 
