@@ -123,6 +123,12 @@ export class LiveSync {
     console.log('\n\n')
     console.log('[Debug] Step 2: History Sync Complete. Opening WebSocket...');
     this.connectWebSocket();
+
+    // Fix: Set initial status message with correct arithmetic (convert string ID to number)
+    if (this.currentGameId && this.uiController?.dom?.statusMessage) {
+      const runningRoundId = parseInt(this.currentGameId) + 1;
+      this.uiController.dom.statusMessage.innerText = `${runningRoundId} Running`;
+    }
   }
 
     connectWebSocket() {
@@ -153,12 +159,12 @@ export class LiveSync {
                 this.reconnectInterval = null;
             }
 
-            // 2. Clear the "Disconnecting" message
-            if (this.uiController?.dom?.statusMessage) {
-                this.uiController.dom.statusMessage.innerHtML = `${this.currentGameId + 1} <span class="hide">Running</span>`;
-                this.uiController.dom.statusMessage.color = "";
-                this.uiController.dom.statusDot.style.backgroundColor = "var(--color-status-success)";
-            }
+           // 2. Clear the "Disconnecting" message             
+           if (this.uiController?.dom?.statusMessage) { 
+            this.uiController.dom.statusMessage.innerText = `${parseInt(this.currentGameId) + 1} Running`; 
+            this.uiController.dom.statusMessage.color = "";  
+            this.uiController.dom.statusDot.style.backgroundColor = "var(--color-status-success)";          
+          }
         };
 
         this.ws.onmessage = (evt) => {
@@ -338,7 +344,7 @@ export class LiveSync {
     }
 
     if (this.uiController?.dom?.statusMessage) {
-      this.uiController.dom.statusMessage.innerHTML = `${this.currentGameId + 1} <span class="hide">Running</span>`;
+      this.uiController.dom.statusMessage.innerText = `${runningRoundId} Running`;  // Fix: Use the pre-calculated runningRoundId (avoids concatenation)
     }
   }
 
