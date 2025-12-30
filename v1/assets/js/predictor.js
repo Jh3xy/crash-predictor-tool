@@ -178,6 +178,10 @@ export class CrashPredictor {
             cycleReasoning: engineResult.cycleReasoning,
             cycleClassification: engineResult.cycleClassification,
 
+            // Phase 2.2: Dynamic Threshold Fields
+            dynamicBustThreshold: engineResult.dynamicBustThreshold,
+            dynamicMoonThreshold: engineResult.dynamicMoonThreshold,
+
             error: false
         };
     }

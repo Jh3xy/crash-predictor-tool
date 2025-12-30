@@ -31,7 +31,8 @@ export class QuantilePredictionEngine {
 
       postMoonCaution: true, // Phase 1.1
       enhancedStreaks: true, // Phase 1.2
-      cycleDetection: false,  // Phase 2.1
+      cycleDetection: false,        // Phase 2.1 (disabled)
+      dynamicThresholds: false,     // Phase 2.2 (disabled)
     };
 
     this.houseEdge = 0.01;
@@ -49,6 +50,10 @@ export class QuantilePredictionEngine {
       calibrationHistory: []
     };
     
+    // 🔥 PHASE 2.2: Dynamic Threshold Storage
+    this.dynamicBustThreshold = 1.5;   // Default, will be recalculated
+    this.dynamicMoonThreshold = 10.0;  // Default, will be recalculated
+
     // 🔥 FIXED CUSUM CONFIG
     this.cusum = {
       statistic: 0,
@@ -183,21 +188,14 @@ export class QuantilePredictionEngine {
 
     const recent50 = cleanHistory.slice(0, 50);
     const recent20 = cleanHistory.slice(0, 20);
-    
+  
+    // 🔥 PHASE 2.2: Update dynamic thresholds before prediction
+    if (this.features.dynamicThresholds) {
+      this._updateDynamicThresholds(cleanHistory.slice(0, 200));  // Use last 200 for better stability
+    }
+
     const stats = this._calculateStats(cleanHistory);
     const recentStats = this._calculateStats(recent50);
-    
-    // ===== BASE PREDICTION =====
-    // const empirical = this._calculateQuantile(cleanHistory, this.targetQuantile);
-    // const theoretical = (1 - this.houseEdge) / this.targetWinRate;
-
-    // let target;
-    // if (this.features.houseEdgeBlend && cleanHistory.length < 500) {
-    //   const blend = 0.5;
-    //   target = blend * empirical + (1 - blend) * theoretical;
-    // } else {
-    //   target = empirical;
-    // }
     
     // ===== BASE PREDICTION (The J-Method: Dual Timeframe) =====
     
@@ -267,9 +265,14 @@ export class QuantilePredictionEngine {
     let streakReasoning = null;
 
     if (this.features.enhancedStreaks) {
+    // 🔥 PHASE 2.2: Use dynamic bust threshold if enabled
+    const bustThreshold = this.features.dynamicThresholds 
+      ? this.dynamicBustThreshold 
+      : 1.7;
       // Count recent busts in last 10 rounds
-      streakCount = this._countRecentBusts(cleanHistory, 10, 1.7);
-      
+      streakCount = this._countRecentBusts(cleanHistory, 10, bustThreshold);
+      console.log(`📊 Using bust threshold: ${bustThreshold.toFixed(2)}x for streak detection`);
+
       if (streakCount >= 2) {
         // Base boost: +10% minimum
         // Scaling: +5% per bust (e.g., 3 busts = 15%, 5 busts = 25%, 6+ busts = 30%)
@@ -407,6 +410,11 @@ export class QuantilePredictionEngine {
       cycleReasoning: this.features.cycleDetection && cycleData ? cycleData.reasoning : null,
       cycleClassification: this.features.cycleDetection && cycleData ? cycleData.last3 : null,
 
+      // 🔥 PHASE 2.2: Dynamic Threshold Fields
+      dynamicBustThreshold: this.features.dynamicThresholds ? this.dynamicBustThreshold.toFixed(2) : null,
+      dynamicMoonThreshold: this.features.dynamicThresholds ? this.dynamicMoonThreshold.toFixed(2) : null,
+
+
       marketMedian: stats.median.toFixed(2),
       recentMedian: recentStats.median.toFixed(2),
       targetQuantile: (this.targetQuantile * 100).toFixed(0) + 'th percentile',
@@ -533,8 +541,10 @@ export class QuantilePredictionEngine {
       };
     }
 
-    // Calculate dynamic moon threshold (90th percentile of recent 50)
-    const moonThreshold = this._calculateQuantile(recent50, 0.90);
+    // 🔥 PHASE 2.2: Use dynamic moon threshold if enabled
+  const moonThreshold = this.features.dynamicThresholds 
+    ? this.dynamicMoonThreshold 
+    : this._calculateQuantile(recent50, 0.90);
     
     // Check if ANY recent round was a moon shot
     const recentMoonShot = recent50.find(m => m >= moonThreshold);
@@ -591,6 +601,49 @@ _countRecentBusts(history, window = 10, threshold = 1.5) {
     
     return bustCount;
   }
+
+    /**
+   * 🔄 PHASE 2.2: DYNAMIC THRESHOLD CALCULATION
+   * Adapts bust/moon definitions based on recent market behavior
+   * 
+   * Logic:
+   * - Bust threshold = 10th percentile of recent data
+   * - Moon threshold = 90th percentile of recent data
+   * - Updates these values before each prediction
+   * 
+   * @param {number[]} recentHistory - Recent market data (50-200 rounds)
+   * @returns {object} { bustThreshold, moonThreshold }
+   */
+  _updateDynamicThresholds(recentHistory) {
+    if (!recentHistory || recentHistory.length < 50) {
+      // Not enough data - use defaults
+      return {
+        bustThreshold: 1.5,
+        moonThreshold: 10.0,
+        updated: false
+      };
+    }
+    
+    // Calculate dynamic thresholds from recent data
+    const bustThreshold = this._calculateQuantile(recentHistory, 0.10);  // 10th percentile
+    const moonThreshold = this._calculateQuantile(recentHistory, 0.90);  // 90th percentile
+    
+    // Store for later use
+    this.dynamicBustThreshold = bustThreshold;
+    this.dynamicMoonThreshold = moonThreshold;
+    
+    console.log(`📊 Dynamic Thresholds Updated:`);
+    console.log(`   Bust: ${bustThreshold.toFixed(2)}x (10th percentile)`);
+    console.log(`   Moon: ${moonThreshold.toFixed(2)}x (90th percentile)`);
+    
+    return {
+      bustThreshold: bustThreshold,
+      moonThreshold: moonThreshold,
+      updated: true
+    };
+  }
+
+
 
   /**
  * 🔄 PHASE 2.1: CYCLE PATTERN CLASSIFIER
