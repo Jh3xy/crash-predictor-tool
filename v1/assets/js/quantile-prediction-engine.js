@@ -26,6 +26,8 @@ export class QuantilePredictionEngine {
       cycleDetection: false,        // Phase 2.1 (disabled)
       dynamicThresholds: false,     // Phase 2.2 (disabled)
       arimaBlend: false,
+      // 🆕 PHASE 3.1: Hybrid Weighting (Math + Rules blend)
+      hybridWeighting: false,    // Will enable after validation
     };
 
     this.houseEdge = 0.01;
@@ -328,8 +330,49 @@ export class QuantilePredictionEngine {
       volatilityMultiplier = this._getVolatilityAdjustment(recentStats.volatility, stats.volatility);
     }
 
-    // Apply all adjustments (Phase 1.1, 1.2 + Phase 2.1 Cycle)
-    target *= hazardMultiplier * cusumMultiplier * volumeMultiplier * volatilityMultiplier * postMoonMultiplier * streakBoostMultiplier * cycleMultiplier;
+    // ===== PHASE 3.1: HYBRID WEIGHTING (FIXED - Separate Boost/Reduction) =====
+
+    // Store pure quantile BEFORE any adjustments
+    const pureQuantileValue = target;
+
+    // Separate NEGATIVE adjustments (caution) from POSITIVE (boosts)
+    // Negative multipliers (always applied at full strength)
+    const negativeMultipliers = hazardMultiplier * cusumMultiplier * volumeMultiplier * 
+                                volatilityMultiplier * postMoonMultiplier;
+
+    // Positive multipliers (amplified via hybrid if enabled)
+    const positiveMultipliers = streakBoostMultiplier * cycleMultiplier;
+
+    // Apply negative adjustments first (these are safety features)
+    target *= negativeMultipliers;
+
+    // 🆕 HYBRID WEIGHTING: Amplify positive adjustments
+    let hybridQuantileComponent = null;
+    let hybridAdjustmentComponent = null;
+
+    if (this.features.hybridWeighting) {
+      // If there's a positive boost (>1.0), blend it with quantile
+      if (positiveMultipliers > 1.0) {
+        const boostedValue = target * positiveMultipliers;
+        
+        // 60% quantile base + 40% boosted value
+        hybridQuantileComponent = target * 0.60;
+        hybridAdjustmentComponent = boostedValue * 0.40;
+        target = hybridQuantileComponent + hybridAdjustmentComponent;
+        
+        console.log(`🔀 HYBRID WEIGHTING (BOOST AMPLIFICATION):`);
+        console.log(`   Quantile Base (60%): ${hybridQuantileComponent.toFixed(2)}x`);
+        console.log(`   Boosted Value (40%): ${hybridAdjustmentComponent.toFixed(2)}x`);
+        console.log(`   Boost Multiplier: ${positiveMultipliers.toFixed(2)}x`);
+        console.log(`   Result: ${target.toFixed(2)}x`);
+      } else {
+        // No boost active, hybrid has no effect
+        console.log(`🔀 HYBRID WEIGHTING: No boost active (${positiveMultipliers.toFixed(2)}x), skipping blend`);
+      }
+    } else {
+      // Traditional: Apply positive multipliers directly
+      target *= positiveMultipliers;
+    }
 
     // 🔧 PHASE 2.3 FIX: Cap maximum prediction to prevent ARIMA over-shooting
     // This prevents the catastrophic >3.0x predictions that had 6.8% success
@@ -441,6 +484,12 @@ export class QuantilePredictionEngine {
       // 🔥 PHASE 2.3: ARIMA Blend Fields
       arimaForecast: this.features.arimaBlend && arimaForecast ? arimaForecast.toFixed(2) : null,
       arimaBlendActive: this.features.arimaBlend ? true : null,
+
+      // 🆕 PHASE 3.1: Hybrid Weighting Fields (FIXED - uses actual calculated values)
+      hybridWeightingActive: this.features.hybridWeighting ? true : null,
+      hybridQuantileComponent: hybridQuantileComponent ? hybridQuantileComponent.toFixed(2) : null,
+      hybridAdjustmentComponent: hybridAdjustmentComponent ? hybridAdjustmentComponent.toFixed(2) : null,
+      hybridBoostDetected: this.features.hybridWeighting && positiveMultipliers > 1.0 ? true : false,
 
       marketMedian: stats.median.toFixed(2),
       recentMedian: recentStats.median.toFixed(2),
@@ -672,34 +721,64 @@ _countRecentBusts(history, window = 10, threshold = 1.5) {
 
     
     /**
-   * 📮 PHASE 2.3: CONSERVATIVE ARIMA FORECAST (FIXED)
-   * Lightweight time-series forecasting using moving average + trend
-   * 
-   * FIXES APPLIED:
-   * - Reduced trend dampening: 50% → 25% (more stable)
-   * - Tightened bounds: [80-150%] → [90-120%] (less extremes)
-   * - Better smoothing factor: 0.3 → 0.4 (more responsive to recent data)
-   * 
-   * Simplified ARIMA(1,1,1) approximation:
-   * - AR(1): Autoregressive - learns from last value
-   * - I(1): Differencing - removes noise
-   * - MA(1): Moving average - smooths trend
-   * 
-   * Logic:
-   * 1. Calculate recent trend (last 10 vs prior 10)
-   * 2. Apply exponential smoothing
-   * 3. Project forward with CONSERVATIVE dampening
-   * 4. Apply TIGHT bounds to prevent over-shooting
-   * 
-   * @param {number[]} recent50 - Last 50 multipliers
-   * @returns {number} Forecasted next multiplier (bounded)
-   */
-  _simpleARIMA(recent50) {
-    if (!recent50 || recent50.length < 20) {
-      // Not enough data - return recent average
-      console.warn('⚠️ ARIMA: Insufficient data, using fallback');
-      return this._mean(recent50);
-    }
+ * ❌ PHASE 2.3: ARIMA BLEND - DISABLED (FAILED GATE CRITERIA)
+ * 
+ * ATTEMPTED: 2024-12-30
+ * 
+ * FAILURE ANALYSIS:
+ * ----------------
+ * Test Results (200-round backtest):
+ * - Accuracy: 58.50% vs 70-76% target (❌ 12% below minimum)
+ * - Avg Predicted: 1.83x vs 1.5-1.8x target (⚠️ in range but accuracy too low)
+ * - ROI: 58.21% vs 60%+ target (❌ below minimum)
+ * - High Risk (>3.0x): 14% vs <10% target (❌ excessive)
+ * - A/B Improvement: 0% vs Phase 1.2 baseline (❌ no benefit)
+ * 
+ * ROOT CAUSES:
+ * ------------
+ * 1. ARIMA forecasts too volatile (2.90x - 5.82x with extremes)
+ * 2. Trend calculation polluted by moon shots (21.79x skewed averages)
+ * 3. Bounds formula broken when recent data contains outliers
+ *    Example: maxForecast = 21.79 * 1.20 = 26.15x (way too high)
+ * 4. Even at 15% blend, ARIMA inflated predictions by 70%
+ * 
+ * TUNING ATTEMPTS:
+ * ----------------
+ * Iteration 1: 70/30 blend → 50% accuracy, 2.65x avg (too bold)
+ * Iteration 2: 85/15 blend → 58% accuracy, 1.83x avg (still failed)
+ * 
+ * GATE DECISION:
+ * --------------
+ * Per ORACLE_AI_ROADMAP_v3.txt:
+ * "IF Accuracy <65%: ❌ FAIL - Disable ARIMA, return to Phase 1.2"
+ * Decision: DISABLE arimaBlend, proceed to Phase 3.1 (Hybrid Weighting)
+ * 
+ * LESSONS LEARNED:
+ * ----------------
+ * - Time-series forecasting requires extreme filtering for crash game data
+ * - 30-50% of data are outliers (moon shots), not representative trends
+ * - Simpler rule-based adjustments (Phase 1.2) outperform complex forecasting
+ * - Better approach: Phase 3.1 Hybrid Weighting (proven in roadmap)
+ * 
+ * FUTURE CONSIDERATIONS:
+ * ----------------------
+ * If revisiting ARIMA later:
+ * 1. Winsorize input at 90th percentile (filter extremes)
+ * 2. Use EMA instead of simple moving averages
+ * 3. Reduce blend to 5% maximum
+ * 4. Add absolute forecast cap at 2.0x
+ * 5. Require 500+ rounds of stable data before enabling
+ * 
+ * CURRENT STATUS: arimaBlend = false (PERMANENTLY DISABLED)
+ */
+_simpleARIMA(recent50) {
+  // Method kept for reference but not called when arimaBlend = false
+  // See documentation above for why this feature was disabled
+  
+  if (!recent50 || recent50.length < 20) {
+    console.warn('⚠️ ARIMA: Insufficient data, using fallback');
+    return this._mean(recent50);
+  }
     
     // Step 1: Calculate short-term and medium-term averages
     const recent10 = recent50.slice(0, 10);
