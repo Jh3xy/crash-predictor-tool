@@ -182,6 +182,10 @@ export class CrashPredictor {
             dynamicBustThreshold: engineResult.dynamicBustThreshold,
             dynamicMoonThreshold: engineResult.dynamicMoonThreshold,
 
+            // Phase 2.3: ARIMA Blend Fields
+            arimaForecast: engineResult.arimaForecast,
+            arimaBlendActive: engineResult.arimaBlendActive,
+
             error: false
         };
     }

@@ -2,16 +2,8 @@
 /**
  * 🎯 QUANTILE-BASED PREDICTION ENGINE v2.0 - COMPLETE FIXED VERSION
  * 
- * FIXES:
- * - ✅ CUSUM now correctly detects DOWNWARD shifts (bust clusters)
- * - ✅ Improved sensitivity and reset logic
- * - ✅ Better logging for debugging
  * 
  * FEATURES (all toggleable):
- * - houseEdgeBlend: true (YOUR BASELINE)
- * - kaplanMeier: false (test with diagnostic first)
- * - weibullHazard: false (test with diagnostic first)
- * - cusumDetection: false (test with diagnostic first)
  */
 
 export class QuantilePredictionEngine {
@@ -33,6 +25,7 @@ export class QuantilePredictionEngine {
       enhancedStreaks: true, // Phase 1.2
       cycleDetection: false,        // Phase 2.1 (disabled)
       dynamicThresholds: false,     // Phase 2.2 (disabled)
+      arimaBlend: false,
     };
 
     this.houseEdge = 0.01;
@@ -227,6 +220,27 @@ export class QuantilePredictionEngine {
       target = (target + kmTarget) / 2;
     }
     
+   // ===== ARIMA BLEND (if enabled) - PHASE 2.3 (CONSERVATIVE FIX) =====
+  let arimaForecast = null;
+  if (this.features.arimaBlend) {
+    arimaForecast = this._simpleARIMA(recent50);
+    
+    // 🔧 FIX: Reduced blend from 70/30 → 85/15 (more conservative)
+    // This reduces ARIMA influence while still adding upward momentum
+    const quantileComponent = target * 0.85;  // Increased from 0.70
+    const arimaComponent = arimaForecast * 0.15;  // Reduced from 0.30
+    
+    const blendedTarget = quantileComponent + arimaComponent;
+    
+    console.log(`📊 ARIMA BLENDING (CONSERVATIVE):`);
+    console.log(`   Quantile (85%): ${quantileComponent.toFixed(2)}x`);
+    console.log(`   ARIMA (15%): ${arimaComponent.toFixed(2)}x`);
+    console.log(`   Before blend: ${target.toFixed(2)}x`);
+    console.log(`   After blend: ${blendedTarget.toFixed(2)}x`);
+    
+    target = blendedTarget;
+  }
+
     // ===== WEIBULL HAZARD (if enabled) =====
     let hazardMultiplier = 1.0;
     let hazardAdvice = null;
@@ -315,8 +329,18 @@ export class QuantilePredictionEngine {
     }
 
     // Apply all adjustments (Phase 1.1, 1.2 + Phase 2.1 Cycle)
-  target *= hazardMultiplier * cusumMultiplier * volumeMultiplier * volatilityMultiplier * postMoonMultiplier * streakBoostMultiplier * cycleMultiplier;
-    
+    target *= hazardMultiplier * cusumMultiplier * volumeMultiplier * volatilityMultiplier * postMoonMultiplier * streakBoostMultiplier * cycleMultiplier;
+
+    // 🔧 PHASE 2.3 FIX: Cap maximum prediction to prevent ARIMA over-shooting
+    // This prevents the catastrophic >3.0x predictions that had 6.8% success
+    if (this.features.arimaBlend) {
+      const MAX_PREDICTION = 3.0;  // Hard cap
+      if (target > MAX_PREDICTION) {
+        console.warn(`⚠️ ARIMA: Capping ${target.toFixed(2)}x → ${MAX_PREDICTION}x (safety limit)`);
+        target = MAX_PREDICTION;
+      }
+    }
+
     // Bootstrap confidence
     const lowerBound = this._bootstrapQuantile(cleanHistory, this.targetQuantile * 0.75, 100);
     target = Math.max(target, lowerBound);
@@ -414,6 +438,9 @@ export class QuantilePredictionEngine {
       dynamicBustThreshold: this.features.dynamicThresholds ? this.dynamicBustThreshold.toFixed(2) : null,
       dynamicMoonThreshold: this.features.dynamicThresholds ? this.dynamicMoonThreshold.toFixed(2) : null,
 
+      // 🔥 PHASE 2.3: ARIMA Blend Fields
+      arimaForecast: this.features.arimaBlend && arimaForecast ? arimaForecast.toFixed(2) : null,
+      arimaBlendActive: this.features.arimaBlend ? true : null,
 
       marketMedian: stats.median.toFixed(2),
       recentMedian: recentStats.median.toFixed(2),
@@ -643,7 +670,72 @@ _countRecentBusts(history, window = 10, threshold = 1.5) {
     };
   }
 
-
+    
+    /**
+   * 📮 PHASE 2.3: CONSERVATIVE ARIMA FORECAST (FIXED)
+   * Lightweight time-series forecasting using moving average + trend
+   * 
+   * FIXES APPLIED:
+   * - Reduced trend dampening: 50% → 25% (more stable)
+   * - Tightened bounds: [80-150%] → [90-120%] (less extremes)
+   * - Better smoothing factor: 0.3 → 0.4 (more responsive to recent data)
+   * 
+   * Simplified ARIMA(1,1,1) approximation:
+   * - AR(1): Autoregressive - learns from last value
+   * - I(1): Differencing - removes noise
+   * - MA(1): Moving average - smooths trend
+   * 
+   * Logic:
+   * 1. Calculate recent trend (last 10 vs prior 10)
+   * 2. Apply exponential smoothing
+   * 3. Project forward with CONSERVATIVE dampening
+   * 4. Apply TIGHT bounds to prevent over-shooting
+   * 
+   * @param {number[]} recent50 - Last 50 multipliers
+   * @returns {number} Forecasted next multiplier (bounded)
+   */
+  _simpleARIMA(recent50) {
+    if (!recent50 || recent50.length < 20) {
+      // Not enough data - return recent average
+      console.warn('⚠️ ARIMA: Insufficient data, using fallback');
+      return this._mean(recent50);
+    }
+    
+    // Step 1: Calculate short-term and medium-term averages
+    const recent10 = recent50.slice(0, 10);
+    const prior10 = recent50.slice(10, 20);
+    
+    const recentAvg = this._mean(recent10);
+    const priorAvg = this._mean(prior10);
+    
+    // Step 2: Calculate trend (momentum)
+    const trend = recentAvg - priorAvg;
+    
+    // Step 3: Apply exponential smoothing (MA component)
+    // 🔧 FIX: Increased alpha 0.3 → 0.4 for better recent data weight
+    const alpha = 0.4;  // Smoothing factor (higher = more recent weight)
+    const lastValue = recent50[0];
+    const smoothed = (alpha * lastValue) + ((1 - alpha) * recentAvg);
+    
+    // Step 4: Forecast = smoothed value + CONSERVATIVE projected trend
+    // 🔧 FIX: Reduced dampening 50% → 25% for stability
+    const forecast = smoothed + (trend * 0.25);
+    
+    // Step 5: TIGHT bounds checking (prevent over-shooting)
+    // 🔧 FIX: Tightened from [80%, 150%] → [90%, 120%]
+    const minForecast = Math.min(...recent10) * 0.90;  // Don't go too low
+    const maxForecast = Math.max(...recent10) * 1.20;  // Don't go too high
+    const boundedForecast = Math.max(minForecast, Math.min(forecast, maxForecast));
+    
+    console.log(`📮 ARIMA Forecast:`);
+    console.log(`   Recent avg: ${recentAvg.toFixed(2)}x`);
+    console.log(`   Prior avg: ${priorAvg.toFixed(2)}x`);
+    console.log(`   Trend: ${trend > 0 ? '+' : ''}${trend.toFixed(2)}x`);
+    console.log(`   Raw forecast: ${forecast.toFixed(2)}x`);
+    console.log(`   Bounded forecast: ${boundedForecast.toFixed(2)}x`);
+    
+    return boundedForecast;
+  }
 
   /**
  * 🔄 PHASE 2.1: CYCLE PATTERN CLASSIFIER
