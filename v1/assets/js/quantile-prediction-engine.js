@@ -20,14 +20,12 @@ export class QuantilePredictionEngine {
       dynamicConfidence: false,
       volumeDetection: false,
       kellyBetting: false,
-
-      postMoonCaution: true, // Phase 1.1
-      enhancedStreaks: true, // Phase 1.2
+      postMoonCaution: false, // Phase 1.1
+      enhancedStreaks: false, // Phase 1.2
       cycleDetection: false,        // Phase 2.1 (disabled)
       dynamicThresholds: false,     // Phase 2.2 (disabled)
       arimaBlend: false,
-      // 🆕 PHASE 3.1: Hybrid Weighting (Math + Rules blend)
-      hybridWeighting: false,    // Will enable after validation
+      hybridWeighting: false, 
     };
 
     this.houseEdge = 0.01;
