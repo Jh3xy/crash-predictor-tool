@@ -26,6 +26,7 @@ export class QuantilePredictionEngine {
       dynamicThresholds: false,     // Phase 2.2 (disabled)
       arimaBlend: false,
       hybridWeighting: false, 
+      normalizeAdjustments: false // Phase 2.2 toggle
     };
 
     this.houseEdge = 0.01;
@@ -328,6 +329,19 @@ export class QuantilePredictionEngine {
       volatilityMultiplier = this._getVolatilityAdjustment(recentStats.volatility, stats.volatility);
     }
 
+    // ===== 🔥 PHASE 2.2: NORMALIZE ALL ADJUSTMENTS =====
+    if (this.features.normalizeAdjustments) {
+      hazardMultiplier = this._normalizeAdjustment(hazardMultiplier, recent50);
+      cusumMultiplier = this._normalizeAdjustment(cusumMultiplier, recent50);
+      postMoonMultiplier = this._normalizeAdjustment(postMoonMultiplier, recent50);
+      streakBoostMultiplier = this._normalizeAdjustment(streakBoostMultiplier, recent50);
+      cycleMultiplier = this._normalizeAdjustment(cycleMultiplier, recent50);
+      volumeMultiplier = this._normalizeAdjustment(volumeMultiplier, recent20);
+      volatilityMultiplier = this._normalizeAdjustment(volatilityMultiplier, recent50);
+      
+      console.log('🔧 Normalization Applied to All Adjustments');
+    }
+
     // ===== PHASE 3.1: HYBRID WEIGHTING (FIXED - Separate Boost/Reduction) =====
 
     // Store pure quantile BEFORE any adjustments
@@ -499,6 +513,115 @@ export class QuantilePredictionEngine {
       
       error: false
     };
+  }
+
+
+      /**
+   * 🔥 PHASE 2.2: NORMALIZE AND CLIP ADJUSTMENTS
+   * 
+   * Prevents over-scaling by:
+   * 1. Z-score normalization: (raw - mean) / std
+   * 2. Soft scaling: 1 + (z-score * 0.1)
+   * 3. Hard clipping: [0.8, 1.2]
+   * 
+   * @param {number} rawMultiplier - Raw adjustment multiplier (e.g., 0.85, 1.15)
+   * @param {number[]} recentHistory - Recent multiplier context for normalization
+   * @returns {number} Normalized and clipped multiplier [0.8, 1.2]
+   * 
+   * @example
+   * // Raw multiplier suggests 0.70x (30% reduction)
+   * const normalized = this._normalizeAdjustment(0.70, recent50);
+   * // Returns ~0.85x (15% reduction, clipped)
+   */
+  _normalizeAdjustment(rawMultiplier, recentHistory) {
+    // Safety checks
+    if (!this.features.normalizeAdjustments) {
+      return rawMultiplier; // Feature disabled, return raw value
+    }
+    
+    if (!recentHistory || recentHistory.length < 10) {
+      console.warn('⚠️  Normalization: Insufficient history, using raw multiplier');
+      return Math.max(0.8, Math.min(1.2, rawMultiplier)); // Just clip
+    }
+    
+    try {
+      // Calculate baseline statistics from recent data
+      const mean = this._mean(recentHistory);
+      const stdDev = Math.sqrt(this._variance(recentHistory));
+      
+      // Prevent division by zero
+      if (stdDev < 0.01) {
+        console.warn('⚠️  Normalization: Low volatility, applying light clipping');
+        return Math.max(0.85, Math.min(1.15, rawMultiplier));
+      }
+      
+      // Step 1: Calculate deviation from neutral (1.0)
+      const deviation = rawMultiplier - 1.0;
+      
+      // Step 2: Z-score normalization
+      // (We use mean=1.0 as our "expected" neutral point)
+      const zScore = deviation / (stdDev / mean);
+      
+      // Step 3: Soft scaling (10% influence per std dev)
+      const normalized = 1.0 + (zScore * 0.1);
+      
+      // Step 4: Hard clipping [0.8, 1.2]
+      const clipped = Math.max(0.8, Math.min(1.2, normalized));
+      
+      // Logging (only if significant change)
+      if (Math.abs(rawMultiplier - clipped) > 0.05) {
+        console.log(`🔧 Normalization: ${rawMultiplier.toFixed(2)}x → ${clipped.toFixed(2)}x (z=${zScore.toFixed(2)})`);
+      }
+      
+      return clipped;
+      
+    } catch (error) {
+      console.error('❌ Normalization error:', error);
+      // Fallback: simple clipping
+      return Math.max(0.8, Math.min(1.2, rawMultiplier));
+    }
+  }
+
+  /**
+ * 🔥 PHASE 2.2: Test normalization behavior
+ * Use this in console to verify normalization is working
+ */
+testNormalization() {
+  console.log('\n🧪 Testing Normalization (Phase 2.2)...\n');
+  
+  const testHistory = this.rawHistory.slice(0, 50);
+  
+  if (testHistory.length < 10) {
+    console.error('❌ Need at least 50 rounds of history');
+    return;
+  }
+  
+  // Test extreme multipliers
+    const testCases = [
+      { name: 'Aggressive Reduction', raw: 0.60 },
+      { name: 'Moderate Reduction', raw: 0.85 },
+      { name: 'Neutral', raw: 1.0 },
+      { name: 'Moderate Boost', raw: 1.15 },
+      { name: 'Aggressive Boost', raw: 1.50 }
+    ];
+    
+    console.log('Input History Stats:');
+    console.log(`  Mean: ${this._mean(testHistory).toFixed(2)}`);
+    console.log(`  StdDev: ${Math.sqrt(this._variance(testHistory)).toFixed(2)}\n`);
+    
+    const wasEnabled = this.features.normalizeAdjustments;
+    this.features.normalizeAdjustments = true;
+    
+    console.log('Normalization Results:');
+    testCases.forEach(test => {
+      const normalized = this._normalizeAdjustment(test.raw, testHistory);
+      const change = ((normalized - test.raw) / test.raw * 100).toFixed(1);
+      console.log(`  ${test.name}: ${test.raw.toFixed(2)}x → ${normalized.toFixed(2)}x (${change}% change)`);
+    });
+    
+    this.features.normalizeAdjustments = wasEnabled;
+    
+    console.log('\n✅ Normalization test complete');
   }
 
   /**
