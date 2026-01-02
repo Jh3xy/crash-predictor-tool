@@ -31,8 +31,15 @@ export class QuantilePredictionEngine {
       hybridWeighting: false,
       normalizeAdjustments: false,
       adaptiveThresholds: false,
-      weightedBlend: false
+      weightedBlend: false,
+
+      emaMedianBlend: false  // 🆕 PHASE 5: Optional polish
     };
+
+    // 🆕 EMA state
+    this.emaMedian = null;
+    this.emaAlpha = 0.3;  // Smoothing factor (higher = more recent weight)
+
 
     this.houseEdge = 0.01;
     this.rawHistory = [];
@@ -124,7 +131,43 @@ export class QuantilePredictionEngine {
     }
   }
 
-  
+  // ============================================
+  // NEW HELPER: CALCULATE EMA
+  // ============================================
+
+  /**
+   * 🆕 PHASE 5: EXPONENTIAL MOVING AVERAGE
+   * 
+   * Tracks recent median with exponential smoothing
+   * - More responsive than simple moving average
+   * - Adds upward momentum when market is running hot
+   * 
+   * @param {number[]} recentHistory - Last 20 rounds
+   * @returns {number} EMA value
+   */
+  _calculateEMA(recentHistory) {
+    if (!recentHistory || recentHistory.length < 10) {
+      return null;
+    }
+    
+    // Calculate current median
+    const sorted = [...recentHistory].sort((a, b) => a - b);
+    const currentMedian = sorted[Math.floor(sorted.length / 2)];
+    
+    // Initialize EMA on first call
+    if (this.emaMedian === null) {
+      this.emaMedian = currentMedian;
+      return this.emaMedian;
+    }
+    
+    // Update EMA: EMA = α × current + (1-α) × previous
+    this.emaMedian = (this.emaAlpha * currentMedian) + 
+                    ((1 - this.emaAlpha) * this.emaMedian);
+    
+    return this.emaMedian;
+  }
+
+
   // ============================================
 // NEW HELPER: WEIGHTED ADDITIVE BLEND
 // ============================================
@@ -646,6 +689,23 @@ async compareBlendMethods(history) {
     // This allows the target to move (responsive) but keeps it anchored to reality (accuracy).
     target = (longTermTarget * 0.70) + (shortTermTarget * 0.30);
 
+    // ===== EMA MEDIAN BLEND (if enabled) =====
+  if (this.features.emaMedianBlend) {
+    const emaValue = this._calculateEMA(recent20);
+    
+    if (emaValue !== null && emaValue > target) {
+      // Only blend upward (don't reduce predictions)
+      // 70% quantile + 30% EMA
+      const blendedTarget = (target * 0.70) + (emaValue * 0.30);
+      
+      console.log(`📈 EMA Blend:`);
+      console.log(`   Quantile: ${target.toFixed(2)}x`);
+      console.log(`   EMA: ${emaValue.toFixed(2)}x`);
+      console.log(`   Blended: ${blendedTarget.toFixed(2)}x`);
+      
+      target = blendedTarget;
+    }
+  }
 
     if (this.features.houseEdgeBlend) {
       const adaptiveEdge = this._calculateAdaptiveHouseEdge(recentStats.volatility);
@@ -1047,6 +1107,71 @@ testAdaptiveThresholds() {
   console.log('💡 High volatility → looser thresholds (fewer alerts)');
   console.log('💡 Low volatility → tighter thresholds (more sensitive)');
 }
+
+  // ============================================
+  // DIAGNOSTIC FUNCTION
+  // ============================================
+
+  /**
+   * 🆕 PHASE 5: Test EMA blend behavior
+   */
+  testEMABlend() {
+    console.log('\n🧪 Testing EMA Median Blend (Phase 5)...\n');
+    
+    const testHistory = this.rawHistory.slice(0, 100);
+    
+    if (testHistory.length < 50) {
+      console.error('❌ Need at least 100 rounds of history');
+      return;
+    }
+    
+    // Test scenarios
+    const scenarios = [
+      {
+        name: 'Rising Market (recent highs)',
+        data: [3.5, 2.8, 3.2, 2.1, 2.9, 2.5, 2.2, 2.7, 2.0, 2.3]
+      },
+      {
+        name: 'Falling Market (recent busts)',
+        data: [1.2, 1.3, 1.1, 1.4, 1.2, 1.5, 1.3, 1.1, 1.2, 1.4]
+      },
+      {
+        name: 'Stable Market',
+        data: [2.0, 1.9, 2.1, 1.8, 2.0, 2.2, 1.9, 2.1, 2.0, 1.8]
+      },
+      {
+        name: 'Recent Data',
+        data: testHistory.slice(0, 20)
+      }
+    ];
+    
+    console.log('Testing EMA impact on predictions:\n');
+    
+    // Reset EMA for each test
+    scenarios.forEach(scenario => {
+      this.emaMedian = null; // Reset
+      
+      const baseQuantile = this._calculateQuantile(scenario.data, this.targetQuantile);
+      const emaValue = this._calculateEMA(scenario.data);
+      
+      // Calculate blended value (only if EMA > base)
+      const blended = emaValue > baseQuantile 
+        ? (baseQuantile * 0.70) + (emaValue * 0.30)
+        : baseQuantile;
+      
+      const change = ((blended - baseQuantile) / baseQuantile * 100).toFixed(1);
+      
+      console.log(`${scenario.name}:`);
+      console.log(`  Base Quantile: ${baseQuantile.toFixed(2)}x`);
+      console.log(`  EMA: ${emaValue.toFixed(2)}x`);
+      console.log(`  Blended: ${blended.toFixed(2)}x (${change > 0 ? '+' : ''}${change}%)`);
+      console.log('');
+    });
+    
+    console.log('✅ EMA blend test complete');
+    console.log('💡 EMA only boosts predictions (never reduces)');
+    console.log('💡 More effective in rising markets');
+  }
 
       /**
    * 🔥 PHASE 2.2: NORMALIZE AND CLIP ADJUSTMENTS
