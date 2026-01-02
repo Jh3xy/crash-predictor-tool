@@ -9,11 +9,19 @@ export class CrashPredictor {
     constructor() {
         this.engine = new QuantilePredictionEngine();
         this.lastPrediction = null;
+
+        // 🔥 ADD THESE:
+        this.liveValidation = this._loadValidationState();
         
         this._loadState();
         
         console.log('🎯 CrashPredictor initialized with Quantile Engine');
         console.log('📊 Stats:', this.engine.getStatistics());
+
+        // 🔥 ADD THESE:
+        if (this.liveValidation.predictions.length > 0) {
+            console.log(`📈 Live Validation: ${this.liveValidation.predictions.length}/50 tracked`);
+        }
     }
 
     _loadState() {
@@ -51,6 +59,188 @@ export class CrashPredictor {
         } catch (e) {
             console.warn('⚠️ Failed to save state:', e);
         }
+    }
+
+    // ============================================
+    // CHANGE 2: Add these new methods to class
+    // ============================================
+
+    /**
+     * 🔥 NEW METHOD: Load validation state
+     */
+    _loadValidationState() {
+        try {
+            const saved = localStorage.getItem('liveValidation_v2');
+            if (saved) {
+                return JSON.parse(saved);
+            }
+        } catch (e) {
+            console.warn('⚠️  Failed to load validation state:', e);
+        }
+        
+        return {
+            predictions: [],
+            startTime: Date.now(),
+            targetCount: 50,
+            sessionId: Date.now().toString(36)
+        };
+    }
+    /**
+     * 🔥 NEW METHOD: Save validation state
+     */
+    _saveValidationState() {
+        try {
+            localStorage.setItem('liveValidation_v2', JSON.stringify(this.liveValidation));
+        } catch (e) {
+            console.warn('⚠️  Failed to save validation state:', e);
+        }
+    }
+    /**
+     * 🔥 NEW METHOD: Track prediction automatically
+     */
+    _trackPrediction(predicted, actual, success) {
+        this.liveValidation.predictions.push({
+            predicted: predicted,
+            actual: actual,
+            success: success,
+            timestamp: Date.now(),
+            predictionNumber: this.liveValidation.predictions.length + 1
+        });
+        
+        const count = this.liveValidation.predictions.length;
+        const target = this.liveValidation.targetCount;
+        
+        // Progress every 10 predictions
+        if (count % 10 === 0 || count === target) {
+            console.log(`📈 Live Validation: ${count}/${target} (${(count/target*100).toFixed(0)}%)`);
+        }
+        
+        this._saveValidationState();
+        
+        // Auto-report at 50
+        if (count === target) {
+            this._generateValidationReport();
+        }
+    }
+    /**
+     * 🔥 NEW METHOD: Generate report
+     */
+    _generateValidationReport() {
+        const results = this.liveValidation.predictions;
+        const wins = results.filter(r => r.success).length;
+        const losses = results.length - wins;
+        const accuracy = wins / results.length;
+        
+        const avgPredicted = results.reduce((sum, r) => sum + r.predicted, 0) / results.length;
+        const avgActual = results.reduce((sum, r) => sum + r.actual, 0) / results.length;
+        
+        // Distribution
+        const veryLow = results.filter(r => r.predicted < 1.5).length;
+        const low = results.filter(r => r.predicted >= 1.5 && r.predicted < 2.0).length;
+        const medium = results.filter(r => r.predicted >= 2.0 && r.predicted < 3.0).length;
+        const high = results.filter(r => r.predicted >= 3.0).length;
+        
+        // ROI
+        const totalWagered = results.length;
+        const totalWon = results.filter(r => r.success).reduce((sum, r) => sum + r.predicted, 0);
+        const netProfit = totalWon - losses;
+        const roi = (netProfit / totalWagered) * 100;
+        
+        console.log('\n' + '='.repeat(70));
+        console.log('🎯 LIVE VALIDATION REPORT (50 PREDICTIONS)');
+        console.log('='.repeat(70));
+        console.log(`\nAccuracy: ${(accuracy * 100).toFixed(1)}% (${wins}W/${losses}L)`);
+        console.log(`ROI: ${roi > 0 ? '+' : ''}${roi.toFixed(2)}%`);
+        console.log(`Avg Predicted: ${avgPredicted.toFixed(2)}x`);
+        console.log(`Distribution: <1.5x=${veryLow}, 1.5-2.0x=${low}, 2.0-3.0x=${medium}, >3.0x=${high}`);
+        
+        const accPass = accuracy >= 0.65 && accuracy <= 0.75;
+        const roiPass = roi >= 50;
+        
+        console.log(`\n${accPass && roiPass ? '✅ VALIDATION PASSED' : '⚠️  REVIEW NEEDED'}`);
+        console.log('='.repeat(70) + '\n');
+        
+        // Save report
+        const report = {
+            summary: {
+                accuracy: (accuracy * 100).toFixed(1) + '%',
+                roi: roi.toFixed(2) + '%',
+                wins: wins,
+                losses: losses,
+                avgPredicted: avgPredicted.toFixed(2) + 'x'
+            },
+            distribution: { veryLow, low, medium, high },
+            timestamp: Date.now()
+        };
+        
+        localStorage.setItem('liveValidation_report_v2', JSON.stringify(report));
+        
+        // Reset for next cycle
+        this._resetValidation();
+    }
+    /**
+     * 🔥 NEW METHOD: Reset validation
+     */
+    _resetValidation() {
+        this.liveValidation = {
+            predictions: [],
+            startTime: Date.now(),
+            targetCount: 50,
+            sessionId: Date.now().toString(36)
+        };
+        this._saveValidationState();
+        console.log('🔄 Tracking next 50 predictions...');
+    }
+    /**
+     * 🔥 NEW METHOD: Get status
+     */
+    getValidationStatus() {
+        const count = this.liveValidation.predictions.length;
+        const target = this.liveValidation.targetCount;
+        
+        if (count === 0) {
+            return { status: 'Not started', progress: '0/50' };
+        }
+        
+        if (count < target) {
+            const wins = this.liveValidation.predictions.filter(p => p.success).length;
+            return {
+                status: 'In progress',
+                progress: `${count}/${target}`,
+                currentAccuracy: ((wins/count)*100).toFixed(1) + '%'
+            };
+        }
+        
+        return { status: 'Complete', progress: '50/50' };
+    }
+    /**
+     * 🔥 NEW METHOD: View last report
+     */
+    viewLastReport() {
+        try {
+            const report = localStorage.getItem('liveValidation_report_v2');
+            if (!report) {
+                console.log('📊 No reports yet');
+                return null;
+            }
+            
+            const data = JSON.parse(report);
+            console.log('\n📊 LAST VALIDATION:');
+            console.log(`   Accuracy: ${data.summary.accuracy}`);
+            console.log(`   ROI: ${data.summary.roi}`);
+            console.log(`   Avg Predicted: ${data.summary.avgPredicted}\n`);
+            return data;
+        } catch (e) {
+            console.error('❌ Failed to load:', e);
+            return null;
+        }
+    }
+    /**
+     * 🔥 NEW METHOD: Manual reset
+     */
+    resetLiveValidation() {
+        console.log('🔄 Resetting validation...');
+        this._resetValidation();
     }
 
     /**
@@ -129,6 +319,8 @@ export class CrashPredictor {
         console.log(`   Result: ${success ? '✅ WIN' : '❌ LOSS'}`);
         
         this.engine.updateAfterPrediction(predicted, actual, success);
+        // 🔥 ADD THIS ONE LINE:
+        this._trackPrediction(predicted, actual, success);
         
         const stats = this.engine.getStatistics();
         console.log(`   Overall: ${stats.successCount}W / ${stats.failureCount}L = ${stats.winRatePercent}\n`);

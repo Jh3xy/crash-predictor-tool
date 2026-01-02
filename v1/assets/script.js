@@ -382,3 +382,20 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('🎯 NEW PREDICTION MADE:', data);
     });
 });
+
+// 🔥 Live Validation Console Helpers
+window.checkValidation = function() {
+    const status = predictor.getValidationStatus();
+    console.log('\n📊 Validation Status:', status.status);
+    console.log('   Progress:', status.progress);
+    if (status.currentAccuracy) {
+        console.log('   Current Accuracy:', status.currentAccuracy);
+    }
+    console.log('');
+};
+
+window.viewReport = function() {
+    predictor.viewLastReport();
+};
+
+console.log('💡 Commands: checkValidation(), viewReport()');
