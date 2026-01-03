@@ -1,14 +1,12 @@
 
 /**
- * 🎯 QUANTILE-BASED PREDICTION ENGINE v2.0 - COMPLETE FIXED VERSION
- * 
- * 
- * FEATURES (all toggleable):
+ * 🎯 QUANTILE-BASED PREDICTION ENGINE v4.0 - COMPLETE FIXED VERSION
+ * --
  */
 
 export class QuantilePredictionEngine {
   constructor() {
-    this.name = "Quantile Engine v2.0 - Fixed & Optimized";
+    this.name = "Quantile Engine v4.0 - Fixed & Optimized";
     
 
     this.features = {
@@ -45,7 +43,6 @@ export class QuantilePredictionEngine {
     this.rawHistory = [];
     this.MAX_HISTORY = 2000;
     
-    // 🔥 KEY CHANGE
     this.targetQuantile = 0.35; // Changed from 0.40
     this.targetWinRate = 0.60;
     
@@ -57,11 +54,11 @@ export class QuantilePredictionEngine {
       calibrationHistory: []
     };
     
-    // 🔥 PHASE 2.2: Dynamic Threshold Storage
+    //  Dynamic Threshold Storage
     this.dynamicBustThreshold = 1.5;   // Default, will be recalculated
     this.dynamicMoonThreshold = 10.0;  // Default, will be recalculated
 
-    // 🔥 FIXED CUSUM CONFIG
+    // FIXED CUSUM CONFIG
     this.cusum = {
       statistic: 0,
       mean: 2.0,           // Expected mean multiplier
@@ -72,7 +69,7 @@ export class QuantilePredictionEngine {
       lastValues: []       // Store last 10 values for debugging
     };
 
-     // 🔥 PHASE 3.1: Store adaptive threshold values
+     // Store adaptive threshold values
       this.adaptiveThresholds = {
         cusumSlack: 0.5,      // Dynamic slack (k parameter)
         cusumThreshold: 3.0,  // Dynamic threshold (H parameter)
@@ -80,7 +77,7 @@ export class QuantilePredictionEngine {
         bustThreshold: 1.5    // Dynamic bust threshold
       };
 
-      // 🔥 PHASE 3.2: Add feature weights
+      // : Add feature weights
     this.featureWeights = {
       hazard: 0.15,
       cusum: 0.20,        // Higher weight for safety
@@ -90,10 +87,10 @@ export class QuantilePredictionEngine {
       volume: 0.10,
       volatility: 0.15
     };
-    console.log('🔥 Phase 3.2: Weighted Ensemble initialized');
+    console.log(' Weighted Ensemble initialized');
     console.log('   Default weights:', this.featureWeights);
     
-    console.log("🎯 Quantile Engine v2.0 - Fixed CUSUM Initialized");
+    console.log(`${this.name} Initialized`);
     console.log("📊 Baseline Config:", this.features);
     console.log("🔧 CUSUM: Detects bust clusters (mean: 2.0x, threshold: 3.0)");
   }
@@ -111,7 +108,7 @@ export class QuantilePredictionEngine {
       this._updateCUSUM(multiplier);
     }
 
-    // 🔥 PHASE 4.4: Periodic reset every 50 rounds
+    //  Periodic reset every 50 rounds
     if (this.rawHistory.length % 50 === 0) {
       const wasActive = this.cusum.alertActive;
       this.resetCUSUM();
@@ -1869,45 +1866,6 @@ testMergedBustDetector() {
     /**
  * ❌ PHASE 2.3: ARIMA BLEND - DISABLED (FAILED GATE CRITERIA)
  * 
- * ATTEMPTED: 2024-12-30
- * 
- * FAILURE ANALYSIS:
- * ----------------
- * Test Results (200-round backtest):
- * - Accuracy: 58.50% vs 70-76% target (❌ 12% below minimum)
- * - Avg Predicted: 1.83x vs 1.5-1.8x target (⚠️ in range but accuracy too low)
- * - ROI: 58.21% vs 60%+ target (❌ below minimum)
- * - High Risk (>3.0x): 14% vs <10% target (❌ excessive)
- * - A/B Improvement: 0% vs Phase 1.2 baseline (❌ no benefit)
- * 
- * ROOT CAUSES:
- * ------------
- * 1. ARIMA forecasts too volatile (2.90x - 5.82x with extremes)
- * 2. Trend calculation polluted by moon shots (21.79x skewed averages)
- * 3. Bounds formula broken when recent data contains outliers
- *    Example: maxForecast = 21.79 * 1.20 = 26.15x (way too high)
- * 4. Even at 15% blend, ARIMA inflated predictions by 70%
- * 
- * TUNING ATTEMPTS:
- * ----------------
- * Iteration 1: 70/30 blend → 50% accuracy, 2.65x avg (too bold)
- * Iteration 2: 85/15 blend → 58% accuracy, 1.83x avg (still failed)
- * 
- * GATE DECISION:
- * --------------
- * Per ORACLE_AI_ROADMAP_v3.txt:
- * "IF Accuracy <65%: ❌ FAIL - Disable ARIMA, return to Phase 1.2"
- * Decision: DISABLE arimaBlend, proceed to Phase 3.1 (Hybrid Weighting)
- * 
- * LESSONS LEARNED:
- * ----------------
- * - Time-series forecasting requires extreme filtering for crash game data
- * - 30-50% of data are outliers (moon shots), not representative trends
- * - Simpler rule-based adjustments (Phase 1.2) outperform complex forecasting
- * - Better approach: Phase 3.1 Hybrid Weighting (proven in roadmap)
- * 
- * FUTURE CONSIDERATIONS:
- * ----------------------
  * If revisiting ARIMA later:
  * 1. Winsorize input at 90th percentile (filter extremes)
  * 2. Use EMA instead of simple moving averages

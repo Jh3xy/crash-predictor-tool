@@ -20,7 +20,7 @@ console.log(`%c${warningTitle}`, warningTitleStyle);
 console.log(`%c${warningMessage}`, messageStyle);
 
 // Current App Version
-const APP_VERSION = "1.1.0";
+const APP_VERSION = "2.4.0";
 
 // 1. Version Log (Simple and clean)
 console.log(`%cOracle %cv${APP_VERSION}`, 
