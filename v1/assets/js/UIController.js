@@ -421,4 +421,65 @@ export class UIController {
         const variance = arr.reduce((s, v) => s + Math.pow(v - mean, 2), 0) / (arr.length - 1);
         return Math.sqrt(variance);
     }
+
+    // 🔥 ADD THESE METHODS TO YOUR EXISTING UIController CLASS
+    // Place them at the end, before the closing }
+
+    /**
+     * 🔥 NEW: Show reconnection overlay
+     */
+    showReconnectOverlay() {
+        let overlay = document.getElementById('reconnect-overlay');
+        
+        if (!overlay) {
+            // Create overlay if it doesn't exist
+            overlay = document.createElement('div');
+            overlay.id = 'reconnect-overlay';
+            overlay.className = 'reconnect-modal';
+            overlay.innerHTML = `
+                <div class="spinner"></div>
+                <div class="reconnect-message">Reconnecting to BC GAME...</div>
+            `;
+            document.body.appendChild(overlay);
+        }
+        
+        // Apply modal-open to body for blur effect
+        document.body.classList.add('modal-open');
+        overlay.style.display = 'flex';
+        
+        console.log('🔄 Reconnect overlay shown');
+    }
+
+    /**
+     * 🔥 NEW: Hide reconnection overlay
+     */
+    hideReconnectOverlay() {
+        const overlay = document.getElementById('reconnect-overlay');
+        
+        if (overlay) {
+            overlay.style.display = 'none';
+            
+            // Remove modal-open only if no other modals are open
+            const otherModals = document.querySelectorAll('.app-modal');
+            if (otherModals.length === 0) {
+                document.body.classList.remove('modal-open');
+            }
+        }
+        
+        console.log('✅ Reconnect overlay hidden');
+    }
+
+    /**
+     * 🔥 NEW: Update reconnection message
+     */
+    updateReconnectMessage(message) {
+        const overlay = document.getElementById('reconnect-overlay');
+        
+        if (overlay) {
+            const messageEl = overlay.querySelector('.reconnect-message');
+            if (messageEl) {
+                messageEl.textContent = message;
+            }
+        }
+    }
 }
