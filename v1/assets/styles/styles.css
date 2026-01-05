@@ -1147,6 +1147,218 @@ body.modal-open .app-modal { pointer-events: auto; }
     color: var(--color-background-base);
 }
 
+/* ========================================
+   Quantile Slider Styling
+   ======================================== */
+
+.settings-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.setting-item label .modal-desc{
+    font-weight: 300;
+}
+.setting-item label{
+    font-size: .85rem;
+    color: var(--text-secondary);
+}
+.setting-item label > span.flex{
+    gap: 10px;
+    align-items: center;
+    color: var(--text-primary);
+}
+
+.settings-section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 8px 0;
+  font-size: 1.1rem;
+  color: var(--color-accent-primary);
+}
+.setting-item {
+  margin-top: 16px;
+}
+
+.setting-item label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--text-primary);
+}
+
+.info-tooltip {
+  cursor: help;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.info-tooltip:hover {
+  opacity: 1;
+}
+
+/* Slider Container */
+.slider-container {
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 16px 28px 32px;
+    margin-bottom: 10px;
+}
+
+.slider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.slider-label {
+  font-size: 0.65rem;
+  opacity: 0.8;
+}
+
+/* Range Slider */
+.quantile-slider {
+  width: 100%;
+  height: 8px;
+  -webkit-appearance: none;
+  appearance: none;
+  background-color: var(--border-subtle);
+  border-radius: 10px;
+  outline: none;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.quantile-slider:hover {
+  opacity: 0.9;
+}
+
+/* Slider Thumb (Chrome/Safari) */
+.quantile-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: var(--text-primary);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.quantile-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.05);
+}
+
+/* Slider Thumb (Firefox) */
+.quantile-slider::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  background: var(--text-primary);
+  border: 3px solid var(--color-accent-primary, #00d4ff);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.quantile-slider::-moz-range-thumb:hover {
+  transform: scale(1.05);
+}
+
+/* Slider Track (Firefox) */
+.quantile-slider::-moz-range-track {
+  background: transparent;
+}
+
+/* Slider Markers */
+.slider-markers {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  position: relative;
+}
+
+.marker {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  position: absolute;
+  transform: translateX(-50%);
+}
+
+.marker.default {
+  color: var(--color-accent-primary);
+  font-weight: 600;
+}
+
+/* Setting Description */
+.setting-description {
+  margin-top: 16px;
+}
+
+.warning-text {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px;
+  background: rgba(248, 113, 113, 0.1);
+  border-left: 3px solid var(--color-status-danger);
+  border-radius: 6px;
+  font-size: 0.89rem;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+.warning-text i {
+  color: var(--color-status-danger, #f87171);
+  margin-top: 2px;
+}
+
+/* Button styling fix */
+.reset-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  background: var(--color-surface-card);
+  border-radius: 8px;
+  transition: var(--transition-fast);
+  cursor: pointer;
+}
+
+.reset-btn:hover {
+  background: var(--sidebar-active-bg);
+  border-color: var(--color-accent-primary);
+}
+
+.reset-btn:active {
+  transform: scale(0.98);
+}
+small.text-secondary {
+    margin-top: 20px;
+    font-size: 12px;
+    display: block;
+}
+
+/* Visual States */
+.quantile-slider.conservative::-webkit-slider-thumb {
+  border-color: var(--color-status-success, #4ade80);
+}
+
+.quantile-slider.bold::-webkit-slider-thumb {
+  border-color: var(--color-status-danger, #f87171);
+}
+
+.quantile-slider.balanced::-webkit-slider-thumb {
+  border-color: var(--color-accent-primary, #00d4ff);
+}
+
 /* =========================================================================
    18. THEME DROPDOWN
    ========================================================================= */

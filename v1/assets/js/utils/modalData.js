@@ -14,10 +14,7 @@ const modalContents = {
                 <div class="dropdown-container">
         <div class="dropdown" id="themeDropdown">
             <div class="dropdown-header">
-                <span class="dropdown-header-text">
-                    <span class="current-theme-indicator"></span>
-                    Deep Space
-                </span>
+                <span class="dropdown-header-text"><span class="current-theme-indicator"></span>Deep Space</span>
                 <div class="dropdown-arrow"></div>
             </div>
                 <div class="dropdown-list">
@@ -102,6 +99,59 @@ const modalContents = {
         </div>
             </div>
             <p class="text-secondary info">More themes coming soon...</p>
+            <!-- 🔥 NEW: Prediction Engine Section -->
+        <div class="settings-section">
+            <!-- <h4 class="settings-section-title">
+            <i class="fa-solid fa-brain"></i> Prediction Engine
+            </h4> -->
+            <div class="setting-item">
+                <label for="quantileSlider">
+                    <span class="flex">
+                        Target Quantile
+                        <i class="fa-solid fa-circle-info" data-modal-id="target-quantile-detail"></i>
+                    </span>
+                    <p class="modal-desc">Adjust prediction behavior and risk tolerance. Affects how "bold" prediction engine gets </p> 
+                <span class="info-tooltip" title="Controls prediction aggressiveness: Lower = safer/conservative, Higher = bolder/riskier">
+                </span>
+            </label>
+            
+            <div class="slider-container">
+                <div class="slider-header">
+                <span class="slider-label conservative">Conservative</span>
+                <span id="quantileDisplay" class="slider-value">48th percentile</span> 
+                <span class="slider-label bold">Bold</span>
+                </div>
+                
+                <input type="range" id="quantileSlider" min="0.20" max="0.60" step="0.01" value="0.39" class="quantile-slider bold">
+                
+                <div class="slider-markers">
+                <span class="marker" style="left: 0%">20%</span>
+                <span class="marker" style="left: 25%">30%</span>
+                <span class="marker default" style="left: 47.5%">39%  (Default)</span>
+                <span class="marker" style="left: 62.5%">45%</span>
+                <span class="marker" style="left: 100%">60%</span>
+                </div>
+            </div>
+            
+            <div class="setting-description">
+                <p class="warning-text">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <strong>Warning:</strong> Values above 45% may increase false positives and losses. 
+                Test in paper mode first.
+                </p>
+                <button id="resetQuantile" class="button-secondary reset-btn">
+                <i class="fa-solid fa-rotate-left"></i> Reset to Default
+                </button>
+            </div>
+            </div>
+        </div>
+
+        <div class="modal-footer-note">
+            <small class="text-secondary">
+            Changes are saved automatically • More settings coming soon
+            </small>
+        </div>
+        </div>
         `
     },
     'integrity': {
@@ -686,6 +736,51 @@ const modalContents = {
 
         <p class="action-note text-secondary">
             Tip: Aim for steady positive growth over 50+ predictions. If it goes negative, try resetting history or testing new engine features.
+        </p>
+    `
+},
+'target-quantile-detail': {
+    title: `Target Quantile`,
+    contentHTML: `
+        <h3 class="section-title">Target Quantile (Safety Dial)</h3>
+        <p class="section-desc">
+            This is the core "safety level" setting for the prediction engine.  
+            It controls how conservative or bold the predictions are by picking a spot in the sorted history of past crashes.  
+            Lower = safer/smaller predictions (high win rate, small edges).  
+            Higher = bolder/riskier (bigger potential wins, but more losses possible).
+        </p>
+
+        <dl class="element-definitions">
+            <dt class="element-name">How It Works</dt>
+            <dd class="element-description">
+                The engine sorts the last 500–2000 crash multipliers from low to high.  
+                This setting picks a percentile in that list:  
+                <ul>
+                    <li>Low (20–35%): Picks from the safer bottom of history → Predictions ~1.2–1.5× (very conservative, 70–80% hit rate, steady survival).</li>
+                    <li>Medium (35–45%): Balanced middle → Predictions ~1.5–2.0× (your default — good for compounding without big risks).</li>
+                    <li>High (45–60%): Picks higher up → Predictions ~1.8–3.0× (bolder, 50–60% hit rate, bigger wins but more "false positives" where crash happens before prediction).</li>
+                </ul>
+                It blends this with other features (like house edge adjustment and bust detection) for the final value.
+            </dd>
+
+            <dt class="element-name">Why It Fits "Survival" Mode</dt>
+            <dd class="element-description">
+                Success here means <strong>actual crash > predicted value</strong> — you "survive" by cashing out safely.  
+                Lower settings ensure pessimistic predictions to avoid overconfidence in random crashes.  
+                It auto-adjusts over time toward ~60% win rate for long-term bankroll protection.
+            </dd>
+
+            <dt class="element-name">Benefits & Risks of Tuning</dt>
+            <dd class="element-description">
+                <strong>Lower (safer):</strong> Higher win rate, fewer big losses — great for beginners or steady grinding.  
+                <strong>Higher (bolder):</strong> Bigger edges when right, faster compounding — but more variance during bad streaks.  
+                <br>
+                Warning: Values >0.45 increase risk of losses. Always test changes with the backtester first (aim for no drop in accuracy >3%).
+            </dd>
+        </dl>
+
+        <p class="action-note text-secondary">
+            Tip: Start at default (39%). Slide up slowly while monitoring your History Log win rate. Reset if variance spikes.
         </p>
     `
 }

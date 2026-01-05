@@ -152,6 +152,94 @@ function initializeThemeDropdown() {
     document.addEventListener('keydown', closeDropdownEscape);
 }
 
+// In script.js - REPLACE your initializeQuantileSlider() function
+
+function initializeQuantileSlider() {
+  const slider = document.getElementById('quantileSlider');
+  const display = document.getElementById('quantileDisplay');
+  const resetBtn = document.getElementById('resetQuantile');
+  
+  // Debug logging
+  console.log('🔧 Initializing quantile slider...');
+  console.log('   Slider element:', slider ? 'Found' : 'NOT FOUND');
+  console.log('   Display element:', display ? 'Found' : 'NOT FOUND');
+  console.log('   Reset button:', resetBtn ? 'Found' : 'NOT FOUND');
+  console.log('   Predictor available:', typeof window.predictor !== 'undefined');
+  
+  if (!slider || !display) {
+    console.error('⚠️ Quantile slider elements not found in DOM');
+    return;
+  }
+  
+  if (!window.predictor || !window.predictor.engine) {
+    console.error('⚠️ Predictor engine not available');
+    return;
+  }
+
+    // Initialize Settings Info Icons
+    const infoIcon = document.querySelector('[data-modal-id="target-quantile-detail"]')
+    infoIcon.addEventListener('click', () => {
+            populateAndShowModal(infoIcon.getAttribute('data-modal-id'));
+        });
+  
+  // Load current value from engine
+  const currentValue = window.predictor.engine.targetQuantile || 0.39;
+  slider.value = currentValue;
+  display.textContent = `${(currentValue * 100).toFixed(0)}th percentile`;
+  
+  console.log(`✅ Slider initialized with value: ${(currentValue * 100).toFixed(0)}%`);
+  
+  // Update display as slider moves (real-time feedback)
+  slider.addEventListener('input', (e) => {
+    const value = parseFloat(e.target.value);
+    display.textContent = `${(value * 100).toFixed(0)}th percentile`;
+    
+    // Update visual indicator based on risk level
+    slider.classList.remove('conservative', 'balanced', 'bold');
+    if (value < 0.35) {
+      slider.classList.add('conservative');
+    } else if (value > 0.45) {
+      slider.classList.add('bold');
+    } else {
+      slider.classList.add('balanced');
+    }
+  });
+  
+  // Apply change when slider is released (saves to engine)
+  slider.addEventListener('change', (e) => {
+    const value = parseFloat(e.target.value);
+    
+    console.log(`🎯 User changed quantile to ${(value * 100).toFixed(0)}%`);
+    
+    // Update engine (this triggers the setter which saves to localStorage)
+    window.predictor.engine.targetQuantile = value;
+    
+    console.log(`✅ Quantile updated to ${(value * 100).toFixed(0)}th percentile`);
+    console.log(`   Next prediction will use this value`);
+  });
+  
+  // Reset button
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      const defaultValue = 0.39;
+      
+      console.log('🔄 Resetting quantile to default...');
+      
+      // Update engine
+      window.predictor.engine.targetQuantile = defaultValue;
+      
+      // Update UI
+      slider.value = defaultValue;
+      display.textContent = `${(defaultValue * 100).toFixed(0)}th percentile`;
+      slider.classList.remove('conservative', 'bold');
+      slider.classList.add('balanced');
+      
+      console.log('✅ Quantile reset to default (39th percentile)');
+    });
+  }
+}
+
+
 function getDOMElements() {
     return {
         currentMultiplier: document.getElementById('current-multiplier'),
@@ -316,18 +404,22 @@ document.addEventListener('DOMContentLoaded', () => {
         '[data-modal-id="card-info-active-sessions"]' 
     );
 
-    // Settings modal with theme dropdown
-    if (settingBtn) {
-        settingBtn.addEventListener('click', () => {
-            populateAndShowModal(settingBtn.getAttribute('data-modal-id'));
-            
-            // Initialize dropdown immediately after modal is shown
-            // Use requestAnimationFrame to ensure DOM is ready
-            requestAnimationFrame(() => {
-                initializeThemeDropdown();
-            });
-        });
-    }
+// 🔥 IMPORTANT: Update your settings button handler
+// Find this section in your code and update it:
+
+if (settingBtn) {
+  settingBtn.addEventListener('click', () => {
+    populateAndShowModal(settingBtn.getAttribute('data-modal-id'));
+    
+    // 🔥 FIX: Use setTimeout instead of requestAnimationFrame
+    // This ensures DOM is fully rendered before initialization
+    setTimeout(() => {
+        console.log('📋 Settings modal opened, initializing...');
+        initializeThemeDropdown();
+        initializeQuantileSlider();
+    }, 100); // 100ms delay ensures modal is rendered
+  });
+}
 
     if (predictDetials) {
         predictDetials.addEventListener('click', () => {
@@ -376,7 +468,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     
-
     // 🔥 DEBUG: Log when predictions are made
     eventBus.on('newPredictionMade', (data) => {
         console.log('🎯 NEW PREDICTION MADE:', data);

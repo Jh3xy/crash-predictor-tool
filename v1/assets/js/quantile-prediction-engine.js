@@ -43,7 +43,9 @@ export class QuantilePredictionEngine {
     this.rawHistory = [];
     this.MAX_HISTORY = 2000;
     
-    this.targetQuantile = 0.35; // Changed from 0.40
+    // 🔥 CHANGE: Load from localStorage or default to 0.39
+    this._targetQuantile = parseFloat(localStorage.getItem('targetQuantile_v2')) || 0.39; // was 0.35 (35th percentile)
+    // this.targetQuantile = 0.39; // Changed from 0.40
     this.targetWinRate = 0.60;
     
     this.predictionStats = {
@@ -95,6 +97,24 @@ export class QuantilePredictionEngine {
     console.log("🔧 CUSUM: Detects bust clusters (mean: 2.0x, threshold: 3.0)");
   }
 
+    get targetQuantile() {
+    return this._targetQuantile;
+  }
+
+  set targetQuantile(value) {
+    const parsed = parseFloat(value);
+    if (isNaN(parsed) || parsed < 0.20 || parsed > 0.60) {
+      console.warn(`⚠️ Invalid quantile: ${value}. Must be 0.20-0.60`);
+      return;
+    }
+    
+    const oldValue = this._targetQuantile;
+    this._targetQuantile = parsed;
+    localStorage.setItem('targetQuantile_v2', parsed.toString());
+    
+    console.log(`🎯 Target Quantile: ${(oldValue * 100).toFixed(0)}% → ${(parsed * 100).toFixed(0)}%`);
+  }
+
   learnFromMarketData(multiplier) {
     if (!multiplier || multiplier <= 0 || !Number.isFinite(multiplier)) return;
     
@@ -126,6 +146,16 @@ export class QuantilePredictionEngine {
         console.log(`   🔴 CUSUM ALERT ACTIVE (stat: ${this.cusum.statistic.toFixed(2)})`);
       }
     }
+  }
+
+    _cleanData(history) {
+    const cleaned = history
+      .map(v => parseFloat(v))
+      .filter(v => !isNaN(v) && v > 0 && v < 1000);
+    
+    // Winsorize at 99th percentile (cap moon shots)
+    const p99 = this._calculateQuantile(cleaned, 0.99);
+    return cleaned.map(v => Math.min(v, p99));
   }
 
   // ============================================

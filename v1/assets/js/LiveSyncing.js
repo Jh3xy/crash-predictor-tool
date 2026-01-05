@@ -670,61 +670,59 @@ async handleReconnectCatchup() {
       this.uiController.updateMultiplier(this.currentMultiplier);
     }
   }
-  // 🔥 ADD THESE METHODS AT THE END OF LiveSync CLASS
-// (Before the closing } of the class, around line 600+)
 
-/**
- * 🔥 TEST HELPER: Fast reconnect test (skips delays)
- * Usage in console: window.liveSync.testReconnect()
- */
-async testReconnect() {
-  console.log('🧪 TEST MODE: Fast reconnection test');
-  
-  // Close connection
-  if (this.ws) {
-    this.ws.close();
+  /**
+   * 🔥 TEST HELPER: Fast reconnect test (skips delays)
+   * Usage in console: window.liveSync.testReconnect()
+   */
+  async testReconnect() {
+    console.log('🧪 TEST MODE: Fast reconnection test');
+    
+    // Close connection
+    if (this.ws) {
+      this.ws.close();
+    }
+    
+    // Show overlay
+    this.connectionState = 'reconnecting';
+    this.showReconnectOverlay();
+    
+    // Wait just 500ms instead of 3 seconds
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Reconnect
+    this.connectWebSocket();
+    
+    console.log('✅ Test reconnection initiated');
   }
-  
-  // Show overlay
-  this.connectionState = 'reconnecting';
-  this.showReconnectOverlay();
-  
-  // Wait just 500ms instead of 3 seconds
-  await new Promise(resolve => setTimeout(resolve, 500));
-  
-  // Reconnect
-  this.connectWebSocket();
-  
-  console.log('✅ Test reconnection initiated');
-}
 
-/**
- * 🔥 TEST HELPER: Simulate missed rounds scenario
- * Usage in console: window.liveSync.testCatchup(10)
- */
-async testCatchup(missedRounds = 10) {
-  console.log(`🧪 TEST MODE: Simulating ${missedRounds} missed rounds`);
-  
-  // Store current ID
-  const currentId = parseInt(this.currentGameId);
-  
-  // Fake that we missed rounds by setting lastReceivedGameId back
-  this.lastReceivedGameId = String(currentId - missedRounds);
-  
-  console.log(`   Faked last received: ${this.lastReceivedGameId}`);
-  console.log(`   Current latest: ${this.currentGameId}`);
-  
-  // Close and reconnect to trigger catch-up
-  if (this.ws) {
-    this.ws.close();
+  /**
+   * 🔥 TEST HELPER: Simulate missed rounds scenario
+   * Usage in console: window.liveSync.testCatchup(10)
+   */
+  async testCatchup(missedRounds = 10) {
+    console.log(`🧪 TEST MODE: Simulating ${missedRounds} missed rounds`);
+    
+    // Store current ID
+    const currentId = parseInt(this.currentGameId);
+    
+    // Fake that we missed rounds by setting lastReceivedGameId back
+    this.lastReceivedGameId = String(currentId - missedRounds);
+    
+    console.log(`   Faked last received: ${this.lastReceivedGameId}`);
+    console.log(`   Current latest: ${this.currentGameId}`);
+    
+    // Close and reconnect to trigger catch-up
+    if (this.ws) {
+      this.ws.close();
+    }
+    
+    this.connectionState = 'disconnected';
+    
+    // Show overlay
+    await new Promise(resolve => setTimeout(resolve, 100));
+    this.connectWebSocket();
+    
+    console.log('✅ Test catch-up scenario triggered');
   }
-  
-  this.connectionState = 'disconnected';
-  
-  // Show overlay
-  await new Promise(resolve => setTimeout(resolve, 100));
-  this.connectWebSocket();
-  
-  console.log('✅ Test catch-up scenario triggered');
-}
 }
