@@ -34,7 +34,7 @@ function applySavedTheme() {
 }
 
 const tabs = document.querySelectorAll('.tab');
-listenForTabs(tabs); //Function from ./js/utils/tabs.js';
+listenForTabs(tabs); 
 
 function setupSidebar() {
     const menuToggle = document.getElementById('menu-toggle');
@@ -81,6 +81,7 @@ function initializeThemeDropdown() {
     const headerText = dropdown.querySelector('.dropdown-header-text');
     const items = dropdown.querySelectorAll('.dropdown-item');
     const body = document.body;
+    console.log(items)
 
     // Load and apply saved theme immediately
     const savedTheme = localStorage.getItem('selectedTheme') || 'default';
@@ -129,6 +130,10 @@ function initializeThemeDropdown() {
             
             const themeClass = item.getAttribute('data-theme');
             const themeName = item.getAttribute('data-name');
+
+            document.body.classList.remove(...document.body.classList);
+            document.body.classList.add('modal-open');
+
             
             applyTheme(themeClass, themeName);
             dropdown.classList.remove('active');
@@ -151,8 +156,6 @@ function initializeThemeDropdown() {
     };
     document.addEventListener('keydown', closeDropdownEscape);
 }
-
-// In script.js - REPLACE your initializeQuantileSlider() function
 
 function initializeQuantileSlider() {
   const slider = document.getElementById('quantileSlider');
@@ -320,7 +323,7 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('🚀 App Initialized. LiveSync connecting...');
     window.logSystemReady();
 
-    // 🔥 FIX: Proper button handler with loading states
+    // button handler with loading states
     if (domElements.predictBtn) {
         domElements.predictBtn.addEventListener('click', async () => {
             console.log('\n\n\n👆 Manual Prediction Button Clicked');
@@ -404,15 +407,11 @@ document.addEventListener('DOMContentLoaded', () => {
         '[data-modal-id="card-info-active-sessions"]' 
     );
 
-// 🔥 IMPORTANT: Update your settings button handler
-// Find this section in your code and update it:
-
 if (settingBtn) {
   settingBtn.addEventListener('click', () => {
     populateAndShowModal(settingBtn.getAttribute('data-modal-id'));
     
-    // 🔥 FIX: Use setTimeout instead of requestAnimationFrame
-    // This ensures DOM is fully rendered before initialization
+    // Use setTimeout instead of requestAnimationFrame so DOM is fully rendered before initialization
     setTimeout(() => {
         console.log('📋 Settings modal opened, initializing...');
         initializeThemeDropdown();
@@ -490,3 +489,8 @@ window.viewReport = function() {
 };
 
 console.log('💡 Commands: checkValidation(), viewReport()');
+
+
+
+
+// export { predictedRoundId }

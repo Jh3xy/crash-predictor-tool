@@ -15,6 +15,7 @@
     <!-- Stylesheets -->
     <link rel="stylesheet" href="./assets/styles/variables.css">
     <link rel="stylesheet" href="./assets/styles/styles.css"> 
+    <link rel="stylesheet" href="./assets/styles/queries.css"> 
     <link rel="stylesheet" href="./assets/styles/utils.css"> 
 
     <!-- Scripts -->
@@ -267,7 +268,10 @@
                     </div>
                     <div class="card glass performance-section p-l" id="performance-chart">
                         <div class="tag">
-                            <h3>📈 Performance Index</h3>
+                            <h3>
+                                <i class="fa-solid fa-chart-simple"></i>
+                                Performance Index
+                            </h3>
                             <i class="fa-solid fa-circle-info stats-info" data-modal-id="chart-info"></i>
                         </div>
                         <div class="chart-container">
@@ -292,38 +296,40 @@
                             <h3>History Log</h3>
                         </div>
                         <div class="stats-table">
+                            <div class="table-header">
+                                <h4>Timestamp</h4>
+                                <h4>Predicted</h4>
+                                <h4>Actual</h4>
+                                <h4 class="hide">Difference</h4>
+                                <h4>Result</h4>
+                            </div>
                             <div class="table">
-                                <div class="table-header">
-                                    <h4>Timestamp</h4>
-                                    <h4>Predicted</h4>
-                                    <h4>Actual</h4>
-                                    <h4 class="hide">Difference</h4>
-                                    <h4>Result</h4>
-                                </div>
-                                <div class="table-content history-log-body" id="history-log-body">
-                                    <div class="time">
-                                        <span></span>
-                                    </div>
-                                    <div class="predicted">
-                                        <span></span>
-                                    </div>
-                                    <div class="actual">
-                                        <span></span>		
-                                    </div>
-                                    <div class="difference">
-                                        <span>±</span>
-                                    </div>
-                                    <div class="accuracy">
-                                        <span class="green"></span>
+                                <div class="table-wrap">
+                                    <div class="table-content history-log-body" id="history-log-body">
+                                        <div class="time">
+                                            <span></span>
+                                        </div>
+                                        <div class="predicted">
+                                            <span></span>
+                                        </div>
+                                        <div class="actual">
+                                            <span></span>		
+                                        </div>
+                                        <div class="difference">
+                                            <span>±</span>
+                                        </div>
+                                        <div class="accuracy">
+                                            <span class="green"></span>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="stat-summary flex">
-                                    <p>Success (%) : <span class="up" id="overall-accuracy">--%</span></p>
-                                    <button id="clear-history-btn">
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>
-                                    <p>Total : <span id="total-predictions-footer">0</span></p>
-                                </div>
+                            </div>
+                            <div class="stat-summary flex">
+                                <p>Success (%) : <span class="up" id="overall-accuracy">--%</span></p>
+                                <button id="clear-history-btn">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                                <p>Total : <span id="total-predictions-footer">0</span></p>
                             </div>
                         </div>
                     </div>

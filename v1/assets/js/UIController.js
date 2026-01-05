@@ -1,8 +1,6 @@
 
 /**
  * UIController.js - FIXED VERSION
- * 🔥 FIX: Separates Market Stats from Prediction Stats
- * Now prediction values stay intact after rounds complete
  */
 
 export class UIController {
@@ -12,7 +10,7 @@ export class UIController {
         this.predictorCard = document.getElementById('ai-predictor');
         this.dom = elements;
         
-        // 🔥 NEW: Track if prediction is active
+        // Track if prediction is active
         this.activePrediction = null;
         
         this.initializeHistoryCells(10); 
@@ -55,7 +53,7 @@ export class UIController {
         if (this.elements.predictedValue) this.elements.predictedValue.textContent = '--';
         if (this.elements.confidencePercentage) this.elements.confidencePercentage.textContent = '0%';
         
-        // 🔥 CLEAR active prediction
+        //  CLEAR active prediction
         this.activePrediction = null;
         
         this.setPredictButtonState('ready'); 
@@ -85,14 +83,14 @@ export class UIController {
     } 
 
     /**
-     * 🔥 FIXED: Display prediction and LOCK values
+     * Display prediction and LOCK values
      */
     renderPrediction(result) {
         if (this.elements.loadingOverlay) {
             this.elements.loadingOverlay.style.display = 'none';
         }
         
-        // 🔥 PHASE 1.3: Update predictor card visual state
+        // Update predictor card visual state
         if (this.predictorCard) {
             // Remove old state classes
             this.predictorCard.classList.remove('confidence-high', 'confidence-medium', 'confidence-low', 'confidence-skip');
@@ -119,7 +117,7 @@ export class UIController {
             return;
         }
 
-        // 🔥 STORE active prediction (prevents overwriting)
+        //  STORE active prediction (prevents overwriting)
         this.activePrediction = result;
 
         if (this.elements.predictionOutputDetails) {
@@ -130,10 +128,10 @@ export class UIController {
         if (this.elements.predictedValue) {
             this.elements.predictedValue.textContent = result.predictedValue.toFixed(2) + 'x';
 
-            // 🔥 PHASE 1.3: Remove old classes first
+            // Remove old classes first
             this.elements.predictedValue.classList.remove('strong-bet', 'moderate-bet', 'cautious-bet', 'skip-bet');
 
-            // 🔥 PHASE 1.3: Apply confidence-based styling
+            // Apply confidence-based styling
             let confidenceClass = '';
             let color;
 
@@ -174,7 +172,6 @@ export class UIController {
         }
 
         // === 4. STATS GRID (PREDICTION STATS - NOT MARKET STATS) ===
-        
         // Risk Zone
         if (this.elements.riskZone) {
             const risk = result.riskLevel || 'MEDIUM';
@@ -291,7 +288,7 @@ export class UIController {
             this.elements.analysisMessage.style.color = messageColor;
         }
 
-        // 🔥 PHASE 1.3: Add pulsing animation for skip rounds
+        // Add pulsing animation for skip rounds
         if (this.elements.analysisMessage) {
             this.elements.analysisMessage.classList.remove('pulse-warning');
             if (result.action === 'SKIP ROUND' || result.confidence < 40) {
@@ -335,7 +332,7 @@ export class UIController {
     }
 
     /**
-     * 🔥 FIXED: Only update market stats if NO active prediction
+     *  Only update market stats if NO active prediction
      * This prevents overwriting prediction display
      */
     updateStats(multipliers = []) {
@@ -387,8 +384,6 @@ export class UIController {
 
         if (this.elements.currentMultiplier) {
             const el = this.elements.currentMultiplier;
-            // el.style.transition = 'transform 180ms ease, color 220ms ease';
-            // el.style.transform = 'scale(1.08)';
             el.style.color = 'var(--color-danger)';
             setTimeout(() => {
                 el.style.transform = '';
@@ -422,11 +417,8 @@ export class UIController {
         return Math.sqrt(variance);
     }
 
-    // 🔥 ADD THESE METHODS TO YOUR EXISTING UIController CLASS
-    // Place them at the end, before the closing }
-
     /**
-     * 🔥 NEW: Show reconnection overlay
+     *  Show reconnection overlay
      */
     showReconnectOverlay() {
         let overlay = document.getElementById('reconnect-overlay');
@@ -451,7 +443,7 @@ export class UIController {
     }
 
     /**
-     * 🔥 NEW: Hide reconnection overlay
+     * Hide reconnection overlay
      */
     hideReconnectOverlay() {
         const overlay = document.getElementById('reconnect-overlay');
@@ -470,7 +462,7 @@ export class UIController {
     }
 
     /**
-     * 🔥 NEW: Update reconnection message
+     * Update reconnection message
      */
     updateReconnectMessage(message) {
         const overlay = document.getElementById('reconnect-overlay');

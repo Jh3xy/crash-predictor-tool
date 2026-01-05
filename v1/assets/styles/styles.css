@@ -878,7 +878,14 @@ form input {
     font-size: 2rem;
     color: var(--text-primary);
 }
-
+.stat-summary{
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 1rem;
+}
+.stat-summary p{
+    margin: 0 20px;
+}
 .stats-cards .stat-summary {
     display: block;
     color: var(--color-status-success);
@@ -894,7 +901,13 @@ p.desc {
    15. HISTORY TABLE
    ========================================================================= */
 .stats-table { margin-top: 2rem; }
-
+.table{
+    max-height: 550px; /* Adjust this to your "particular height" */
+    overflow-y: auto; 
+}
+.table-wrap{
+    height: auto;
+}
 .table-header h4 {
     color: var(--text-secondary);
     font-weight: 600;
@@ -904,6 +917,7 @@ p.desc {
 .table-header {
     padding: 1.03rem;
     border-bottom: 1px solid var(--border-subtle);
+
 }
 
 .table-header,
@@ -1219,7 +1233,9 @@ body.modal-open .app-modal { pointer-events: auto; }
   font-size: 0.65rem;
   opacity: 0.8;
 }
-
+.slider-value{
+    font-size: clamp(.8rem, 14px, 2rem);
+}
 /* Range Slider */
 .quantile-slider {
   width: 100%;
@@ -1300,9 +1316,6 @@ body.modal-open .app-modal { pointer-events: auto; }
 }
 
 .warning-text {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
   padding: 12px;
   background: rgba(248, 113, 113, 0.1);
   border-left: 3px solid var(--color-status-danger);
@@ -1310,6 +1323,7 @@ body.modal-open .app-modal { pointer-events: auto; }
   font-size: 0.89rem;
   color: var(--text-secondary);
   margin-bottom: 12px;
+  font-size: 12px;
 }
 
 .warning-text i {
@@ -1357,6 +1371,11 @@ small.text-secondary {
 
 .quantile-slider.balanced::-webkit-slider-thumb {
   border-color: var(--color-accent-primary, #00d4ff);
+}
+.warning-title{
+    display: flex;
+    gap: 5px;
+    font-size: 15px;
 }
 
 /* =========================================================================
@@ -1472,7 +1491,7 @@ small.text-secondary {
     overflow-y: auto;
 }
 
-.dropdown-list::-webkit-scrollbar { width: 8px; }
+.dropdown-list::-webkit-scrollbar { width: 1px; }
 .dropdown-list::-webkit-scrollbar-track { background: var(--color-background-base); border-radius: 4px; }
 .dropdown-list::-webkit-scrollbar-thumb { background: var(--color-accent-primary); border-radius: 4px; }
 .dropdown-list::-webkit-scrollbar-thumb:hover { background: var(--color-accent-hover); }
@@ -1520,6 +1539,8 @@ small.text-secondary {
 .theme-indicator[data-theme="theme-atom"] { background: hsla(207, 82%, 66%, 1); }
 .theme-indicator[data-theme="theme-dracula"] { background: hsla(265, 89%, 78%, 1); }
 .theme-indicator[data-theme="theme-dream"] { background: hsla(315, 90%, 75%, 1); }
+.theme-indicator[data-theme="bc-crash-green"] { background: hsla(150, 100%, 58%, 1); }
+.theme-indicator[data-theme="bc-neon"] { background: hsla(265, 90%, 65%, 1); }
 
 /* =========================================================================
    19. CODE BLOCKS & PRE
@@ -1827,147 +1848,4 @@ body.modal-open #reconnect-overlay {
         font-size: 1rem;
         padding: 0 1rem;
     }
-}
-
-/* =========================================================================
-   21. RESPONSIVE MEDIA QUERIES
-   ========================================================================= */
-
-/* Mobile Adjustments (max-width: 500px) */
-@media (max-width: 500px) {
-    .stats-grid { max-width: max-content; }
-    .hide{display: none;}
-}
-
-/* Tablet Adjustments (max-width: 960px) */
-@media (max-width: 960px) {
-    .table-header,
-    .log-row {
-        grid-template-columns: 2fr 1fr 1fr;
-        font-size: 0.82rem;
-    }
-    
-    .card.predictor .modal-icon {
-        top: 0.48rem;
-        right: -1.8rem;
-    }
-    
-    .table-header h4:nth-child(4),
-    .table-header h4:nth-child(3),
-    .log-row div:nth-child(3),
-    .log-row div:nth-child(4) {
-        display: none;
-        justify-self: center;
-    }
-}
-
-/* Desktop Layout (min-width: 961px) */
-@media (min-width: 961px) {
-    /* Dashboard switches to 2-column layout */
-    .dashboard {
-        grid-template-columns: 250px 1fr;
-        height: 100vh;
-        overflow-y: hidden;
-    }
-    
-    header { grid-column: 2 / 3; }
-    .beta-secondary{
-        opacity:0;
-    }
-    /* Sidebar is always visible */
-    .sidebar {
-        grid-row: 1 / 3;
-        grid-column: 1 / 2;
-        position: sticky;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: 10;
-        transition: none;
-    }
-    
-    #menu-toggle,
-    .sidebar-backdrop {
-        display: none !important;
-    }
-    
-    .sidebar-footer {
-        position: absolute;
-        bottom: 0;
-        padding: 1rem;
-        width: 85%;
-    }
-    
-    .dashboard-overview {
-        grid-column: 2 / 3;
-        overflow-y: auto;
-        height: 100%;
-        padding: 1.5rem;
-        padding-right: 0.5rem;
-        padding-top: 1.5rem;
-    }
-    
-    /* Cards switch to grid layout */
-    .cards {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-        gap: 1.5rem;
-    }
-    
-    .stats-cards {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        padding: 10px;
-    }
-    
-    .stat-item { margin-bottom: 0; }
-    .full-width { grid-column: 1 / -1; }
-    
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-        width: 700px;
-        gap: var(--spacing-small);
-    }
-    
-    .stat-item.full-column-width { grid-column: 1 / -1; }
-    
-    .table-content > *,
-    .table-header > * {
-        padding-right: 1.5rem;
-    }
-    
-    .tag span { display: block; }
-}
-
-/* Large Desktop (min-width: 1201px) */
-@media (min-width: 1201px) {
-    .wrap { max-width: 1800px; }
-    
-    /* Named grid areas for complex layout */
-    .cards {
-        grid-template-columns: 1fr 1fr;
-        grid-template-areas:
-            "live-sync live-sync"
-            "predictor predictor"
-            "verifier stats-cards"
-            "performance performance"
-            "history history";
-        gap: 2rem;
-    }
-    
-    #live-sync { grid-area: live-sync; }
-    #ai-predictor { grid-area: predictor; }
-    #crash-verfier { grid-area: verifier; }
-    #performance-chart { grid-area: performance; }
-    
-    .stats-cards {
-        grid-area: stats-cards;
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    }
-    
-    #history { grid-area: history; }
-    .full-width { grid-column: unset; }
-    #history { grid-column: 1 / -1; }
 }

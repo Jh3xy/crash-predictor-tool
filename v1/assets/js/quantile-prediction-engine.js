@@ -1,14 +1,14 @@
 
 /**
- * 🎯 QUANTILE-BASED PREDICTION ENGINE v4.0 - COMPLETE FIXED VERSION
- * --
+ * 🎯 QUANTILE-BASED PREDICTION ENGINE v4.0 
+ * -----------------------------------------------
  */
 
 export class QuantilePredictionEngine {
   constructor() {
     this.name = "Quantile Engine v4.0 - Fixed & Optimized";
     
-
+    // Prediction Engine Features
     this.features = {
       // ✅ ACTIVE
       kaplanMeier: true,
@@ -16,7 +16,7 @@ export class QuantilePredictionEngine {
       enhancedStreaks: true,
       cusumDetection: true,
       
-      // ❌ DISABLED (set ALL Phase 3-4 features to false)
+      // ❌ DISABLED
       weibullHazard: false,
       winsorization: false,
       dynamicConfidence: false,
@@ -31,10 +31,10 @@ export class QuantilePredictionEngine {
       adaptiveThresholds: false,
       weightedBlend: false,
 
-      emaMedianBlend: false  // 🆕 PHASE 5: Optional polish
+      emaMedianBlend: false  // PHASE 5: Optional polish
     };
 
-    // 🆕 EMA state
+    //  EMA state
     this.emaMedian = null;
     this.emaAlpha = 0.3;  // Smoothing factor (higher = more recent weight)
 
@@ -43,9 +43,8 @@ export class QuantilePredictionEngine {
     this.rawHistory = [];
     this.MAX_HISTORY = 2000;
     
-    // 🔥 CHANGE: Load from localStorage or default to 0.39
+    //Load from localStorage or default to 0.39
     this._targetQuantile = parseFloat(localStorage.getItem('targetQuantile_v2')) || 0.39; // was 0.35 (35th percentile)
-    // this.targetQuantile = 0.39; // Changed from 0.40
     this.targetWinRate = 0.60;
     
     this.predictionStats = {
@@ -157,12 +156,9 @@ export class QuantilePredictionEngine {
     const p99 = this._calculateQuantile(cleaned, 0.99);
     return cleaned.map(v => Math.min(v, p99));
   }
-
-  // ============================================
-  // NEW HELPER: CALCULATE EMA
-  // ============================================
-
+  
   /**
+   *  NEW HELPER: CALCULATE EMA
    * 🆕 PHASE 5: EXPONENTIAL MOVING AVERAGE
    * 
    * Tracks recent median with exponential smoothing
@@ -193,14 +189,9 @@ export class QuantilePredictionEngine {
     
     return this.emaMedian;
   }
-
-
-  // ============================================
-// NEW HELPER: WEIGHTED ADDITIVE BLEND
-// ============================================
-
+  
   /**
-   * 🔥 PHASE 3.2: WEIGHTED ADDITIVE BLEND
+   *  NEW HELPER: WEIGHTED ADDITIVE BLEND
    * 
    * Combines feature adjustments using learned weights instead of multiplication
    * 
@@ -277,11 +268,11 @@ export class QuantilePredictionEngine {
   }
 
   // ============================================
-  // NEW HELPER: OPTIMIZE FEATURE WEIGHTS
   // ============================================
-
+  
   /**
-   * 🔥 PHASE 3.2: OPTIMIZE FEATURE WEIGHTS VIA GRID SEARCH
+   *  NEW HELPER: OPTIMIZE FEATURE WEIGHTS
+   * OPTIMIZE FEATURE WEIGHTS VIA GRID SEARCH
    * 
    * Uses simple grid search to find best weights:
    * - Test weight combinations [0.05, 0.10, 0.15, 0.20, 0.25, 0.30]
@@ -385,12 +376,9 @@ export class QuantilePredictionEngine {
     const roi = (totalProfit / numTests) * 100;
     return roi;
   }
-
-  // ============================================
-// DIAGNOSTIC FUNCTIONS
-// ============================================
-
-/**
+  
+  /**
+   * DIAGNOSTIC FUNCTION
  * 🔥 PHASE 3.2: Test weighted blend behavior
  */
 testWeightedBlend() {
@@ -446,7 +434,7 @@ testWeightedBlend() {
 }
 
 /**
- * 🔥 PHASE 3.2: Compare weighted vs multiplicative approach
+ * Compare weighted vs multiplicative approach
  */
 async compareBlendMethods(history) {
   console.log('\n🔬 Comparing Weighted vs Multiplicative Blending...\n');
@@ -503,14 +491,10 @@ async compareBlendMethods(history) {
   
   return { multiplicative: multResults, weighted: weightedResults };
 }
-
-
-  // ============================================
-  // NEW HELPER: CALCULATE ADAPTIVE THRESHOLDS
-  // ============================================
-
+  
   /**
-   * 🔥 PHASE 3.1: CALCULATE ADAPTIVE THRESHOLDS
+   * NEW HELPER: CALCULATE ADAPTIVE THRESHOLDS
+   * CALCULATE ADAPTIVE THRESHOLDS
    * 
    * Adjusts thresholds based on recent market volatility:
    * - High volatility → looser thresholds (fewer false alarms)
@@ -577,11 +561,10 @@ async compareBlendMethods(history) {
   }
 
   // ============================================
-  // UPDATE: _updateCUSUM() - USE ADAPTIVE SLACK/THRESHOLD
   // ============================================
-
+  
   /**
-   * 🔥 MODIFIED: Use adaptive slack and threshold
+   * UPDATE: _updateCUSUM() - USE ADAPTIVE SLACK/THRESHOLD
    * 
    * BEFORE Phase 3.1:
    * - Fixed slack = 0.5
@@ -598,7 +581,7 @@ async compareBlendMethods(history) {
       this.cusum.lastValues.length = 10;
     }
     
-    // 🔥 PHASE 3.1: Use adaptive slack if enabled
+    //Use adaptive slack if enabled
     const slack = this.features.adaptiveThresholds 
       ? this.adaptiveThresholds.cusumSlack 
       : this.cusum.slack;
@@ -639,7 +622,7 @@ async compareBlendMethods(history) {
   }
 
   /**
-   * 🆕 MANUAL CUSUM RESET
+   * MANUAL CUSUM RESET
    */
   resetCUSUM() {
     this.cusum.statistic = 0;
@@ -650,7 +633,7 @@ async compareBlendMethods(history) {
   }
 
   /**
-   * 🆕 GET CUSUM STATUS
+   * GET CUSUM STATUS
    */
   getCUSUMStatus() {
     return {
@@ -673,7 +656,7 @@ async compareBlendMethods(history) {
 
     let cleanHistory = this._cleanData(history.slice(0, 500));
 
-    // 🔥 PHASE 3.1: Update adaptive thresholds
+    //Update adaptive thresholds
     if (this.features.adaptiveThresholds) {
       this._updateAdaptiveThresholds(cleanHistory.slice(0, 100));
     }
@@ -687,12 +670,12 @@ async compareBlendMethods(history) {
     const recent50 = cleanHistory.slice(0, 50);
     const recent20 = cleanHistory.slice(0, 20);
 
-    // 🔥 PHASE 3.1: Update adaptive thresholds BEFORE any feature calculations
+    //Update adaptive thresholds BEFORE any feature calculations
     if (this.features.adaptiveThresholds) {
       this._updateAdaptiveThresholds(cleanHistory.slice(0, 100));
     }
   
-    // 🔥 PHASE 2.2: Update dynamic thresholds before prediction
+    // Update dynamic thresholds before prediction
     if (this.features.dynamicThresholds) {
       this._updateDynamicThresholds(cleanHistory.slice(0, 200));  // Use last 200 for better stability
     }
@@ -761,7 +744,6 @@ async compareBlendMethods(history) {
   if (this.features.arimaBlend) {
     arimaForecast = this._simpleARIMA(recent50);
     
-    // 🔧 FIX: Reduced blend from 70/30 → 85/15 (more conservative)
     // This reduces ARIMA influence while still adding upward momentum
     const quantileComponent = target * 0.85;  // Increased from 0.70
     const arimaComponent = arimaForecast * 0.15;  // Reduced from 0.30
@@ -856,7 +838,7 @@ async compareBlendMethods(history) {
       volatilityMultiplier = this._getVolatilityAdjustment(recentStats.volatility, stats.volatility);
     }
 
-    // ===== 🔥 PHASE 3.2: WEIGHTED BLEND INSTEAD OF MULTIPLICATION =====
+    // WEIGHTED BLEND INSTEAD OF MULTIPLICATION =====
   
   if (this.features.weightedBlend) {
     // Additive weighted blend approach
@@ -891,7 +873,7 @@ async compareBlendMethods(history) {
     }
   }
 
-    // ===== 🔥 PHASE 2.2: NORMALIZE ALL ADJUSTMENTS =====
+    // NORMALIZE ALL ADJUSTMENTS If Normalize is toggled on=====
     if (this.features.normalizeAdjustments) {
       hazardMultiplier = this._normalizeAdjustment(hazardMultiplier, recent50);
       cusumMultiplier = this._normalizeAdjustment(cusumMultiplier, recent50);
@@ -904,7 +886,7 @@ async compareBlendMethods(history) {
       console.log('🔧 Normalization Applied to All Adjustments');
     }
 
-    // ===== PHASE 3.1: HYBRID WEIGHTING (FIXED - Separate Boost/Reduction) =====
+    //HYBRID WEIGHTING (FIXED - Separate Boost/Reduction) =====
 
     // Store pure quantile BEFORE any adjustments
     const pureQuantileValue = target;
@@ -948,7 +930,6 @@ async compareBlendMethods(history) {
       target *= positiveMultipliers;
     }
 
-    // 🔧 PHASE 2.3 FIX: Cap maximum prediction to prevent ARIMA over-shooting
     // This prevents the catastrophic >3.0x predictions that had 6.8% success
     if (this.features.arimaBlend) {
       const MAX_PREDICTION = 3.0;  // Hard cap
@@ -962,13 +943,13 @@ async compareBlendMethods(history) {
     const lowerBound = this._bootstrapQuantile(cleanHistory, this.targetQuantile * 0.75, 100);
     target = Math.max(target, lowerBound);
 
-    // 🔥 PHASE 1.2: Apply 1.3x floor BEFORE safety pad (higher priority)
+    // Apply 1.3x floor BEFORE safety pad (higher priority)
     if (this.features.enhancedStreaks && streakBoostActive) {
       target = Math.max(target, 1.3);
       console.log(`📊 Streak floor applied: Minimum 1.3x enforced`);
     }
 
-    // 🔥 THE JHEY SAFETY PAD (only if no streak boost)
+    //THE JHEY SAFETY PAD (only if no streak boost) - remove 0.03 to predicted value
     if (!streakBoostActive && target < 2.0) {
         target = target - 0.03; 
     }
@@ -984,12 +965,12 @@ async compareBlendMethods(history) {
       confidence *= 0.80;
     }
     
-    // 🔥 PHASE 1.1: Reduce confidence if Post-Moon detected
+    // Reduce confidence if Post-Moon detected
     if (this.features.postMoonCaution && postMoonData && postMoonData.detected) {
       confidence *= 0.80;  // 20% confidence reduction
       console.log(`📉 Confidence reduced by 20% due to post-moon caution`);
     }
-    // 🔥 PHASE 1.2: Boost confidence during rebound streaks
+    //Boost confidence during rebound streaks
     if (this.features.enhancedStreaks && streakBoostActive) {
       confidence *= 1.15;  // +15% confidence boost (increased from roadmap's 10%)
       console.log(`📈 Confidence boosted by 15% due to rebound signal`);
@@ -1034,38 +1015,38 @@ async compareBlendMethods(history) {
         ? this._kaplanMeierSurvival(cleanHistory, target).toFixed(3)
         : null,
 
-     // 🔥 Phase 1.2 Post Moon Fields
+     // 🔥Post Moon Fields
       postMoonAlert: this.features.postMoonCaution ? (postMoonData?.detected || false) : false,
       postMoonWarning: this.features.postMoonCaution ? (postMoonData?.reasoning || null) : null,
       postMoonThreshold: (this.features.postMoonCaution && postMoonData?.threshold) ? postMoonData.threshold.toFixed(2) : null,
 
-      // 🔥 PHASE 1.2: Streak Boost Fields
+      // 🔥: Streak Boost Fields
       streakBoostActive: this.features.enhancedStreaks ? streakBoostActive : null,
       streakCount: this.features.enhancedStreaks ? streakCount : null,
       streakBoostMultiplier: this.features.enhancedStreaks && streakBoostActive ? streakBoostMultiplier.toFixed(2) : null,
       streakReasoning: this.features.enhancedStreaks ? streakReasoning : null,
 
-      // 🔥 PHASE 2.1: Cycle Detection Fields
+      // 🔥 Cycle Detection Fields
       cyclePattern: this.features.cycleDetection && cycleData ? cycleData.pattern : null,
       cycleAdjustment: this.features.cycleDetection && cycleData && cycleData.adjustment !== 1.0 ? cycleData.adjustment.toFixed(2) : null,
       cycleReasoning: this.features.cycleDetection && cycleData ? cycleData.reasoning : null,
       cycleClassification: this.features.cycleDetection && cycleData ? cycleData.last3 : null,
 
-      // 🔥 PHASE 2.2: Dynamic Threshold Fields
+      // 🔥 Dynamic Threshold Fields
       dynamicBustThreshold: this.features.dynamicThresholds ? this.dynamicBustThreshold.toFixed(2) : null,
       dynamicMoonThreshold: this.features.dynamicThresholds ? this.dynamicMoonThreshold.toFixed(2) : null,
 
-      // 🔥 PHASE 2.3: ARIMA Blend Fields
+      // 🔥 ARIMA Blend Fields
       arimaForecast: this.features.arimaBlend && arimaForecast ? arimaForecast.toFixed(2) : null,
       arimaBlendActive: this.features.arimaBlend ? true : null,
 
-      // 🆕 PHASE 3.1: Hybrid Weighting Fields (FIXED - uses actual calculated values)
+      // Hybrid Weighting Fields (FIXED - uses actual calculated values)
       hybridWeightingActive: this.features.hybridWeighting ? true : null,
       hybridQuantileComponent: hybridQuantileComponent ? hybridQuantileComponent.toFixed(2) : null,
       hybridAdjustmentComponent: hybridAdjustmentComponent ? hybridAdjustmentComponent.toFixed(2) : null,
       hybridBoostDetected: this.features.hybridWeighting && positiveMultipliers > 1.0 ? true : false,
 
-      // 🔥 PHASE 4.1: KM fields
+      // 🔥 KM fields
       kmConfidence: this.features.kaplanMeier && kmConfidence 
         ? (kmConfidence * 100).toFixed(0) + '%' 
         : null,
@@ -1084,62 +1065,55 @@ async compareBlendMethods(history) {
       error: false
     };
   }
-
-    // ============================================
-// DIAGNOSTIC FUNCTION - TEST ADAPTIVE THRESHOLDS
-// ============================================
-
-/**
- * 🔥 PHASE 3.1: Test adaptive threshold behavior
- * Use this in console to verify thresholds adapt correctly
- */
-testAdaptiveThresholds() {
-  console.log('\n🧪 Testing Adaptive Thresholds (Phase 3.1)...\n');
-  
-  const testHistory = this.rawHistory.slice(0, 100);
-  
-  if (testHistory.length < 50) {
-    console.error('❌ Need at least 100 rounds of history');
-    return;
+    
+  /**
+ * DIAGNOSTIC FUNCTION - TEST ADAPTIVE THRESHOLDS
+  * Use this in console to verify thresholds adapt correctly
+  */
+  testAdaptiveThresholds() {
+    console.log('\n🧪 Testing Adaptive Thresholds (Phase 3.1)...\n');
+    
+    const testHistory = this.rawHistory.slice(0, 100);
+    
+    if (testHistory.length < 50) {
+      console.error('❌ Need at least 100 rounds of history');
+      return;
+    }
+    
+    // Test with different volatility scenarios
+    const scenarios = [
+      { name: 'Low Volatility', data: testHistory.filter(m => m < 3.0) },
+      { name: 'Normal Market', data: testHistory },
+      { name: 'High Volatility', data: testHistory }
+    ];
+    
+    const wasEnabled = this.features.adaptiveThresholds;
+    this.features.adaptiveThresholds = true;
+    
+    console.log('Testing threshold adaptation to market conditions:\n');
+    
+    scenarios.forEach(scenario => {
+      const stats = this._calculateStats(scenario.data);
+      this._updateAdaptiveThresholds(scenario.data);
+      
+      console.log(`${scenario.name}:`);
+      console.log(`  Market Volatility: ${stats.volatility.toFixed(2)}`);
+      console.log(`  CUSUM Slack: ${this.adaptiveThresholds.cusumSlack.toFixed(2)} (base: 0.5)`);
+      console.log(`  CUSUM Threshold: ${this.adaptiveThresholds.cusumThreshold.toFixed(2)} (base: 3.0)`);
+      console.log(`  Moon Threshold: ${this.adaptiveThresholds.postMoonThreshold.toFixed(2)}x`);
+      console.log(`  Bust Threshold: ${this.adaptiveThresholds.bustThreshold.toFixed(2)}x`);
+      console.log('');
+    });
+    
+    this.features.adaptiveThresholds = wasEnabled;
+    
+    console.log('✅ Adaptive threshold test complete');
+    console.log('💡 High volatility → looser thresholds (fewer alerts)');
+    console.log('💡 Low volatility → tighter thresholds (more sensitive)');
   }
   
-  // Test with different volatility scenarios
-  const scenarios = [
-    { name: 'Low Volatility', data: testHistory.filter(m => m < 3.0) },
-    { name: 'Normal Market', data: testHistory },
-    { name: 'High Volatility', data: testHistory }
-  ];
-  
-  const wasEnabled = this.features.adaptiveThresholds;
-  this.features.adaptiveThresholds = true;
-  
-  console.log('Testing threshold adaptation to market conditions:\n');
-  
-  scenarios.forEach(scenario => {
-    const stats = this._calculateStats(scenario.data);
-    this._updateAdaptiveThresholds(scenario.data);
-    
-    console.log(`${scenario.name}:`);
-    console.log(`  Market Volatility: ${stats.volatility.toFixed(2)}`);
-    console.log(`  CUSUM Slack: ${this.adaptiveThresholds.cusumSlack.toFixed(2)} (base: 0.5)`);
-    console.log(`  CUSUM Threshold: ${this.adaptiveThresholds.cusumThreshold.toFixed(2)} (base: 3.0)`);
-    console.log(`  Moon Threshold: ${this.adaptiveThresholds.postMoonThreshold.toFixed(2)}x`);
-    console.log(`  Bust Threshold: ${this.adaptiveThresholds.bustThreshold.toFixed(2)}x`);
-    console.log('');
-  });
-  
-  this.features.adaptiveThresholds = wasEnabled;
-  
-  console.log('✅ Adaptive threshold test complete');
-  console.log('💡 High volatility → looser thresholds (fewer alerts)');
-  console.log('💡 Low volatility → tighter thresholds (more sensitive)');
-}
-
-  // ============================================
-  // DIAGNOSTIC FUNCTION
-  // ============================================
-
   /**
+   * DIAGNOSTIC FUNCTION
    * 🆕 PHASE 5: Test EMA blend behavior
    */
   testEMABlend() {
@@ -1267,7 +1241,7 @@ testAdaptiveThresholds() {
   }
 
   /**
- * 🔥 PHASE 2.2: Test normalization behavior
+ *  Test normalization behavior
  * Use this in console to verify normalization is working
  */
 testNormalization() {
@@ -1328,20 +1302,6 @@ testNormalization() {
     return survivalProb;
   }
 
-  
-    /**
-     * 🎯 PHASE 4.1: KAPLAN-MEIER PATCH
-     * 
-     * Fixes KM to handle non-censoring better:
-     * - Weight crashed observations at 0.8x (less influence)
-     * - Bound adjustment to ±10% (prevent extreme shifts)
-     * - Add confidence scoring based on sample size
-     */
-
-    // ============================================
-    // REPLACE EXISTING _kaplanMeierPredict() METHOD
-    // ============================================
-
     /**
      * 🔥 PHASE 4.1: IMPROVED KAPLAN-MEIER PREDICTION
      * 
@@ -1376,7 +1336,7 @@ testNormalization() {
       let lastMultiplier = 1.0;
       let kmEstimate = baseQuantile;
       
-      // 🔥 PHASE 4.1: Track crashed events for weighting
+      // Track crashed events for weighting
       const crashedEvents = [];
       
       for (let i = 0; i < sorted.length; i++) {
@@ -1385,7 +1345,7 @@ testNormalization() {
         // Count events at this multiplier (handle duplicates)
         const eventsAtThisPoint = sorted.filter(m => Math.abs(m - multiplier) < 0.01).length;
         
-        // 🔥 PHASE 4.1: Weight crashed observations (multiplier < 2.0)
+        // Weight crashed observations (multiplier < 2.0)
         let weightedEvents = eventsAtThisPoint;
         if (multiplier < 2.0) {
           weightedEvents = eventsAtThisPoint * 0.8; // 80% weight for busts
@@ -1411,13 +1371,13 @@ testNormalization() {
         kmEstimate = lastMultiplier;
       }
       
-      // 🔥 PHASE 4.1: Calculate bounded adjustment
+      // Calculate bounded adjustment
       // Prevent KM from shifting prediction by more than ±10%
       const rawAdjustment = (kmEstimate - baseQuantile) / baseQuantile;
       const boundedAdjustment = Math.max(-0.10, Math.min(0.10, rawAdjustment));
       const adjustedTarget = baseQuantile * (1 + boundedAdjustment);
       
-      // 🔥 PHASE 4.1: Confidence scoring based on sample size and stability
+      // Confidence scoring based on sample size and stability
       // More data + less crashed events = higher confidence
       const sampleSizeScore = Math.min(1.0, history.length / 200); // Max at 200 rounds
       const crashRatio = crashedEvents.length / history.length;
@@ -1450,7 +1410,7 @@ testNormalization() {
     // ============================================
 
     /**
-     * 🔥 PHASE 4.1: Test KM patch behavior
+     *  Test KM patch behavior
      */
     testKaplanMeierPatch() {
       console.log('\n🧪 Testing Kaplan-Meier Patch (Phase 4.1)...\n');
@@ -1493,7 +1453,7 @@ testNormalization() {
     }
 
     /**
- * 🔥 PHASE 4.2: CALCULATE ADAPTIVE HOUSE EDGE
+  *  CALCULATE ADAPTIVE HOUSE EDGE
  * 
  * Adjusts house edge based on market volatility:
  * - Low volatility (stable) → standard edge (1%)
@@ -1527,7 +1487,7 @@ _calculateAdaptiveHouseEdge(volatility) {
 }
 
   /**
- * 🔥 FINAL: UNCAPPED STREAK BOOST (1.30x MAX)
+ * UNCAPPED STREAK BOOST (1.30x MAX)
  * 
  * Proven in Test 2:
  * - 68.5% accuracy
@@ -1578,7 +1538,7 @@ _calculateMergedBustBoost(cleanHistory, bustThreshold = 1.5) {
     };
   }
   
-  // 🔥 UNCAPPED BOOST CALCULATION
+  // UNCAPPED BOOST CALCULATION
   // 3 busts = 15% (1.15x)
   // 5 busts = 25% (1.25x)
   // 7+ busts = 30% (1.30x max)
@@ -1586,7 +1546,7 @@ _calculateMergedBustBoost(cleanHistory, bustThreshold = 1.5) {
   const scalingBoost = Math.min(consecutiveBusts * 0.05, 0.20); // Up to +20%
   const totalBoost = baseBoost + scalingBoost;
   
-  // 🔥 NEW CAP: 1.30x (30% max, up from 10%)
+  // CAP: 1.30x (30% max, up from 10%)
   const multiplier = Math.min(1.30, 1.0 + totalBoost);
   
   // Build reasoning
@@ -1612,7 +1572,7 @@ _calculateMergedBustBoost(cleanHistory, bustThreshold = 1.5) {
 }
 
   /**
-   * 🔥 PHASE 4.2: Test adaptive house edge
+   * Test adaptive house edge
    */
   testAdaptiveHouseEdge() {
     console.log('\n🧪 Testing Adaptive House Edge (Phase 4.2)...\n');
@@ -1643,7 +1603,7 @@ _calculateMergedBustBoost(cleanHistory, bustThreshold = 1.5) {
 }
 
   /**
- * 🔥 PHASE 4.3: Test merged bust detector
+ *  Test merged bust detector
  */
 testMergedBustDetector() {
   console.log('\n🧪 Testing Merged Bust Detector (Phase 4.3)...\n');
@@ -1699,7 +1659,7 @@ testMergedBustDetector() {
 }
 
     /**
-   * 🔥 PHASE 4: Combined diagnostic
+   *  Combined diagnostic
    */
   testPhase4Patches() {
     console.log('\n' + '='.repeat(60));
@@ -1765,11 +1725,11 @@ testMergedBustDetector() {
   }
 
   // ============================================
-  // UPDATE: _detectPostMoonCondition() - USE ADAPTIVE THRESHOLD
   // ============================================
-
+  
   /**
-   * 🔥 MODIFIED: Use adaptive moon threshold
+   * Use adaptive moon threshold
+   * UPDATE: _detectPostMoonCondition() - USE ADAPTIVE THRESHOLD
    * 
    * BEFORE Phase 3.1:
    * - Fixed threshold = 90th percentile calculated each time
@@ -1788,7 +1748,7 @@ testMergedBustDetector() {
       };
     }
     
-    // 🔥 PHASE 3.1: Use adaptive threshold if enabled
+    // Use adaptive threshold if enabled
     const moonThreshold = this.features.adaptiveThresholds
       ? this.adaptiveThresholds.postMoonThreshold
       : this._calculateQuantile(recent50, 0.90);
@@ -1817,11 +1777,11 @@ testMergedBustDetector() {
   }
   
     // ============================================
-  // UPDATE: _countRecentBusts() - USE ADAPTIVE BUST THRESHOLD
-  // ============================================
-
-  /**
-   * 🔥 MODIFIED: Use adaptive bust threshold for streak detection
+    // ============================================
+    
+    /**
+   * UPDATE: _countRecentBusts() - USE ADAPTIVE BUST THRESHOLD
+   *Use adaptive bust threshold for streak detection
    * 
    * BEFORE Phase 3.1:
    * - Fixed threshold = 1.5x
@@ -1832,7 +1792,7 @@ testMergedBustDetector() {
   _countRecentBusts(history, window = 10, threshold = null) {
     if (!history || history.length === 0) return 0;
     
-    // 🔥 PHASE 3.1: Use adaptive threshold if enabled
+    //Use adaptive threshold if enabled
     const bustThreshold = this.features.adaptiveThresholds && threshold === null
       ? this.adaptiveThresholds.bustThreshold
       : (threshold || 1.5);
@@ -1852,7 +1812,7 @@ testMergedBustDetector() {
   }
 
     /**
-   * 🔄 PHASE 2.2: DYNAMIC THRESHOLD CALCULATION
+   * DYNAMIC THRESHOLD CALCULATION
    * Adapts bust/moon definitions based on recent market behavior
    * 
    * Logic:
@@ -1894,7 +1854,7 @@ testMergedBustDetector() {
 
     
     /**
- * ❌ PHASE 2.3: ARIMA BLEND - DISABLED (FAILED GATE CRITERIA)
+ * ❌  ARIMA BLEND - DISABLED (FAILED GATE CRITERIA)
  * 
  * If revisiting ARIMA later:
  * 1. Winsorize input at 90th percentile (filter extremes)
@@ -1925,17 +1885,17 @@ _simpleARIMA(recent50) {
     const trend = recentAvg - priorAvg;
     
     // Step 3: Apply exponential smoothing (MA component)
-    // 🔧 FIX: Increased alpha 0.3 → 0.4 for better recent data weight
+    // Increased alpha 0.3 → 0.4 for better recent data weight
     const alpha = 0.4;  // Smoothing factor (higher = more recent weight)
     const lastValue = recent50[0];
     const smoothed = (alpha * lastValue) + ((1 - alpha) * recentAvg);
     
     // Step 4: Forecast = smoothed value + CONSERVATIVE projected trend
-    // 🔧 FIX: Reduced dampening 50% → 25% for stability
+    //  Reduced dampening 50% → 25% for stability
     const forecast = smoothed + (trend * 0.25);
     
     // Step 5: TIGHT bounds checking (prevent over-shooting)
-    // 🔧 FIX: Tightened from [80%, 150%] → [90%, 120%]
+    //  Tightened from [80%, 150%] → [90%, 120%]
     const minForecast = Math.min(...recent10) * 0.90;  // Don't go too low
     const maxForecast = Math.max(...recent10) * 1.20;  // Don't go too high
     const boundedForecast = Math.max(minForecast, Math.min(forecast, maxForecast));
@@ -1951,7 +1911,7 @@ _simpleARIMA(recent50) {
   }
 
   /**
- * 🔄 PHASE 2.1: CYCLE PATTERN CLASSIFIER
+ *  CYCLE PATTERN CLASSIFIER
  * Classifies recent rounds into Low/Med/High and detects repeating patterns
  * 
  * Logic:
@@ -2103,7 +2063,7 @@ _detectCyclePattern(recent10) {
   }
 
   _determineAction(confidence, target, volatility, cusumAlert) {
-    // 🔥 FIXED: Only skip if CUSUM is actually detecting something meaningful
+    // Only skip if CUSUM is actually detecting something meaningful
     if (cusumAlert && this.cusum.consecutiveBusts >= 3) {
       return {
         type: 'SKIP ROUND',

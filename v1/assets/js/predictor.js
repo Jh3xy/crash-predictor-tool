@@ -10,7 +10,6 @@ export class CrashPredictor {
         this.engine = new QuantilePredictionEngine();
         this.lastPrediction = null;
 
-        // 🔥 ADD THESE:
         this.liveValidation = this._loadValidationState();
         
         this._loadState();
@@ -18,7 +17,7 @@ export class CrashPredictor {
         console.log('🎯 CrashPredictor initialized with Quantile Engine');
         console.log('📊 Stats:', this.engine.getStatistics());
 
-        // 🔥 ADD THESE:
+
         if (this.liveValidation.predictions.length > 0) {
             console.log(`📈 Live Validation: ${this.liveValidation.predictions.length}/50 tracked`);
         }
@@ -61,12 +60,8 @@ export class CrashPredictor {
         }
     }
 
-    // ============================================
-    // CHANGE 2: Add these new methods to class
-    // ============================================
-
     /**
-     * 🔥 NEW METHOD: Load validation state
+     * Load validation state
      */
     _loadValidationState() {
         try {
@@ -86,7 +81,7 @@ export class CrashPredictor {
         };
     }
     /**
-     * 🔥 NEW METHOD: Save validation state
+     *  Save validation state
      */
     _saveValidationState() {
         try {
@@ -96,7 +91,7 @@ export class CrashPredictor {
         }
     }
     /**
-     * 🔥 NEW METHOD: Track prediction automatically
+     *  Track prediction automatically
      */
     _trackPrediction(predicted, actual, success) {
         this.liveValidation.predictions.push({
@@ -123,7 +118,7 @@ export class CrashPredictor {
         }
     }
     /**
-     * 🔥 NEW METHOD: Generate report
+     *  Generate report
      */
     _generateValidationReport() {
         const results = this.liveValidation.predictions;
@@ -179,7 +174,7 @@ export class CrashPredictor {
         this._resetValidation();
     }
     /**
-     * 🔥 NEW METHOD: Reset validation
+     *  Reset validation
      */
     _resetValidation() {
         this.liveValidation = {
@@ -192,7 +187,7 @@ export class CrashPredictor {
         console.log('🔄 Tracking next 50 predictions...');
     }
     /**
-     * 🔥 NEW METHOD: Get status
+     *  Get status
      */
     getValidationStatus() {
         const count = this.liveValidation.predictions.length;
@@ -214,7 +209,7 @@ export class CrashPredictor {
         return { status: 'Complete', progress: '50/50' };
     }
     /**
-     * 🔥 NEW METHOD: View last report
+     *  View last report
      */
     viewLastReport() {
         try {
@@ -236,7 +231,7 @@ export class CrashPredictor {
         }
     }
     /**
-     * 🔥 NEW METHOD: Manual reset
+     *  Manual reset
      */
     resetLiveValidation() {
         console.log('🔄 Resetting validation...');
@@ -244,7 +239,7 @@ export class CrashPredictor {
     }
 
     /**
-     * 🔥 PASSIVE LEARNING - Called on EVERY round
+     *  PASSIVE LEARNING - Called on EVERY round
      */
     learnFromMarketData(multiplier) {
         try {

@@ -94,6 +94,14 @@ const modalContents = {
                         <span class="theme-indicator" data-theme="theme-dream"></span>
                         Dream City
                     </div>
+                     <div class="dropdown-item" data-theme="bc-crash-green" data-name="BC Crash Green">
+                        <span class="theme-indicator" data-theme="bc-crash-green"></span>
+                        BC Crash Green
+                    </div>
+                    <div class="dropdown-item" data-theme="bc-neon" data-name="BC Neon">
+                        <span class="theme-indicator" data-theme="bc-neon"></span>
+                        BC Neon
+                    </div>
                 </div>
             </div>
         </div>
@@ -117,7 +125,7 @@ const modalContents = {
             
             <div class="slider-container">
                 <div class="slider-header">
-                <span class="slider-label conservative">Conservative</span>
+                <span class="slider-label conservative">Cautious</span>
                 <span id="quantileDisplay" class="slider-value">48th percentile</span> 
                 <span class="slider-label bold">Bold</span>
                 </div>
@@ -126,17 +134,18 @@ const modalContents = {
                 
                 <div class="slider-markers">
                 <span class="marker" style="left: 0%">20%</span>
-                <span class="marker" style="left: 25%">30%</span>
                 <span class="marker default" style="left: 47.5%">39%  (Default)</span>
-                <span class="marker" style="left: 62.5%">45%</span>
                 <span class="marker" style="left: 100%">60%</span>
                 </div>
             </div>
             
             <div class="setting-description">
                 <p class="warning-text">
+                <span class="warning-title">
                 <i class="fa-solid fa-triangle-exclamation"></i>
-                <strong>Warning:</strong> Values above 45% may increase false positives and losses. 
+                <strong>Warning:</strong>
+                </span>
+                Values above 45% may increase false positives and losses. 
                 Test in paper mode first.
                 </p>
                 <button id="resetQuantile" class="button-secondary reset-btn">

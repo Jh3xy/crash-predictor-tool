@@ -52,6 +52,15 @@
   --spacing-small: 8px;
   --spacing-large: 24px;
   --z-overlay: 1000;
+
+  /* New "Specialty" Colors (Added for BC Game compatibility) */
+  --color-accent-secondary: hsla(185, 100%, 55%, 1); 
+  --color-accent-tertiary: hsla(330, 100%, 62%, 1);
+  --color-gold: hsla(45, 100%, 65%, 1);
+  --color-orange-risk: hsla(30, 100%, 65%, 1);
+
+  /* New Glows */
+  --shadow-glow-secondary: 0 0 12px hsla(185, 100%, 55%, 0.4);
 }
 
 /* =========================================================================
@@ -648,3 +657,78 @@ body.theme-dream {
   --cell-moderate: var(--color-status-warning);
   --cell-low: var(--color-status-danger);
 }
+/* =========================================================================
+   20. BC GAME CRASH GREEN
+   ========================================================================= */
+body.bc-crash-green {
+  --color-background-base: hsla(220, 35%, 6%, 1);
+  --color-surface-card: hsla(220, 30%, 10%, 1);
+  --color-surface-glass: hsla(220, 30%, 10%, 0.85);
+
+  --color-accent-primary: hsla(150, 100%, 58%, 1); 
+  --color-accent-hover: hsla(150, 100%, 63%, 0.92);
+  --color-accent-glow: hsla(150, 100%, 58%, 0.55);
+
+  --text-primary: hsla(0, 0%, 96%, 1);
+  --text-secondary: hsla(220, 20%, 75%, 0.85);
+
+  /* Status Colors mapped to match your system */
+  --color-status-success: var(--color-accent-primary);
+  --color-status-warning: hsla(45, 100%, 65%, 1);
+  --color-status-danger: hsla(345, 90%, 65%, 1);
+
+  /* Chart Cells */
+  --cell-high: hsla(45, 100%, 65%, 1);   /* Gold */
+  --cell-medium: hsla(30, 100%, 65%, 1); /* Orange */
+  --cell-moderate: var(--color-accent-primary);
+  --cell-low: var(--color-accent-primary);
+
+  /* Layout & Glow */
+  --shadow-glow-accent: 0 0 14px var(--color-accent-glow), 0 0 28px var(--color-accent-glow);
+  --border-subtle: hsla(150, 80%, 50%, 0.35);
+  --card-border: 1px solid var(--border-subtle);
+  --sidebar-active-bg: hsla(150, 90%, 58%, 0.15);
+  --sidebar-active-border: var(--color-accent-primary);
+  --card-radius: 12px;
+}
+
+/* =========================================================================
+   21. BC GAME NEON
+   ========================================================================= */
+body.bc-neon {
+  --color-background-base: hsla(220, 30%, 7%, 1);
+  --color-surface-card: hsla(230, 25%, 12%, 1);
+  --color-surface-glass: hsla(230, 25%, 12%, 0.88);
+
+  --color-accent-primary: hsla(265, 90%, 65%, 1);
+  --color-accent-hover: hsla(265, 90%, 70%, 0.92);
+  --color-accent-glow: hsla(265, 90%, 65%, 0.45);
+
+  /* Extra Neon Accents */
+  --color-accent-secondary: hsla(185, 100%, 58%, 1); /* Neon Cyan */
+  --color-accent-tertiary: hsla(330, 100%, 62%, 1);  /* Neon Pink */
+
+  --text-primary: hsla(220, 20%, 94%, 1);
+  --text-secondary: hsla(220, 20%, 72%, 0.82);
+
+  /* Status Colors */
+  --color-status-success: var(--color-accent-secondary);
+  --color-status-warning: hsla(45, 100%, 65%, 1);
+  --color-status-danger: hsla(345, 100%, 62%, 1);
+
+  /* Chart Cells */
+  --cell-high: var(--color-accent-secondary);
+  --cell-medium: var(--color-accent-primary);
+  --cell-moderate: hsla(45, 100%, 65%, 1);
+  --cell-low: var(--color-status-danger);
+
+  /* Layout & Glow */
+  --shadow-glow-accent: 0 0 12px var(--color-accent-glow), 0 0 24px var(--color-accent-glow);
+  --border-subtle: hsla(265, 80%, 60%, 0.45);
+  --card-border: 1px solid var(--border-subtle);
+  --sidebar-active-bg: hsla(265, 90%, 65%, 0.18);
+  --sidebar-active-border: var(--color-accent-primary);
+  --card-radius: 14px;
+}
+
+

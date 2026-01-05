@@ -19,15 +19,15 @@ export class LiveSync {
     this._reconnectDelay = 3000;
     this.reconnectInterval = null;
 
-    // 🔥 NEW: Reconnection state tracking
+    // Reconnection state tracking
     this.connectionState = 'connecting'; // 'connected', 'disconnected', 'reconnecting', 'syncing'
     this.lastReceivedGameId = null;
     this.syncInProgress = false;
     this.messageQueue = [];
 
     this.WORKER_BASE = 'https://bc-oracle-worker.jhxydev-me.workers.dev';
+    //Convert some characters in WORKER_BASE for the websocket base url
     this.WS_BASE = this.WORKER_BASE.replace(/^https?:\/\//, (m) => (m === 'https://' ? 'wss://' : 'ws://'));
-
     console.log('🔄 LiveSync: Initialized.', { WORKER_BASE: this.WORKER_BASE, WS_BASE: this.WS_BASE });
 
     this.initialize();
@@ -61,6 +61,7 @@ export class LiveSync {
             this.dataStore.setHistory(standardized);
             
             console.log(`🕵️ [Debug] DataStore rounds count: ${this.dataStore.rounds.length}`);
+            // Shwo table of Last 10 rounds
             console.table(
               this.dataStore.rounds.slice(0, 10).map(r => ({
                 gameId: r.gameId,
@@ -148,7 +149,7 @@ export class LiveSync {
 
     console.log('🔌 LiveSync: connecting WebSocket to', this.WS_BASE);
     
-    // 🔥 Show reconnecting overlay if not initial connection
+    // Show reconnecting overlay if not initial connection
     if (this.connectionState === 'disconnected') {
       this.connectionState = 'reconnecting';
       this.showReconnectOverlay();
@@ -672,7 +673,7 @@ async handleReconnectCatchup() {
   }
 
   /**
-   * 🔥 TEST HELPER: Fast reconnect test (skips delays)
+   * TEST HELPER: Fast reconnect test (skips delays)
    * Usage in console: window.liveSync.testReconnect()
    */
   async testReconnect() {
@@ -697,7 +698,7 @@ async handleReconnectCatchup() {
   }
 
   /**
-   * 🔥 TEST HELPER: Simulate missed rounds scenario
+   * TEST HELPER: Simulate missed rounds scenario
    * Usage in console: window.liveSync.testCatchup(10)
    */
   async testCatchup(missedRounds = 10) {

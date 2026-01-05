@@ -14,7 +14,7 @@ export class HistoryLog {
         this.elements = domElements;
         this.eventBus = eventBus;
         this.log = this.loadLog();
-        this.cleanStaleEntries();  // 🔥 NEW: Clean up stale entries on load
+        this.cleanStaleEntries();  // Clean up stale entries on load
         this.renderStats();
         
         // Event listeners
@@ -48,7 +48,7 @@ export class HistoryLog {
 
     // Add this NEW method after loadLog()
     cleanStaleEntries() {
-        const STALE_THRESHOLD = 3 * 60 * 1000; // 3 minutes
+        const STALE_THRESHOLD = 2 * 60 * 1000; // 3 minutes
         const now = Date.now();
         
         const originalLength = this.log.length;
@@ -88,14 +88,14 @@ export class HistoryLog {
         this.log = [];
         this.renderLog();
         this.renderStats();
-        // 🔥 NEW: Tell ChartManager to update
+        //Tell ChartManager to update
         this.eventBus.emit('historyCleared');
 
         console.log("📋 History log cleared via modal confirmation.");
     }
 
     /**
-     * 🔥 CRITICAL: Handle new predictions
+     * Handle new predictions
      */
     handleNewPrediction(predictionResult) {
         console.log('🎯 HistoryLog: New prediction received:', predictionResult);
@@ -137,14 +137,14 @@ export class HistoryLog {
     }
     
     handleRoundCompleted(roundData) {
-    const completedGameId = String(roundData.gameId); // ðŸ"¥ FORCE STRING
+    const completedGameId = String(roundData.gameId); // FORCE STRING
     
-    console.log(`ðŸ"Š ROUND COMPLETED:`);
+    console.log(`ROUND COMPLETED:`);
     console.log(`   gameId: ${completedGameId} (type: ${typeof completedGameId})`);
     console.log(`   multiplier: ${roundData.finalMultiplier.toFixed(2)}x`);
     console.log(`   Looking for matching prediction...`);
     
-    // ðŸ"¥ Enhanced search with logging
+    // Enhanced search with logging
     const logEntry = this.log.find(entry => {
         const match = String(entry.id) === completedGameId;
         if (entry.roundStatus === 'PENDING') {
@@ -169,7 +169,7 @@ export class HistoryLog {
         
         const diff = Math.abs(logEntry.actual - logEntry.predicted);
         
-        // 🔥 SUCCESS CRITERIA: Actual >= Predicted (bet would have won)
+        // Actual >= Predicted (bet would have won)
         const success = logEntry.actual >= logEntry.predicted;
         logEntry.successRate = success ? 100 : 0;
         logEntry.diff = diff;
@@ -177,8 +177,8 @@ export class HistoryLog {
         console.log(`📊 HistoryLog: Round ${logEntry.id} - ${success ? 'SUCCESS ✅' : 'MISS ❌'}`);
         console.log(`   Predicted: ${logEntry.predicted.toFixed(2)}x | Actual: ${logEntry.actual.toFixed(2)}x | Diff: ${diff.toFixed(2)}`);
 
-        // ðŸ"¥ EMIT Bayesian update event
-try {
+        //  EMIT Bayesian update event
+    try {
     console.log(`🔥 EMITTING BAYESIAN UPDATE:`);
     console.log(`   Predicted: ${logEntry.predicted.toFixed(2)}x`);
     console.log(`   Actual: ${logEntry.actual.toFixed(2)}x`);
@@ -192,7 +192,6 @@ try {
     
     console.log('✅ Bayesian event emitted successfully');
     
-    // ðŸ"¥ IMMEDIATE VERIFICATION
     setTimeout(() => {
         console.log(`📊 Engine state after update:`, window.predictor.getStatistics());
     }, 100);
@@ -239,7 +238,7 @@ try {
     }
 
    renderStats() {
-        // ðŸ"¥ FIX: Only count actual predictions made by user
+        //Only count actual predictions made by user
      const totalPredictions = this.log.length;
      const completedPredictions = this.log.filter(l => l.roundStatus === 'COMPLETED').length;
     
@@ -374,10 +373,11 @@ try {
             rowDiv.classList.add('pending-row');
         }
         
+        // Update timestamp to use format: timestamp - predcitedRoundID
         const timestamp = new Date(item.timestamp).toLocaleTimeString('en-US', {
             year: 'numeric', month: 'numeric', day: 'numeric', 
             hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
-        }).replace(',', '');
+        }).replace(',', '') ;
         
         rowDiv.innerHTML = `
             <div class="time"><span>${timestamp}</span></div>

@@ -29,11 +29,15 @@ export class ChartManager {
                         if (!chartArea) return;
                         return this.createDynamicFill(ctx, chartArea, chart);
                     },
+                    // --- ADD THESE FOR OPACITY ---
+                    pointBackgroundColor: 'rgba(255, 255, 255, 0.01)', // Point Fill Opacity
+                    pointBorderColor: 'rgba(255, 255, 255, 0.01)',     // Point Border Opacity
                     fill: true,
                     tension: 0.4,
-                    pointRadius: 4,
-                    pointHoverRadius: 5,
-                    pointBorderWidth: 1,
+                    pointRadius: 1,         // Hides the dots completely
+                    pointHoverRadius: 0,    // Hides dots even when hovering
+                    pointHitRadius: 10, 
+                    pointBorderWidth: 0,
                     segment: {
                         borderColor: ctx => {
                             const val = ctx.p0.parsed.y;
@@ -71,7 +75,6 @@ export class ChartManager {
         // this.eventBus.on('newRoundCompleted', () => this.update());
         this.eventBus.on('newRoundCompleted', () => this.update());
 
-        // 🔥 ADD THIS:
         this.eventBus.on('historyCleared', () => {
             console.log('🧹 ChartManager: History cleared, resetting chart...');
             this.chart.data.labels = [];
@@ -124,10 +127,7 @@ export class ChartManager {
         
         // Calculate where 0 is as a percentage
         const zeroPercent = (zeroPixel - top) / (bottom - top);
-        
-        // 🛡️ FIX: Clamp the value strictly between 0 and 1
-        // If the chart is all-green (zeroPercent > 1), this locks it to 1.
-        // If the chart is all-red (zeroPercent < 0), this locks it to 0.
+
         const clampedZero = Math.max(0, Math.min(1, zeroPercent));
         
         // Top of chart (Success Color Start)
