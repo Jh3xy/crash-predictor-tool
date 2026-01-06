@@ -125,7 +125,7 @@ export class UIController {
         }
 
         // === 1. MAIN PREDICTED VALUE (PHASE 1.3: Enhanced Visual Feedback) ===
-        if (this.elements.predictedValue) {
+       if (this.elements.predictedValue) {
             this.elements.predictedValue.textContent = result.predictedValue.toFixed(2) + 'x';
 
             // Remove old classes first
@@ -153,6 +153,41 @@ export class UIController {
             this.elements.predictedValue.style.color = color;
 
             console.log(`🎨 UI: Applied ${confidenceClass} styling (${result.confidence.toFixed(0)}% confidence)`);
+        }
+        
+        // === 🔥 PHASE 2.1: LIQUIDITY WARNING DISPLAY (MOVED OUT) ===
+        if (result.liquidityWarning) {
+            // Remove any existing warning
+            const existingWarning = this.predictorCard.querySelector('.liquidity-warning');
+            if (existingWarning) {
+                existingWarning.remove();
+            }
+            
+            // Create warning badge
+            const warningBadge = document.createElement('div');
+            warningBadge.className = `liquidity-warning ${result.liquidityWarning.level.toLowerCase()}-risk`;
+            
+            // Set icon based on level
+            const icon = result.liquidityWarning.level === 'HIGH' ? '🔴' : '⚠️';
+            
+            warningBadge.innerHTML = `
+                <span class="warning-icon">${icon}</span>
+                <span class="warning-text">${result.liquidityWarning.message}</span>
+            `;
+            
+            // Insert at top of predictor card
+            this.predictorCard.insertBefore(
+                warningBadge,
+                this.predictorCard.firstChild
+            );
+            
+            console.log('⚠️ UI Warning Displayed:', result.liquidityWarning.level);
+        } else {
+            // Remove warning if prediction is clean
+            const existingWarning = this.predictorCard.querySelector('.liquidity-warning');
+            if (existingWarning) {
+                existingWarning.remove();
+            }
         }
 
         // === 2. ROUND ID ===

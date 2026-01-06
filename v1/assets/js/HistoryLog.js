@@ -126,6 +126,14 @@ export class HistoryLog {
             roundStatus: 'PENDING',
             successRate: 0, 
             diff: 0,
+
+            // 🔥 PHASE 2.1: Track warning
+            warning: predictionResult.liquidityWarning ? {
+                active: true,
+                level: predictionResult.liquidityWarning.level,
+                triggers: predictionResult.liquidityWarning.triggers,
+                correct: null  // Will be set when round completes
+            } : null
         };
         
         this.log.unshift(newEntry);
@@ -176,6 +184,21 @@ export class HistoryLog {
 
         console.log(`📊 HistoryLog: Round ${logEntry.id} - ${success ? 'SUCCESS ✅' : 'MISS ❌'}`);
         console.log(`   Predicted: ${logEntry.predicted.toFixed(2)}x | Actual: ${logEntry.actual.toFixed(2)}x | Diff: ${diff.toFixed(2)}`);
+
+        // 🔥 PHASE 2.1: Evaluate warning accuracy
+        if (logEntry.warning && logEntry.warning.active) {
+            // Warning is "correct" if actual < 2.0x (bust/low multiplier)
+            const warningCorrect = logEntry.actual < 2.0;
+            logEntry.warning.correct = warningCorrect;
+            
+            const result = warningCorrect ? 'CORRECT ✅' : 'FALSE POSITIVE ❌';
+            console.log(`⚠️ ${logEntry.warning.level} Warning ${result}: Actual ${logEntry.actual.toFixed(2)}x`);
+            
+            // Log statistics every 10 warnings
+            if (this.log.filter(e => e.warning && e.warning.active).length % 10 === 0) {
+                this._logWarningStatistics();
+            }
+        }
 
         //  EMIT Bayesian update event
     try {
@@ -235,6 +258,41 @@ export class HistoryLog {
     
     getRecentHistory(count = 30) {
         return this.log.slice(0, count);
+    }
+
+    /**
+     * 🔥 PHASE 2.1: Calculate warning accuracy statistics
+     */
+    _logWarningStatistics() {
+        const warningEntries = this.log.filter(e => 
+            e.warning && 
+            e.warning.active && 
+            e.warning.correct !== null
+        );
+        
+        if (warningEntries.length === 0) {
+            console.log('📊 No warning data yet');
+            return;
+        }
+        
+        const totalWarnings = warningEntries.length;
+        const correctWarnings = warningEntries.filter(e => e.warning.correct).length;
+        const accuracy = (correctWarnings / totalWarnings * 100).toFixed(1);
+        
+        console.log('\n📊 WARNING ACCURACY REPORT');
+        console.log(`   Total Warnings: ${totalWarnings}`);
+        console.log(`   Correct: ${correctWarnings}`);
+        console.log(`   Accuracy: ${accuracy}%`);
+        console.log(`   Gate Requirement: ≥70%`);
+        console.log(`   Status: ${parseFloat(accuracy) >= 70 ? '✅ PASS' : '⚠️ NEEDS IMPROVEMENT'}\n`);
+        
+        // Store in localStorage for Phase 2 gate check
+        localStorage.setItem('phase2_warning_stats', JSON.stringify({
+            totalWarnings,
+            correctWarnings,
+            accuracy: parseFloat(accuracy),
+            timestamp: Date.now()
+        }));
     }
 
    renderStats() {

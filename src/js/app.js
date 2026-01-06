@@ -23,7 +23,7 @@ updateCountdown()
 const timer = setInterval(updateCountdown, 100);
 // Countdown Timer
 function updateCountdown() {
-    const targetDate = new Date("2026-01-20")
+    const targetDate = new Date("2026-02-01")
     const currentDate = targetDate - new Date() //milliseonds left till the target Date
 
     const timeDivs = document.querySelectorAll(".num")

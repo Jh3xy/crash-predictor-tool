@@ -1849,3 +1849,48 @@ body.modal-open #reconnect-overlay {
         padding: 0 1rem;
     }
 }
+/* Phase 2.1: Liquidity Warning Styles */
+.liquidity-warning {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    margin-bottom: 12px;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    animation: fadeIn 0.3s ease;
+}
+
+.liquidity-warning.moderate-risk {
+    background: rgba(255, 193, 7, 0.15);
+    border-left: 3px solid var(--color-status-warning);
+    color: var(--color-status-warning);
+}
+
+.liquidity-warning.high-risk {
+    background: rgba(244, 67, 54, 0.15);
+    border-left: 3px solid var(--color-status-danger);
+    color: var(--color-status-danger);
+}
+
+.liquidity-warning .warning-icon {
+    font-size: 1.1rem;
+    line-height: 1;
+}
+
+.liquidity-warning .warning-text {
+    flex: 1;
+    line-height: 1.4;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

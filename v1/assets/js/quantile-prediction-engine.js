@@ -16,13 +16,14 @@ export class QuantilePredictionEngine {
       enhancedStreaks: true,
       cusumDetection: true,
       
+      postMoonCaution: true,
+
       // ❌ DISABLED
       weibullHazard: false,
       winsorization: false,
       dynamicConfidence: false,
       volumeDetection: false,
       kellyBetting: false,
-      postMoonCaution: false,
       cycleDetection: false,
       dynamicThresholds: false,
       arimaBlend: false,
@@ -826,6 +827,8 @@ async compareBlendMethods(history) {
       }
     }
 
+    
+
     // ===== VOLUME DETECTION (if enabled) =====
     let volumeMultiplier = 1.0;
     if (this.features.volumeDetection) {
@@ -992,7 +995,40 @@ async compareBlendMethods(history) {
     if (this.features.kellyBetting && this.predictionStats.totalPredictions >= 10) {
       kellyBetSize = this._calculateKellyBet(confidence, target);
     }
-    
+    // 🔥 PHASE 2.1: Liquidity Warning Detection
+    const liquidityWarning = this._detectLiquidityWarning(
+      recent20,
+      this.cusum.alertActive,
+      streakBoostActive
+    );
+
+    if (liquidityWarning.active) {
+      console.log(`⚠️ LIQUIDITY WARNING: ${liquidityWarning.message}`);
+      console.log(`   Level: ${liquidityWarning.level}`);
+      console.log(`   Bust Rate: ${liquidityWarning.bustRate}`);
+    }
+
+    return {
+      predictedValue: target,
+      confidence: confidence,
+      action: action.type,
+      message: action.message,
+      reasoning: action.reasoning,
+      
+      predictedRange: [target * 0.85, target * 1.25],
+      safetyZone: Math.max(1.2, safetyExit),
+      
+      riskLevel: recentStats.volatility > 2.5 ? 'HIGH' : recentStats.volatility > 1.8 ? 'MEDIUM' : 'LOW',
+      volatility: recentStats.volatility.toFixed(2),
+      
+      // ... (keep all existing fields) ...
+      
+      // 🔥 PHASE 2.1: NEW FIELD
+      liquidityWarning: liquidityWarning.active ? liquidityWarning : null,
+      
+      error: false
+    };
+
     return {
       predictedValue: target,
       confidence: confidence,
@@ -1723,13 +1759,9 @@ testMergedBustDetector() {
     
     return 1.0;
   }
-
-  // ============================================
-  // ============================================
   
   /**
-   * Use adaptive moon threshold
-   * UPDATE: _detectPostMoonCondition() - USE ADAPTIVE THRESHOLD
+   *  _detectPostMoonCondition() - USE ADAPTIVE THRESHOLD
    * 
    * BEFORE Phase 3.1:
    * - Fixed threshold = 90th percentile calculated each time
@@ -1775,12 +1807,67 @@ testMergedBustDetector() {
       reasoning: 'No recent moon shots detected'
     };
   }
+
+  /**
+ * 🔥 PHASE 2.1: LIQUIDITY WARNING DETECTION
+ * Informational warnings for high-volume/bust conditions
+ * Does NOT change predictions - UI display only
+ * 
+ * @param {number[]} recent20 - Last 20 rounds
+ * @param {boolean} cusumAlert - CUSUM bust detection active
+ * @param {boolean} streakBoostActive - Streak boost active
+ * @returns {object} Warning state and message
+ */
+_detectLiquidityWarning(recent20, cusumAlert, streakBoostActive) {
+  if (!recent20 || recent20.length < 10) {
+    return { active: false, level: 'NONE', message: '', triggers: [] };
+  }
   
-    // ============================================
-    // ============================================
+  const bustCount = recent20.filter(m => m < 1.5).length;
+  const bustRate = bustCount / recent20.length;
+  
+  const warning = {
+    active: false,
+    level: 'NONE',
+    message: '',
+    triggers: []
+  };
+  
+  // Trigger 1: CUSUM alert (highest priority)
+  if (cusumAlert) {
+    warning.active = true;
+    warning.level = 'HIGH';
+    warning.triggers.push('CUSUM');
+  }
+  
+  // Trigger 2: Active streak boost (3+ consecutive busts)
+  if (streakBoostActive) {
+    warning.active = true;
+    if (warning.level !== 'HIGH') {
+      warning.level = 'MODERATE';
+    }
+    warning.triggers.push('STREAK');
+  }
+  
+  // Trigger 3: High recent bust rate (>40%)
+  if (bustRate > 0.40 && !warning.active) {
+    warning.active = true;
+    warning.level = 'MODERATE';
+    warning.triggers.push('VOLUME');
+  }
+  
+  // Build message
+  if (warning.active) {
+    const triggerText = warning.triggers.join(' + ');
+    warning.message = `${warning.level} Risk: ${triggerText} detected`;
+    warning.bustRate = (bustRate * 100).toFixed(0) + '%';
+  }
+  
+  return warning;
+}
     
     /**
-   * UPDATE: _countRecentBusts() - USE ADAPTIVE BUST THRESHOLD
+   *  _countRecentBusts() - USE ADAPTIVE BUST THRESHOLD
    *Use adaptive bust threshold for streak detection
    * 
    * BEFORE Phase 3.1:

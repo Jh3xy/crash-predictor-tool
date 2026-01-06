@@ -324,7 +324,7 @@ export class CrashPredictor {
         this.lastPrediction = null;
     }
 
-    _transformForUI(engineResult) {
+   _transformForUI(engineResult) {
         if (engineResult.error) {
             return engineResult;
         }
@@ -372,6 +372,9 @@ export class CrashPredictor {
             // Phase 2.3: ARIMA Blend Fields
             arimaForecast: engineResult.arimaForecast,
             arimaBlendActive: engineResult.arimaBlendActive,
+
+            // 🔥 PHASE 2.1: Liquidity Warning Field (MISSING!)
+            liquidityWarning: engineResult.liquidityWarning,
 
             error: false
         };
